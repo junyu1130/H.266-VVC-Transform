@@ -1,8 +1,8 @@
-//describe  : 一维DCT2, 4x4, 8x8, 16x16, 32x32, 64x64(高频置零)
-//input     : 4-64个像素残差/第一次变换系数
-//output    : 4-64个变换系数
+//describe  : 第二次一维DCT2, 4x4, 8x8, 16x16, 32x32, 64x64(高频置零)
+//input     : 4-64个第一次变换系数
+//output    : 4-64个第二次变换系数
 //delay     : 6clk
-module dct1d#(
+module dct1d_2nd#(
     parameter  IN_WIDTH  = 16,
     parameter  OUT_WIDTH = 16
 )
@@ -11,8 +11,11 @@ module dct1d#(
     input                               clk     ,
     input                               rst_n   ,
 //input parameter
-    input           [2 : 0]             i_size  ,//0:DCT_4, 1:DCT_8, 2:DCT_16, 3:DCT_32, 4:DCT_64
-    input           [3 : 0]             i_shift ,
+    input           [2 : 0]             i_width ,//0:DCT_4, 1:DCT_8, 2:DCT_16, 3:DCT_32, 4:DCT_64
+    input           [2 : 0]             i_height,
+//output parameter
+    input           [2 : 0]             o_width ,
+    input           [2 : 0]             o_height,
 //input data
     input                               i_valid ,
     input   signed  [IN_WIDTH - 1 : 0]  i_0     ,
@@ -180,6 +183,7 @@ integer i, j;
     reg pre_coeff_valid;
     reg signed [IN_WIDTH + 11 : 0] pre_coeff[63 : 0];
 //limited to 16bit : offset + shift
+    reg [3 : 0] dct_shift;
     wire coeff_valid;
     wire signed [OUT_WIDTH - 1 : 0] coeff[63 : 0];
 
@@ -249,6 +253,18 @@ integer i, j;
     assign i_data[62] = i_62;
     assign i_data[63] = i_63;
 
+//shift
+always @(*) begin
+    case (i_height)//second stage : log2(Height) + 6
+        DCT_4   : dct_shift <= 8;
+        DCT_8   : dct_shift <= 9;
+        DCT_16  : dct_shift <= 10;
+        DCT_32  : dct_shift <= 11;
+        DCT_64  : dct_shift <= 12;
+        default : dct_shift <= 0;
+    endcase
+end
+
 //dct in select
 always @(*) begin
     dct_4_valid <= 0;
@@ -271,7 +287,7 @@ always @(*) begin
     for (i = 0; i < 64; i = i + 1) begin
         i_dct_64[i] <= 0;
     end
-    case (i_size)
+    case (i_height)
         DCT_4   : begin
             dct_4_valid <= i_valid;
             for (i = 0; i < 4; i = i + 1) begin
@@ -452,7 +468,7 @@ always @(*) begin
     for (i = 0; i < 64; i = i + 1) begin
         pre_coeff[i] <= 0;
     end
-    case (i_size)
+    case (i_height_d6)
         DCT_4   : begin
             pre_coeff_valid <= pre_coeff_4_valid_d4;
             for (i = 0; i < 4; i = i + 1) begin
@@ -668,7 +684,7 @@ u_dct1d_32(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_size             ),
+    .i_size (i_height_d4        ),
 //input data
     .i_valid(dct_32_valid       ),
     .i_0    (i_dct_32[0 ]       ),

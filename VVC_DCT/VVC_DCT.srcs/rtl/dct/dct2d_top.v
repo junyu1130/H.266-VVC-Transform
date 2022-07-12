@@ -1,13 +1,10 @@
 //describe  : 二维DCT2，高频系数置零
 //input     : 64个像素残差数据
 //output    : 64个系数数据
-//delay     : Max : [height+15] clk = 1in + 6dct + 1wr + [height-1]other + 1rd + 1in + 6dct
-//            Min : [height+7] clk = 1in + 2dct + 1wr + [height-1]other + 1rd + 1in + 2dct
-//            1D-DCT : 64x64:6clk, 32x32:5clk, 16x16:4clk, 8x8:3clk 4x4:2clk
-//            64x64 : 79 clk后流水输出
-//a matrix process time : Max : [height+width+14] clk = 1in + 5dct + 1wr + (height-1)other + 1rd + 1in + 5dct + (width-1)other
-//                        Min : [height+width+6] clk = 1in + 2dct + 1wr + (height-1)other + 1rd + 1in + 2dct + (width-1)other
-//                        64x64 : 142-32=110 clk (Nx64 =>reduce 32 clk)
+//delay     : [height+13] clk = 6dct + 1wr + [height-1]other + 1rd + 6dct
+//                        64x64 : 77 clk
+//a matrix process time : [height+width+12] clk = 6dct + 1wr + (height-1)other + 1rd + 6dct + (width-1)other
+//                        64x64 : 140-32=108 clk (Nx64 =>reduce 32 clk)
 module dct2d_top#(
     parameter  BIT_DEPTH = 8,
     parameter  OUT_WIDTH = 16
@@ -165,22 +162,15 @@ integer i;
 
 //DCT
     reg dct_stage;
-    reg [2 : 0] dct_size;
-    reg dct_in_valid;
-    reg signed [OUT_WIDTH - 1 : 0] dct_in[63 : 0];
-    wire dct_out_valid;
-    wire signed [OUT_WIDTH - 1 : 0] dct_out[63 : 0];
+    wire dct1d_out_valid;
+    wire signed [OUT_WIDTH - 1 : 0] dct1d_out[63 : 0];
     wire dct2d_out_valid;
-    reg signed [OUT_WIDTH - 1 : 0] dct2d_out[63 : 0];
+    wire signed [OUT_WIDTH - 1 : 0] dct2d_out[63 : 0];
 //shift
-    reg [3 : 0] shift_1st, shift_2nd, dct_shift;
+    reg [3 : 0] shift_1st, shift_2nd;
 //transpose memory
-    wire transpose_in_valid, transpose_out_valid;
-    reg signed [OUT_WIDTH - 1 : 0] transpose_in[63 : 0];
+    wire transpose_out_valid;
     wire signed [OUT_WIDTH - 1 : 0] transpose_out[63 : 0];
-
-assign transpose_in_valid = dct_stage ? 0 : dct_out_valid;
-assign dct2d_out_valid = dct_stage ? dct_out_valid : 0;
 
 //shift
 always @(*) begin
@@ -202,280 +192,151 @@ always @(*) begin
     endcase
 end
 
-//dct data in(1 clk)
-always @(posedge clk or negedge rst_n) begin
-    if (!rst_n) begin
-        dct_stage <= 0;
-        dct_size <= 0;
-        dct_shift <= 0;
-        dct_in_valid <= 0;
-        for (i = 0; i < 64; i = i + 1) begin
-            dct_in[i] <= 0;
-        end
-    end
-    else if (i_valid) begin//1st stage
-        dct_stage <= 0;
-        dct_size <= i_width;
-        dct_shift <= shift_1st;
-        dct_in_valid <= i_valid;
-        dct_in[0 ] <= i_0 ;
-        dct_in[1 ] <= i_1 ;
-        dct_in[2 ] <= i_2 ;
-        dct_in[3 ] <= i_3 ;
-        dct_in[4 ] <= i_4 ;
-        dct_in[5 ] <= i_5 ;
-        dct_in[6 ] <= i_6 ;
-        dct_in[7 ] <= i_7 ;
-        dct_in[8 ] <= i_8 ;
-        dct_in[9 ] <= i_9 ;
-        dct_in[10] <= i_10;
-        dct_in[11] <= i_11;
-        dct_in[12] <= i_12;
-        dct_in[13] <= i_13;
-        dct_in[14] <= i_14;
-        dct_in[15] <= i_15;
-        dct_in[16] <= i_16;
-        dct_in[17] <= i_17;
-        dct_in[18] <= i_18;
-        dct_in[19] <= i_19;
-        dct_in[20] <= i_20;
-        dct_in[21] <= i_21;
-        dct_in[22] <= i_22;
-        dct_in[23] <= i_23;
-        dct_in[24] <= i_24;
-        dct_in[25] <= i_25;
-        dct_in[26] <= i_26;
-        dct_in[27] <= i_27;
-        dct_in[28] <= i_28;
-        dct_in[29] <= i_29;
-        dct_in[30] <= i_30;
-        dct_in[31] <= i_31;
-        dct_in[32] <= i_32;
-        dct_in[33] <= i_33;
-        dct_in[34] <= i_34;
-        dct_in[35] <= i_35;
-        dct_in[36] <= i_36;
-        dct_in[37] <= i_37;
-        dct_in[38] <= i_38;
-        dct_in[39] <= i_39;
-        dct_in[40] <= i_40;
-        dct_in[41] <= i_41;
-        dct_in[42] <= i_42;
-        dct_in[43] <= i_43;
-        dct_in[44] <= i_44;
-        dct_in[45] <= i_45;
-        dct_in[46] <= i_46;
-        dct_in[47] <= i_47;
-        dct_in[48] <= i_48;
-        dct_in[49] <= i_49;
-        dct_in[50] <= i_50;
-        dct_in[51] <= i_51;
-        dct_in[52] <= i_52;
-        dct_in[53] <= i_53;
-        dct_in[54] <= i_54;
-        dct_in[55] <= i_55;
-        dct_in[56] <= i_56;
-        dct_in[57] <= i_57;
-        dct_in[58] <= i_58;
-        dct_in[59] <= i_59;
-        dct_in[60] <= i_60;
-        dct_in[61] <= i_61;
-        dct_in[62] <= i_62;
-        dct_in[63] <= i_63;
-    end
-    else if (transpose_out_valid) begin//2nd stage
-        dct_stage <= 1;
-        dct_size <= i_height;
-        dct_shift <= shift_2nd;
-        dct_in_valid <= transpose_out_valid;
-        for (i = 0; i < 64; i = i + 1) begin
-            dct_in[i] <= transpose_out[i];
-        end
-    end
-    else begin
-        dct_stage <= dct_stage;
-        dct_size <= dct_size;
-        dct_shift <= dct_shift;
-        dct_in_valid <= 0;
-        for (i = 0; i < 64; i = i + 1) begin
-            dct_in[i] <= 0;
-        end
-    end
-end
-
-//transpose data in
-always @(*) begin
-    if (transpose_in_valid) begin
-        for (i = 0; i < 64; i = i + 1) begin
-            transpose_in[i] <= dct_out[i];
-        end
-    end
-    else begin
-        for (i = 0; i < 64; i = i + 1) begin
-            transpose_in[i] <= 0;
-        end
-    end
-end
-
-//dct data out
-always @(*) begin
-    if (dct_stage) begin
-        for (i = 0; i < 64; i = i + 1) begin
-            dct2d_out[i] <= dct_out[i];
-        end
-    end
-    else begin
-        for (i = 0; i < 64; i = i + 1) begin
-            dct2d_out[i] <= 0;
-        end
-    end
-end
-
 //sub module
 //1D-DCT
 dct1d#(
-    .IN_WIDTH   (OUT_WIDTH),
-    .OUT_WIDTH  (OUT_WIDTH)
+    .IN_WIDTH   (BIT_DEPTH + 1  ),
+    .OUT_WIDTH  (OUT_WIDTH      )
 )
-u_dct1d(
+u_dct1d_1st(
 //system input
-    .clk     (clk           ),
-    .rst_n   (rst_n         ),
+    .clk     (clk               ),
+    .rst_n   (rst_n             ),
 //input parameter
-    .i_size  (dct_size      ),
-    .i_shift (dct_shift     ),
+    .i_size  (i_width           ),
+    .i_shift (shift_1st         ),
 //input data
-    .i_valid (dct_in_valid  ),
-    .i_0     (dct_in[0 ]    ),
-    .i_1     (dct_in[1 ]    ),
-    .i_2     (dct_in[2 ]    ),
-    .i_3     (dct_in[3 ]    ),
-    .i_4     (dct_in[4 ]    ),
-    .i_5     (dct_in[5 ]    ),
-    .i_6     (dct_in[6 ]    ),
-    .i_7     (dct_in[7 ]    ),
-    .i_8     (dct_in[8 ]    ),
-    .i_9     (dct_in[9 ]    ),
-    .i_10    (dct_in[10]    ),
-    .i_11    (dct_in[11]    ),
-    .i_12    (dct_in[12]    ),
-    .i_13    (dct_in[13]    ),
-    .i_14    (dct_in[14]    ),
-    .i_15    (dct_in[15]    ),
-    .i_16    (dct_in[16]    ),
-    .i_17    (dct_in[17]    ),
-    .i_18    (dct_in[18]    ),
-    .i_19    (dct_in[19]    ),
-    .i_20    (dct_in[20]    ),
-    .i_21    (dct_in[21]    ),
-    .i_22    (dct_in[22]    ),
-    .i_23    (dct_in[23]    ),
-    .i_24    (dct_in[24]    ),
-    .i_25    (dct_in[25]    ),
-    .i_26    (dct_in[26]    ),
-    .i_27    (dct_in[27]    ),
-    .i_28    (dct_in[28]    ),
-    .i_29    (dct_in[29]    ),
-    .i_30    (dct_in[30]    ),
-    .i_31    (dct_in[31]    ),
-    .i_32    (dct_in[32]    ),
-    .i_33    (dct_in[33]    ),
-    .i_34    (dct_in[34]    ),
-    .i_35    (dct_in[35]    ),
-    .i_36    (dct_in[36]    ),
-    .i_37    (dct_in[37]    ),
-    .i_38    (dct_in[38]    ),
-    .i_39    (dct_in[39]    ),
-    .i_40    (dct_in[40]    ),
-    .i_41    (dct_in[41]    ),
-    .i_42    (dct_in[42]    ),
-    .i_43    (dct_in[43]    ),
-    .i_44    (dct_in[44]    ),
-    .i_45    (dct_in[45]    ),
-    .i_46    (dct_in[46]    ),
-    .i_47    (dct_in[47]    ),
-    .i_48    (dct_in[48]    ),
-    .i_49    (dct_in[49]    ),
-    .i_50    (dct_in[50]    ),
-    .i_51    (dct_in[51]    ),
-    .i_52    (dct_in[52]    ),
-    .i_53    (dct_in[53]    ),
-    .i_54    (dct_in[54]    ),
-    .i_55    (dct_in[55]    ),
-    .i_56    (dct_in[56]    ),
-    .i_57    (dct_in[57]    ),
-    .i_58    (dct_in[58]    ),
-    .i_59    (dct_in[59]    ),
-    .i_60    (dct_in[60]    ),
-    .i_61    (dct_in[61]    ),
-    .i_62    (dct_in[62]    ),
-    .i_63    (dct_in[63]    ),
+    .i_valid (i_valid           ),
+    .i_0     (i_0               ),
+    .i_1     (i_1               ),
+    .i_2     (i_2               ),
+    .i_3     (i_3               ),
+    .i_4     (i_4               ),
+    .i_5     (i_5               ),
+    .i_6     (i_6               ),
+    .i_7     (i_7               ),
+    .i_8     (i_8               ),
+    .i_9     (i_9               ),
+    .i_10    (i_10              ),
+    .i_11    (i_11              ),
+    .i_12    (i_12              ),
+    .i_13    (i_13              ),
+    .i_14    (i_14              ),
+    .i_15    (i_15              ),
+    .i_16    (i_16              ),
+    .i_17    (i_17              ),
+    .i_18    (i_18              ),
+    .i_19    (i_19              ),
+    .i_20    (i_20              ),
+    .i_21    (i_21              ),
+    .i_22    (i_22              ),
+    .i_23    (i_23              ),
+    .i_24    (i_24              ),
+    .i_25    (i_25              ),
+    .i_26    (i_26              ),
+    .i_27    (i_27              ),
+    .i_28    (i_28              ),
+    .i_29    (i_29              ),
+    .i_30    (i_30              ),
+    .i_31    (i_31              ),
+    .i_32    (i_32              ),
+    .i_33    (i_33              ),
+    .i_34    (i_34              ),
+    .i_35    (i_35              ),
+    .i_36    (i_36              ),
+    .i_37    (i_37              ),
+    .i_38    (i_38              ),
+    .i_39    (i_39              ),
+    .i_40    (i_40              ),
+    .i_41    (i_41              ),
+    .i_42    (i_42              ),
+    .i_43    (i_43              ),
+    .i_44    (i_44              ),
+    .i_45    (i_45              ),
+    .i_46    (i_46              ),
+    .i_47    (i_47              ),
+    .i_48    (i_48              ),
+    .i_49    (i_49              ),
+    .i_50    (i_50              ),
+    .i_51    (i_51              ),
+    .i_52    (i_52              ),
+    .i_53    (i_53              ),
+    .i_54    (i_54              ),
+    .i_55    (i_55              ),
+    .i_56    (i_56              ),
+    .i_57    (i_57              ),
+    .i_58    (i_58              ),
+    .i_59    (i_59              ),
+    .i_60    (i_60              ),
+    .i_61    (i_61              ),
+    .i_62    (i_62              ),
+    .i_63    (i_63              ),
 //output coeff
-    .o_valid (dct_out_valid ),
-    .o_0     (dct_out[0 ]   ),
-    .o_1     (dct_out[1 ]   ),
-    .o_2     (dct_out[2 ]   ),
-    .o_3     (dct_out[3 ]   ),
-    .o_4     (dct_out[4 ]   ),
-    .o_5     (dct_out[5 ]   ),
-    .o_6     (dct_out[6 ]   ),
-    .o_7     (dct_out[7 ]   ),
-    .o_8     (dct_out[8 ]   ),
-    .o_9     (dct_out[9 ]   ),
-    .o_10    (dct_out[10]   ),
-    .o_11    (dct_out[11]   ),
-    .o_12    (dct_out[12]   ),
-    .o_13    (dct_out[13]   ),
-    .o_14    (dct_out[14]   ),
-    .o_15    (dct_out[15]   ),
-    .o_16    (dct_out[16]   ),
-    .o_17    (dct_out[17]   ),
-    .o_18    (dct_out[18]   ),
-    .o_19    (dct_out[19]   ),
-    .o_20    (dct_out[20]   ),
-    .o_21    (dct_out[21]   ),
-    .o_22    (dct_out[22]   ),
-    .o_23    (dct_out[23]   ),
-    .o_24    (dct_out[24]   ),
-    .o_25    (dct_out[25]   ),
-    .o_26    (dct_out[26]   ),
-    .o_27    (dct_out[27]   ),
-    .o_28    (dct_out[28]   ),
-    .o_29    (dct_out[29]   ),
-    .o_30    (dct_out[30]   ),
-    .o_31    (dct_out[31]   ),
-    .o_32    (dct_out[32]   ),
-    .o_33    (dct_out[33]   ),
-    .o_34    (dct_out[34]   ),
-    .o_35    (dct_out[35]   ),
-    .o_36    (dct_out[36]   ),
-    .o_37    (dct_out[37]   ),
-    .o_38    (dct_out[38]   ),
-    .o_39    (dct_out[39]   ),
-    .o_40    (dct_out[40]   ),
-    .o_41    (dct_out[41]   ),
-    .o_42    (dct_out[42]   ),
-    .o_43    (dct_out[43]   ),
-    .o_44    (dct_out[44]   ),
-    .o_45    (dct_out[45]   ),
-    .o_46    (dct_out[46]   ),
-    .o_47    (dct_out[47]   ),
-    .o_48    (dct_out[48]   ),
-    .o_49    (dct_out[49]   ),
-    .o_50    (dct_out[50]   ),
-    .o_51    (dct_out[51]   ),
-    .o_52    (dct_out[52]   ),
-    .o_53    (dct_out[53]   ),
-    .o_54    (dct_out[54]   ),
-    .o_55    (dct_out[55]   ),
-    .o_56    (dct_out[56]   ),
-    .o_57    (dct_out[57]   ),
-    .o_58    (dct_out[58]   ),
-    .o_59    (dct_out[59]   ),
-    .o_60    (dct_out[60]   ),
-    .o_61    (dct_out[61]   ),
-    .o_62    (dct_out[62]   ),
-    .o_63    (dct_out[63]   )
+    .o_valid (dct1d_out_valid   ),
+    .o_0     (dct1d_out[0 ]     ),
+    .o_1     (dct1d_out[1 ]     ),
+    .o_2     (dct1d_out[2 ]     ),
+    .o_3     (dct1d_out[3 ]     ),
+    .o_4     (dct1d_out[4 ]     ),
+    .o_5     (dct1d_out[5 ]     ),
+    .o_6     (dct1d_out[6 ]     ),
+    .o_7     (dct1d_out[7 ]     ),
+    .o_8     (dct1d_out[8 ]     ),
+    .o_9     (dct1d_out[9 ]     ),
+    .o_10    (dct1d_out[10]     ),
+    .o_11    (dct1d_out[11]     ),
+    .o_12    (dct1d_out[12]     ),
+    .o_13    (dct1d_out[13]     ),
+    .o_14    (dct1d_out[14]     ),
+    .o_15    (dct1d_out[15]     ),
+    .o_16    (dct1d_out[16]     ),
+    .o_17    (dct1d_out[17]     ),
+    .o_18    (dct1d_out[18]     ),
+    .o_19    (dct1d_out[19]     ),
+    .o_20    (dct1d_out[20]     ),
+    .o_21    (dct1d_out[21]     ),
+    .o_22    (dct1d_out[22]     ),
+    .o_23    (dct1d_out[23]     ),
+    .o_24    (dct1d_out[24]     ),
+    .o_25    (dct1d_out[25]     ),
+    .o_26    (dct1d_out[26]     ),
+    .o_27    (dct1d_out[27]     ),
+    .o_28    (dct1d_out[28]     ),
+    .o_29    (dct1d_out[29]     ),
+    .o_30    (dct1d_out[30]     ),
+    .o_31    (dct1d_out[31]     ),
+    .o_32    (dct1d_out[32]     ),
+    .o_33    (dct1d_out[33]     ),
+    .o_34    (dct1d_out[34]     ),
+    .o_35    (dct1d_out[35]     ),
+    .o_36    (dct1d_out[36]     ),
+    .o_37    (dct1d_out[37]     ),
+    .o_38    (dct1d_out[38]     ),
+    .o_39    (dct1d_out[39]     ),
+    .o_40    (dct1d_out[40]     ),
+    .o_41    (dct1d_out[41]     ),
+    .o_42    (dct1d_out[42]     ),
+    .o_43    (dct1d_out[43]     ),
+    .o_44    (dct1d_out[44]     ),
+    .o_45    (dct1d_out[45]     ),
+    .o_46    (dct1d_out[46]     ),
+    .o_47    (dct1d_out[47]     ),
+    .o_48    (dct1d_out[48]     ),
+    .o_49    (dct1d_out[49]     ),
+    .o_50    (dct1d_out[50]     ),
+    .o_51    (dct1d_out[51]     ),
+    .o_52    (dct1d_out[52]     ),
+    .o_53    (dct1d_out[53]     ),
+    .o_54    (dct1d_out[54]     ),
+    .o_55    (dct1d_out[55]     ),
+    .o_56    (dct1d_out[56]     ),
+    .o_57    (dct1d_out[57]     ),
+    .o_58    (dct1d_out[58]     ),
+    .o_59    (dct1d_out[59]     ),
+    .o_60    (dct1d_out[60]     ),
+    .o_61    (dct1d_out[61]     ),
+    .o_62    (dct1d_out[62]     ),
+    .o_63    (dct1d_out[63]     )
 );
 
 //transpose memory
@@ -490,71 +351,71 @@ u_transpose_memory(
     .i_width (i_width               ),
     .i_height(i_height              ),
 //1st stage's coeff
-    .i_valid (transpose_in_valid    ),
-    .i_0     (dct_out[0 ]           ),
-    .i_1     (dct_out[1 ]           ),
-    .i_2     (dct_out[2 ]           ),
-    .i_3     (dct_out[3 ]           ),
-    .i_4     (dct_out[4 ]           ),
-    .i_5     (dct_out[5 ]           ),
-    .i_6     (dct_out[6 ]           ),
-    .i_7     (dct_out[7 ]           ),
-    .i_8     (dct_out[8 ]           ),
-    .i_9     (dct_out[9 ]           ),
-    .i_10    (dct_out[10]           ),
-    .i_11    (dct_out[11]           ),
-    .i_12    (dct_out[12]           ),
-    .i_13    (dct_out[13]           ),
-    .i_14    (dct_out[14]           ),
-    .i_15    (dct_out[15]           ),
-    .i_16    (dct_out[16]           ),
-    .i_17    (dct_out[17]           ),
-    .i_18    (dct_out[18]           ),
-    .i_19    (dct_out[19]           ),
-    .i_20    (dct_out[20]           ),
-    .i_21    (dct_out[21]           ),
-    .i_22    (dct_out[22]           ),
-    .i_23    (dct_out[23]           ),
-    .i_24    (dct_out[24]           ),
-    .i_25    (dct_out[25]           ),
-    .i_26    (dct_out[26]           ),
-    .i_27    (dct_out[27]           ),
-    .i_28    (dct_out[28]           ),
-    .i_29    (dct_out[29]           ),
-    .i_30    (dct_out[30]           ),
-    .i_31    (dct_out[31]           ),
-    .i_32    (dct_out[32]           ),
-    .i_33    (dct_out[33]           ),
-    .i_34    (dct_out[34]           ),
-    .i_35    (dct_out[35]           ),
-    .i_36    (dct_out[36]           ),
-    .i_37    (dct_out[37]           ),
-    .i_38    (dct_out[38]           ),
-    .i_39    (dct_out[39]           ),
-    .i_40    (dct_out[40]           ),
-    .i_41    (dct_out[41]           ),
-    .i_42    (dct_out[42]           ),
-    .i_43    (dct_out[43]           ),
-    .i_44    (dct_out[44]           ),
-    .i_45    (dct_out[45]           ),
-    .i_46    (dct_out[46]           ),
-    .i_47    (dct_out[47]           ),
-    .i_48    (dct_out[48]           ),
-    .i_49    (dct_out[49]           ),
-    .i_50    (dct_out[50]           ),
-    .i_51    (dct_out[51]           ),
-    .i_52    (dct_out[52]           ),
-    .i_53    (dct_out[53]           ),
-    .i_54    (dct_out[54]           ),
-    .i_55    (dct_out[55]           ),
-    .i_56    (dct_out[56]           ),
-    .i_57    (dct_out[57]           ),
-    .i_58    (dct_out[58]           ),
-    .i_59    (dct_out[59]           ),
-    .i_60    (dct_out[60]           ),
-    .i_61    (dct_out[61]           ),
-    .i_62    (dct_out[62]           ),
-    .i_63    (dct_out[63]           ),
+    .i_valid (dct1d_out_valid       ),
+    .i_0     (dct1d_out[0 ]         ),
+    .i_1     (dct1d_out[1 ]         ),
+    .i_2     (dct1d_out[2 ]         ),
+    .i_3     (dct1d_out[3 ]         ),
+    .i_4     (dct1d_out[4 ]         ),
+    .i_5     (dct1d_out[5 ]         ),
+    .i_6     (dct1d_out[6 ]         ),
+    .i_7     (dct1d_out[7 ]         ),
+    .i_8     (dct1d_out[8 ]         ),
+    .i_9     (dct1d_out[9 ]         ),
+    .i_10    (dct1d_out[10]         ),
+    .i_11    (dct1d_out[11]         ),
+    .i_12    (dct1d_out[12]         ),
+    .i_13    (dct1d_out[13]         ),
+    .i_14    (dct1d_out[14]         ),
+    .i_15    (dct1d_out[15]         ),
+    .i_16    (dct1d_out[16]         ),
+    .i_17    (dct1d_out[17]         ),
+    .i_18    (dct1d_out[18]         ),
+    .i_19    (dct1d_out[19]         ),
+    .i_20    (dct1d_out[20]         ),
+    .i_21    (dct1d_out[21]         ),
+    .i_22    (dct1d_out[22]         ),
+    .i_23    (dct1d_out[23]         ),
+    .i_24    (dct1d_out[24]         ),
+    .i_25    (dct1d_out[25]         ),
+    .i_26    (dct1d_out[26]         ),
+    .i_27    (dct1d_out[27]         ),
+    .i_28    (dct1d_out[28]         ),
+    .i_29    (dct1d_out[29]         ),
+    .i_30    (dct1d_out[30]         ),
+    .i_31    (dct1d_out[31]         ),
+    .i_32    (dct1d_out[32]         ),
+    .i_33    (dct1d_out[33]         ),
+    .i_34    (dct1d_out[34]         ),
+    .i_35    (dct1d_out[35]         ),
+    .i_36    (dct1d_out[36]         ),
+    .i_37    (dct1d_out[37]         ),
+    .i_38    (dct1d_out[38]         ),
+    .i_39    (dct1d_out[39]         ),
+    .i_40    (dct1d_out[40]         ),
+    .i_41    (dct1d_out[41]         ),
+    .i_42    (dct1d_out[42]         ),
+    .i_43    (dct1d_out[43]         ),
+    .i_44    (dct1d_out[44]         ),
+    .i_45    (dct1d_out[45]         ),
+    .i_46    (dct1d_out[46]         ),
+    .i_47    (dct1d_out[47]         ),
+    .i_48    (dct1d_out[48]         ),
+    .i_49    (dct1d_out[49]         ),
+    .i_50    (dct1d_out[50]         ),
+    .i_51    (dct1d_out[51]         ),
+    .i_52    (dct1d_out[52]         ),
+    .i_53    (dct1d_out[53]         ),
+    .i_54    (dct1d_out[54]         ),
+    .i_55    (dct1d_out[55]         ),
+    .i_56    (dct1d_out[56]         ),
+    .i_57    (dct1d_out[57]         ),
+    .i_58    (dct1d_out[58]         ),
+    .i_59    (dct1d_out[59]         ),
+    .i_60    (dct1d_out[60]         ),
+    .i_61    (dct1d_out[61]         ),
+    .i_62    (dct1d_out[62]         ),
+    .i_63    (dct1d_out[63]         ),
 //transpose 1st stage's coeff
     .o_valid (transpose_out_valid   ),
     .o_0     (transpose_out[0 ]     ),
@@ -621,6 +482,152 @@ u_transpose_memory(
     .o_61    (transpose_out[61]     ),
     .o_62    (transpose_out[62]     ),
     .o_63    (transpose_out[63]     )
+);
+
+//1D-DCT
+dct1d#(
+    .IN_WIDTH   (OUT_WIDTH          ),
+    .OUT_WIDTH  (OUT_WIDTH          )
+)
+u_dct1d_2nd(
+//system input
+    .clk     (clk                   ),
+    .rst_n   (rst_n                 ),
+//input parameter
+    .i_size  (i_height              ),
+    .i_shift (shift_2nd             ),
+//input data
+    .i_valid (transpose_out_valid   ),
+    .i_0     (transpose_out[0 ]     ),
+    .i_1     (transpose_out[1 ]     ),
+    .i_2     (transpose_out[2 ]     ),
+    .i_3     (transpose_out[3 ]     ),
+    .i_4     (transpose_out[4 ]     ),
+    .i_5     (transpose_out[5 ]     ),
+    .i_6     (transpose_out[6 ]     ),
+    .i_7     (transpose_out[7 ]     ),
+    .i_8     (transpose_out[8 ]     ),
+    .i_9     (transpose_out[9 ]     ),
+    .i_10    (transpose_out[10]     ),
+    .i_11    (transpose_out[11]     ),
+    .i_12    (transpose_out[12]     ),
+    .i_13    (transpose_out[13]     ),
+    .i_14    (transpose_out[14]     ),
+    .i_15    (transpose_out[15]     ),
+    .i_16    (transpose_out[16]     ),
+    .i_17    (transpose_out[17]     ),
+    .i_18    (transpose_out[18]     ),
+    .i_19    (transpose_out[19]     ),
+    .i_20    (transpose_out[20]     ),
+    .i_21    (transpose_out[21]     ),
+    .i_22    (transpose_out[22]     ),
+    .i_23    (transpose_out[23]     ),
+    .i_24    (transpose_out[24]     ),
+    .i_25    (transpose_out[25]     ),
+    .i_26    (transpose_out[26]     ),
+    .i_27    (transpose_out[27]     ),
+    .i_28    (transpose_out[28]     ),
+    .i_29    (transpose_out[29]     ),
+    .i_30    (transpose_out[30]     ),
+    .i_31    (transpose_out[31]     ),
+    .i_32    (transpose_out[32]     ),
+    .i_33    (transpose_out[33]     ),
+    .i_34    (transpose_out[34]     ),
+    .i_35    (transpose_out[35]     ),
+    .i_36    (transpose_out[36]     ),
+    .i_37    (transpose_out[37]     ),
+    .i_38    (transpose_out[38]     ),
+    .i_39    (transpose_out[39]     ),
+    .i_40    (transpose_out[40]     ),
+    .i_41    (transpose_out[41]     ),
+    .i_42    (transpose_out[42]     ),
+    .i_43    (transpose_out[43]     ),
+    .i_44    (transpose_out[44]     ),
+    .i_45    (transpose_out[45]     ),
+    .i_46    (transpose_out[46]     ),
+    .i_47    (transpose_out[47]     ),
+    .i_48    (transpose_out[48]     ),
+    .i_49    (transpose_out[49]     ),
+    .i_50    (transpose_out[50]     ),
+    .i_51    (transpose_out[51]     ),
+    .i_52    (transpose_out[52]     ),
+    .i_53    (transpose_out[53]     ),
+    .i_54    (transpose_out[54]     ),
+    .i_55    (transpose_out[55]     ),
+    .i_56    (transpose_out[56]     ),
+    .i_57    (transpose_out[57]     ),
+    .i_58    (transpose_out[58]     ),
+    .i_59    (transpose_out[59]     ),
+    .i_60    (transpose_out[60]     ),
+    .i_61    (transpose_out[61]     ),
+    .i_62    (transpose_out[62]     ),
+    .i_63    (transpose_out[63]     ),
+//output coeff
+    .o_valid (dct2d_out_valid       ),
+    .o_0     (dct2d_out[0 ]         ),
+    .o_1     (dct2d_out[1 ]         ),
+    .o_2     (dct2d_out[2 ]         ),
+    .o_3     (dct2d_out[3 ]         ),
+    .o_4     (dct2d_out[4 ]         ),
+    .o_5     (dct2d_out[5 ]         ),
+    .o_6     (dct2d_out[6 ]         ),
+    .o_7     (dct2d_out[7 ]         ),
+    .o_8     (dct2d_out[8 ]         ),
+    .o_9     (dct2d_out[9 ]         ),
+    .o_10    (dct2d_out[10]         ),
+    .o_11    (dct2d_out[11]         ),
+    .o_12    (dct2d_out[12]         ),
+    .o_13    (dct2d_out[13]         ),
+    .o_14    (dct2d_out[14]         ),
+    .o_15    (dct2d_out[15]         ),
+    .o_16    (dct2d_out[16]         ),
+    .o_17    (dct2d_out[17]         ),
+    .o_18    (dct2d_out[18]         ),
+    .o_19    (dct2d_out[19]         ),
+    .o_20    (dct2d_out[20]         ),
+    .o_21    (dct2d_out[21]         ),
+    .o_22    (dct2d_out[22]         ),
+    .o_23    (dct2d_out[23]         ),
+    .o_24    (dct2d_out[24]         ),
+    .o_25    (dct2d_out[25]         ),
+    .o_26    (dct2d_out[26]         ),
+    .o_27    (dct2d_out[27]         ),
+    .o_28    (dct2d_out[28]         ),
+    .o_29    (dct2d_out[29]         ),
+    .o_30    (dct2d_out[30]         ),
+    .o_31    (dct2d_out[31]         ),
+    .o_32    (dct2d_out[32]         ),
+    .o_33    (dct2d_out[33]         ),
+    .o_34    (dct2d_out[34]         ),
+    .o_35    (dct2d_out[35]         ),
+    .o_36    (dct2d_out[36]         ),
+    .o_37    (dct2d_out[37]         ),
+    .o_38    (dct2d_out[38]         ),
+    .o_39    (dct2d_out[39]         ),
+    .o_40    (dct2d_out[40]         ),
+    .o_41    (dct2d_out[41]         ),
+    .o_42    (dct2d_out[42]         ),
+    .o_43    (dct2d_out[43]         ),
+    .o_44    (dct2d_out[44]         ),
+    .o_45    (dct2d_out[45]         ),
+    .o_46    (dct2d_out[46]         ),
+    .o_47    (dct2d_out[47]         ),
+    .o_48    (dct2d_out[48]         ),
+    .o_49    (dct2d_out[49]         ),
+    .o_50    (dct2d_out[50]         ),
+    .o_51    (dct2d_out[51]         ),
+    .o_52    (dct2d_out[52]         ),
+    .o_53    (dct2d_out[53]         ),
+    .o_54    (dct2d_out[54]         ),
+    .o_55    (dct2d_out[55]         ),
+    .o_56    (dct2d_out[56]         ),
+    .o_57    (dct2d_out[57]         ),
+    .o_58    (dct2d_out[58]         ),
+    .o_59    (dct2d_out[59]         ),
+    .o_60    (dct2d_out[60]         ),
+    .o_61    (dct2d_out[61]         ),
+    .o_62    (dct2d_out[62]         ),
+    .o_63    (dct2d_out[63]         )
 );
 
 //output
