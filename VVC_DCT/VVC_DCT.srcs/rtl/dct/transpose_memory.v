@@ -221,9 +221,16 @@ integer i;
     assign i_data[62] = i_62;
     assign i_data[63] = i_63;
 //ram
+
     reg [5 : 0] count, wr_count_max, rd_count_max;
     reg rd_vaild;//0 : wr /  1 : rd
-    wire ram_wr_n = ~i_valid;//写有效
+    
+    //reviced by pr
+    reg write_enable[63:0];
+    wire ram_wr_n = ~i_valid;
+    reg wen_i[63:0];
+    //reviced by pr
+    
     wire ram_cs_n = (~i_valid) && (~rd_vaild);//读、写有效
     //存入地址：列(ram的地址)
     reg [5 : 0] addr[63 : 0];
@@ -234,6 +241,28 @@ integer i;
     wire signed [WIDTH - 1 : 0] ram_rd_data[63 : 0];
 //output
     reg signed [WIDTH - 1 : 0] o_data[63 : 0];
+    
+    
+//reviced by pr
+always@(*)
+begin
+    if (!rst_n) 
+    begin
+        for(i=0;i<64;i=i+1)
+        begin
+            write_enable[i] <= 1'b1;
+            wen_i[i] <= 1'b1;
+        end
+    end  
+    else
+    begin
+        for(i=0;i<64;i=i+1)
+        begin
+            wen_i[i] <= ram_wr_n | write_enable[i];
+        end
+    end
+end
+//reviced by pr
 
 //存储/读取周期
 always @(*) begin
@@ -242,7 +271,7 @@ always @(*) begin
         DCT_8   : wr_count_max <= 7 ;
         DCT_16  : wr_count_max <= 15;
         DCT_32  : wr_count_max <= 31;
-        DCT_64  : wr_count_max <= 63;
+        DCT_64  : wr_count_max <= 63;//******写32就够了，后32个全是0
         default : wr_count_max <= 0 ;
     endcase
     case (i_width)//读取周期
@@ -292,10 +321,26 @@ always @(*) begin
             if (i >= count) begin
                 ram_wr_data[i] <= i_data[i - count];
                 addr[i] <= i - count; 
+                
+                //reviced by pr
+                if( i-count > 31)
+                    write_enable[i] <= 1;
+                else
+                    write_enable[i] <= 0;
+                //reviced by pr
+                    
             end
             else begin
                 ram_wr_data[i] <= i_data[64 + i - count];
                 addr[i] <= 64 + i - count; 
+                
+                //reviced by pr
+                if( 64 + i - count > 31)
+                    write_enable[i] <= 1;
+                else
+                    write_enable[i] <= 0;
+                //reviced by pr
+                    
             end
         end
     end
@@ -350,70 +395,70 @@ always @(*) begin
 end
 
 //ram
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_0 (.data_o(ram_rd_data[0 ]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[0 ]), .data_i(ram_wr_data[0 ]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_1 (.data_o(ram_rd_data[1 ]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[1 ]), .data_i(ram_wr_data[1 ]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_2 (.data_o(ram_rd_data[2 ]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[2 ]), .data_i(ram_wr_data[2 ]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_3 (.data_o(ram_rd_data[3 ]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[3 ]), .data_i(ram_wr_data[3 ]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_4 (.data_o(ram_rd_data[4 ]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[4 ]), .data_i(ram_wr_data[4 ]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_5 (.data_o(ram_rd_data[5 ]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[5 ]), .data_i(ram_wr_data[5 ]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_6 (.data_o(ram_rd_data[6 ]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[6 ]), .data_i(ram_wr_data[6 ]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_7 (.data_o(ram_rd_data[7 ]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[7 ]), .data_i(ram_wr_data[7 ]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_8 (.data_o(ram_rd_data[8 ]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[8 ]), .data_i(ram_wr_data[8 ]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_9 (.data_o(ram_rd_data[9 ]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[9 ]), .data_i(ram_wr_data[9 ]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_10(.data_o(ram_rd_data[10]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[10]), .data_i(ram_wr_data[10]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_11(.data_o(ram_rd_data[11]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[11]), .data_i(ram_wr_data[11]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_12(.data_o(ram_rd_data[12]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[12]), .data_i(ram_wr_data[12]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_13(.data_o(ram_rd_data[13]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[13]), .data_i(ram_wr_data[13]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_14(.data_o(ram_rd_data[14]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[14]), .data_i(ram_wr_data[14]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_15(.data_o(ram_rd_data[15]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[15]), .data_i(ram_wr_data[15]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_16(.data_o(ram_rd_data[16]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[16]), .data_i(ram_wr_data[16]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_17(.data_o(ram_rd_data[17]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[17]), .data_i(ram_wr_data[17]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_18(.data_o(ram_rd_data[18]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[18]), .data_i(ram_wr_data[18]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_19(.data_o(ram_rd_data[19]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[19]), .data_i(ram_wr_data[19]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_20(.data_o(ram_rd_data[20]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[20]), .data_i(ram_wr_data[20]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_21(.data_o(ram_rd_data[21]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[21]), .data_i(ram_wr_data[21]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_22(.data_o(ram_rd_data[22]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[22]), .data_i(ram_wr_data[22]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_23(.data_o(ram_rd_data[23]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[23]), .data_i(ram_wr_data[23]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_24(.data_o(ram_rd_data[24]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[24]), .data_i(ram_wr_data[24]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_25(.data_o(ram_rd_data[25]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[25]), .data_i(ram_wr_data[25]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_26(.data_o(ram_rd_data[26]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[26]), .data_i(ram_wr_data[26]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_27(.data_o(ram_rd_data[27]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[27]), .data_i(ram_wr_data[27]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_28(.data_o(ram_rd_data[28]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[28]), .data_i(ram_wr_data[28]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_29(.data_o(ram_rd_data[29]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[29]), .data_i(ram_wr_data[29]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_30(.data_o(ram_rd_data[30]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[30]), .data_i(ram_wr_data[30]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_31(.data_o(ram_rd_data[31]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[31]), .data_i(ram_wr_data[31]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_32(.data_o(ram_rd_data[32]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[32]), .data_i(ram_wr_data[32]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_33(.data_o(ram_rd_data[33]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[33]), .data_i(ram_wr_data[33]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_34(.data_o(ram_rd_data[34]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[34]), .data_i(ram_wr_data[34]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_35(.data_o(ram_rd_data[35]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[35]), .data_i(ram_wr_data[35]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_36(.data_o(ram_rd_data[36]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[36]), .data_i(ram_wr_data[36]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_37(.data_o(ram_rd_data[37]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[37]), .data_i(ram_wr_data[37]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_38(.data_o(ram_rd_data[38]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[38]), .data_i(ram_wr_data[38]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_39(.data_o(ram_rd_data[39]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[39]), .data_i(ram_wr_data[39]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_40(.data_o(ram_rd_data[40]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[40]), .data_i(ram_wr_data[40]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_41(.data_o(ram_rd_data[41]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[41]), .data_i(ram_wr_data[41]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_42(.data_o(ram_rd_data[42]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[42]), .data_i(ram_wr_data[42]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_43(.data_o(ram_rd_data[43]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[43]), .data_i(ram_wr_data[43]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_44(.data_o(ram_rd_data[44]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[44]), .data_i(ram_wr_data[44]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_45(.data_o(ram_rd_data[45]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[45]), .data_i(ram_wr_data[45]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_46(.data_o(ram_rd_data[46]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[46]), .data_i(ram_wr_data[46]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_47(.data_o(ram_rd_data[47]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[47]), .data_i(ram_wr_data[47]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_48(.data_o(ram_rd_data[48]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[48]), .data_i(ram_wr_data[48]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_49(.data_o(ram_rd_data[49]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[49]), .data_i(ram_wr_data[49]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_50(.data_o(ram_rd_data[50]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[50]), .data_i(ram_wr_data[50]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_51(.data_o(ram_rd_data[51]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[51]), .data_i(ram_wr_data[51]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_52(.data_o(ram_rd_data[52]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[52]), .data_i(ram_wr_data[52]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_53(.data_o(ram_rd_data[53]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[53]), .data_i(ram_wr_data[53]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_54(.data_o(ram_rd_data[54]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[54]), .data_i(ram_wr_data[54]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_55(.data_o(ram_rd_data[55]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[55]), .data_i(ram_wr_data[55]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_56(.data_o(ram_rd_data[56]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[56]), .data_i(ram_wr_data[56]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_57(.data_o(ram_rd_data[57]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[57]), .data_i(ram_wr_data[57]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_58(.data_o(ram_rd_data[58]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[58]), .data_i(ram_wr_data[58]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_59(.data_o(ram_rd_data[59]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[59]), .data_i(ram_wr_data[59]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_60(.data_o(ram_rd_data[60]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[60]), .data_i(ram_wr_data[60]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_61(.data_o(ram_rd_data[61]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[61]), .data_i(ram_wr_data[61]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_62(.data_o(ram_rd_data[62]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[62]), .data_i(ram_wr_data[62]), .oen_i(1'b0));
-    ram_1p#(.Addr_Width(6), .Word_Width(WIDTH)) ram_1p_63(.data_o(ram_rd_data[63]), .clk(clk), .cen_i(ram_cs_n), .wen_i(ram_wr_n), .addr_i(addr[63]), .data_i(ram_wr_data[63]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_0 (.data_o(ram_rd_data[0 ]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[0 ]), .addr_i(addr[0 ]), .data_i(ram_wr_data[0 ]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_1 (.data_o(ram_rd_data[1 ]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[1 ]), .addr_i(addr[1 ]), .data_i(ram_wr_data[1 ]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_2 (.data_o(ram_rd_data[2 ]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[2 ]), .addr_i(addr[2 ]), .data_i(ram_wr_data[2 ]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_3 (.data_o(ram_rd_data[3 ]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[3 ]), .addr_i(addr[3 ]), .data_i(ram_wr_data[3 ]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_4 (.data_o(ram_rd_data[4 ]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[4 ]), .addr_i(addr[4 ]), .data_i(ram_wr_data[4 ]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_5 (.data_o(ram_rd_data[5 ]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[5 ]), .addr_i(addr[5 ]), .data_i(ram_wr_data[5 ]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_6 (.data_o(ram_rd_data[6 ]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[6 ]), .addr_i(addr[6 ]), .data_i(ram_wr_data[6 ]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_7 (.data_o(ram_rd_data[7 ]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[7 ]), .addr_i(addr[7 ]), .data_i(ram_wr_data[7 ]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_8 (.data_o(ram_rd_data[8 ]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[8 ]), .addr_i(addr[8 ]), .data_i(ram_wr_data[8 ]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_9 (.data_o(ram_rd_data[9 ]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[9 ]), .addr_i(addr[9 ]), .data_i(ram_wr_data[9 ]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_10(.data_o(ram_rd_data[10]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[10]), .addr_i(addr[10]), .data_i(ram_wr_data[10]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_11(.data_o(ram_rd_data[11]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[11]), .addr_i(addr[11]), .data_i(ram_wr_data[11]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_12(.data_o(ram_rd_data[12]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[12]), .addr_i(addr[12]), .data_i(ram_wr_data[12]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_13(.data_o(ram_rd_data[13]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[13]), .addr_i(addr[13]), .data_i(ram_wr_data[13]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_14(.data_o(ram_rd_data[14]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[14]), .addr_i(addr[14]), .data_i(ram_wr_data[14]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_15(.data_o(ram_rd_data[15]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[15]), .addr_i(addr[15]), .data_i(ram_wr_data[15]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_16(.data_o(ram_rd_data[16]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[16]), .addr_i(addr[16]), .data_i(ram_wr_data[16]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_17(.data_o(ram_rd_data[17]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[17]), .addr_i(addr[17]), .data_i(ram_wr_data[17]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_18(.data_o(ram_rd_data[18]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[18]), .addr_i(addr[18]), .data_i(ram_wr_data[18]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_19(.data_o(ram_rd_data[19]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[19]), .addr_i(addr[19]), .data_i(ram_wr_data[19]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_20(.data_o(ram_rd_data[20]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[20]), .addr_i(addr[20]), .data_i(ram_wr_data[20]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_21(.data_o(ram_rd_data[21]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[21]), .addr_i(addr[21]), .data_i(ram_wr_data[21]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_22(.data_o(ram_rd_data[22]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[22]), .addr_i(addr[22]), .data_i(ram_wr_data[22]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_23(.data_o(ram_rd_data[23]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[23]), .addr_i(addr[23]), .data_i(ram_wr_data[23]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_24(.data_o(ram_rd_data[24]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[24]), .addr_i(addr[24]), .data_i(ram_wr_data[24]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_25(.data_o(ram_rd_data[25]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[25]), .addr_i(addr[25]), .data_i(ram_wr_data[25]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_26(.data_o(ram_rd_data[26]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[26]), .addr_i(addr[26]), .data_i(ram_wr_data[26]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_27(.data_o(ram_rd_data[27]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[27]), .addr_i(addr[27]), .data_i(ram_wr_data[27]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_28(.data_o(ram_rd_data[28]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[28]), .addr_i(addr[28]), .data_i(ram_wr_data[28]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_29(.data_o(ram_rd_data[29]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[29]), .addr_i(addr[29]), .data_i(ram_wr_data[29]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_30(.data_o(ram_rd_data[30]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[30]), .addr_i(addr[30]), .data_i(ram_wr_data[30]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_31(.data_o(ram_rd_data[31]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[31]), .addr_i(addr[31]), .data_i(ram_wr_data[31]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_32(.data_o(ram_rd_data[32]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[32]), .addr_i(addr[32]), .data_i(ram_wr_data[32]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_33(.data_o(ram_rd_data[33]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[33]), .addr_i(addr[33]), .data_i(ram_wr_data[33]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_34(.data_o(ram_rd_data[34]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[34]), .addr_i(addr[34]), .data_i(ram_wr_data[34]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_35(.data_o(ram_rd_data[35]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[35]), .addr_i(addr[35]), .data_i(ram_wr_data[35]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_36(.data_o(ram_rd_data[36]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[36]), .addr_i(addr[36]), .data_i(ram_wr_data[36]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_37(.data_o(ram_rd_data[37]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[37]), .addr_i(addr[37]), .data_i(ram_wr_data[37]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_38(.data_o(ram_rd_data[38]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[38]), .addr_i(addr[38]), .data_i(ram_wr_data[38]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_39(.data_o(ram_rd_data[39]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[39]), .addr_i(addr[39]), .data_i(ram_wr_data[39]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_40(.data_o(ram_rd_data[40]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[40]), .addr_i(addr[40]), .data_i(ram_wr_data[40]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_41(.data_o(ram_rd_data[41]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[41]), .addr_i(addr[41]), .data_i(ram_wr_data[41]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_42(.data_o(ram_rd_data[42]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[42]), .addr_i(addr[42]), .data_i(ram_wr_data[42]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_43(.data_o(ram_rd_data[43]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[43]), .addr_i(addr[43]), .data_i(ram_wr_data[43]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_44(.data_o(ram_rd_data[44]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[44]), .addr_i(addr[44]), .data_i(ram_wr_data[44]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_45(.data_o(ram_rd_data[45]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[45]), .addr_i(addr[45]), .data_i(ram_wr_data[45]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_46(.data_o(ram_rd_data[46]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[46]), .addr_i(addr[46]), .data_i(ram_wr_data[46]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_47(.data_o(ram_rd_data[47]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[47]), .addr_i(addr[47]), .data_i(ram_wr_data[47]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_48(.data_o(ram_rd_data[48]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[48]), .addr_i(addr[48]), .data_i(ram_wr_data[48]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_49(.data_o(ram_rd_data[49]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[49]), .addr_i(addr[49]), .data_i(ram_wr_data[49]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_50(.data_o(ram_rd_data[50]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[50]), .addr_i(addr[50]), .data_i(ram_wr_data[50]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_51(.data_o(ram_rd_data[51]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[51]), .addr_i(addr[51]), .data_i(ram_wr_data[51]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_52(.data_o(ram_rd_data[52]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[52]), .addr_i(addr[52]), .data_i(ram_wr_data[52]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_53(.data_o(ram_rd_data[53]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[53]), .addr_i(addr[53]), .data_i(ram_wr_data[53]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_54(.data_o(ram_rd_data[54]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[54]), .addr_i(addr[54]), .data_i(ram_wr_data[54]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_55(.data_o(ram_rd_data[55]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[55]), .addr_i(addr[55]), .data_i(ram_wr_data[55]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_56(.data_o(ram_rd_data[56]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[56]), .addr_i(addr[56]), .data_i(ram_wr_data[56]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_57(.data_o(ram_rd_data[57]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[57]), .addr_i(addr[57]), .data_i(ram_wr_data[57]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_58(.data_o(ram_rd_data[58]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[58]), .addr_i(addr[58]), .data_i(ram_wr_data[58]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_59(.data_o(ram_rd_data[59]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[59]), .addr_i(addr[59]), .data_i(ram_wr_data[59]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_60(.data_o(ram_rd_data[60]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[60]), .addr_i(addr[60]), .data_i(ram_wr_data[60]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_61(.data_o(ram_rd_data[61]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[61]), .addr_i(addr[61]), .data_i(ram_wr_data[61]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_62(.data_o(ram_rd_data[62]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[62]), .addr_i(addr[62]), .data_i(ram_wr_data[62]), .oen_i(1'b0));
+    ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_63(.data_o(ram_rd_data[63]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[63]), .addr_i(addr[63]), .data_i(ram_wr_data[63]), .oen_i(1'b0));
 
 //output
     assign o_valid = rd_vaild_d1;
