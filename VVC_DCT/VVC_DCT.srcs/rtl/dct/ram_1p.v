@@ -31,8 +31,8 @@ module ram_1p (
 //    Parameter DECLARATION                    
 //                                             
 // ********************************************
-parameter                 Word_Width = 32;
-parameter                 Addr_Width = 8;
+parameter                 Word_Width = 16;
+parameter                 Addr_Width = 5;
 
 // ********************************************
 //                                             

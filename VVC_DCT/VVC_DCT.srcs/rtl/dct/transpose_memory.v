@@ -78,6 +78,9 @@ module transpose_memory#(
     input   signed  [WIDTH - 1 : 0]     i_61    ,
     input   signed  [WIDTH - 1 : 0]     i_62    ,
     input   signed  [WIDTH - 1 : 0]     i_63    ,
+//output parameter
+    output           [2 : 0]             o_width     ,
+    output           [2 : 0]             o_height    ,
 //output coeff
     output                              o_valid ,
     output  signed  [WIDTH - 1 : 0]     o_0     ,
@@ -151,89 +154,185 @@ localparam  DCT_4  = 0,
             DCT_16 = 2,
             DCT_32 = 3,
             DCT_64 = 4;
+//存储/读取周期
+localparam [5:0] wr_count_max  = 6'd63;
+localparam [5:0] rd_count_max  = 6'd31;
 
 integer i;
+reg     [2:0]i_width_d  [65:0];
+reg     [2:0]i_height_d [65:0];
+always @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin 
+        for (i = 0; i < 66; i = i + 1) begin
+            i_width_d[i] <= 0;
+            i_height_d[i] <= 0;
+        end
+    end
+    else begin
+        i_width_d[0] <= i_width;
+        for (i = 0; i < 5; i = i + 1) begin
+            i_width_d[i + 1] <= i_width_d[i];
+        end
+    end
+end
 
 //input
-    wire signed [WIDTH - 1 : 0] i_data[63 : 0];
-    assign i_data[0 ] = i_0 ;
-    assign i_data[1 ] = i_1 ;
-    assign i_data[2 ] = i_2 ;
-    assign i_data[3 ] = i_3 ;
-    assign i_data[4 ] = i_4 ;
-    assign i_data[5 ] = i_5 ;
-    assign i_data[6 ] = i_6 ;
-    assign i_data[7 ] = i_7 ;
-    assign i_data[8 ] = i_8 ;
-    assign i_data[9 ] = i_9 ;
-    assign i_data[10] = i_10;
-    assign i_data[11] = i_11;
-    assign i_data[12] = i_12;
-    assign i_data[13] = i_13;
-    assign i_data[14] = i_14;
-    assign i_data[15] = i_15;
-    assign i_data[16] = i_16;
-    assign i_data[17] = i_17;
-    assign i_data[18] = i_18;
-    assign i_data[19] = i_19;
-    assign i_data[20] = i_20;
-    assign i_data[21] = i_21;
-    assign i_data[22] = i_22;
-    assign i_data[23] = i_23;
-    assign i_data[24] = i_24;
-    assign i_data[25] = i_25;
-    assign i_data[26] = i_26;
-    assign i_data[27] = i_27;
-    assign i_data[28] = i_28;
-    assign i_data[29] = i_29;
-    assign i_data[30] = i_30;
-    assign i_data[31] = i_31;
-    assign i_data[32] = i_32;
-    assign i_data[33] = i_33;
-    assign i_data[34] = i_34;
-    assign i_data[35] = i_35;
-    assign i_data[36] = i_36;
-    assign i_data[37] = i_37;
-    assign i_data[38] = i_38;
-    assign i_data[39] = i_39;
-    assign i_data[40] = i_40;
-    assign i_data[41] = i_41;
-    assign i_data[42] = i_42;
-    assign i_data[43] = i_43;
-    assign i_data[44] = i_44;
-    assign i_data[45] = i_45;
-    assign i_data[46] = i_46;
-    assign i_data[47] = i_47;
-    assign i_data[48] = i_48;
-    assign i_data[49] = i_49;
-    assign i_data[50] = i_50;
-    assign i_data[51] = i_51;
-    assign i_data[52] = i_52;
-    assign i_data[53] = i_53;
-    assign i_data[54] = i_54;
-    assign i_data[55] = i_55;
-    assign i_data[56] = i_56;
-    assign i_data[57] = i_57;
-    assign i_data[58] = i_58;
-    assign i_data[59] = i_59;
-    assign i_data[60] = i_60;
-    assign i_data[61] = i_61;
-    assign i_data[62] = i_62;
-    assign i_data[63] = i_63;
-//ram
+    wire    signed [WIDTH - 1 : 0]  i_data[63 : 0];
+    reg     signed [WIDTH - 1 : 0]  i_data_d1[63 : 0];
+    //数据延迟一拍
+    assign i_data[0 ] = i_data_d1[0 ];
+    assign i_data[1 ] = i_data_d1[1 ];
+    assign i_data[2 ] = i_data_d1[2 ];
+    assign i_data[3 ] = i_data_d1[3 ];
+    assign i_data[4 ] = i_data_d1[4 ];
+    assign i_data[5 ] = i_data_d1[5 ];
+    assign i_data[6 ] = i_data_d1[6 ];
+    assign i_data[7 ] = i_data_d1[7 ];
+    assign i_data[8 ] = i_data_d1[8 ];
+    assign i_data[9 ] = i_data_d1[9 ];
+    assign i_data[10] = i_data_d1[10];
+    assign i_data[11] = i_data_d1[11];
+    assign i_data[12] = i_data_d1[12];
+    assign i_data[13] = i_data_d1[13];
+    assign i_data[14] = i_data_d1[14];
+    assign i_data[15] = i_data_d1[15];
+    assign i_data[16] = i_data_d1[16];
+    assign i_data[17] = i_data_d1[17];
+    assign i_data[18] = i_data_d1[18];
+    assign i_data[19] = i_data_d1[19];
+    assign i_data[20] = i_data_d1[20];
+    assign i_data[21] = i_data_d1[21];
+    assign i_data[22] = i_data_d1[22];
+    assign i_data[23] = i_data_d1[23];
+    assign i_data[24] = i_data_d1[24];
+    assign i_data[25] = i_data_d1[25];
+    assign i_data[26] = i_data_d1[26];
+    assign i_data[27] = i_data_d1[27];
+    assign i_data[28] = i_data_d1[28];
+    assign i_data[29] = i_data_d1[29];
+    assign i_data[30] = i_data_d1[30];
+    assign i_data[31] = i_data_d1[31];
+    assign i_data[32] = i_data_d1[32];
+    assign i_data[33] = i_data_d1[33];
+    assign i_data[34] = i_data_d1[34];
+    assign i_data[35] = i_data_d1[35];
+    assign i_data[36] = i_data_d1[36];
+    assign i_data[37] = i_data_d1[37];
+    assign i_data[38] = i_data_d1[38];
+    assign i_data[39] = i_data_d1[39];
+    assign i_data[40] = i_data_d1[40];
+    assign i_data[41] = i_data_d1[41];
+    assign i_data[42] = i_data_d1[42];
+    assign i_data[43] = i_data_d1[43];
+    assign i_data[44] = i_data_d1[44];
+    assign i_data[45] = i_data_d1[45];
+    assign i_data[46] = i_data_d1[46];
+    assign i_data[47] = i_data_d1[47];
+    assign i_data[48] = i_data_d1[48];
+    assign i_data[49] = i_data_d1[49];
+    assign i_data[50] = i_data_d1[50];
+    assign i_data[51] = i_data_d1[51];
+    assign i_data[52] = i_data_d1[52];
+    assign i_data[53] = i_data_d1[53];
+    assign i_data[54] = i_data_d1[54];
+    assign i_data[55] = i_data_d1[55];
+    assign i_data[56] = i_data_d1[56];
+    assign i_data[57] = i_data_d1[57];
+    assign i_data[58] = i_data_d1[58];
+    assign i_data[59] = i_data_d1[59];
+    assign i_data[60] = i_data_d1[60];
+    assign i_data[61] = i_data_d1[61];
+    assign i_data[62] = i_data_d1[62];
+    assign i_data[63] = i_data_d1[63];
+    
+    always@(posedge clk or negedge rst_n)
+    if(!rst_n)begin
+        for(i = 0; i<64;i= i+1)begin
+            i_data_d1[i]    <=  0;
+        end
+    end
+    else begin
+         i_data_d1[0 ] = i_0 ;
+         i_data_d1[1 ] = i_1 ;
+         i_data_d1[2 ] = i_2 ;
+         i_data_d1[3 ] = i_3 ;
+         i_data_d1[4 ] = i_4 ;
+         i_data_d1[5 ] = i_5 ;
+         i_data_d1[6 ] = i_6 ;
+         i_data_d1[7 ] = i_7 ;
+         i_data_d1[8 ] = i_8 ;
+         i_data_d1[9 ] = i_9 ;
+         i_data_d1[10] = i_10;
+         i_data_d1[11] = i_11;
+         i_data_d1[12] = i_12;
+         i_data_d1[13] = i_13;
+         i_data_d1[14] = i_14;
+         i_data_d1[15] = i_15;
+         i_data_d1[16] = i_16;
+         i_data_d1[17] = i_17;
+         i_data_d1[18] = i_18;
+         i_data_d1[19] = i_19;
+         i_data_d1[20] = i_20;
+         i_data_d1[21] = i_21;
+         i_data_d1[22] = i_22;
+         i_data_d1[23] = i_23;
+         i_data_d1[24] = i_24;
+         i_data_d1[25] = i_25;
+         i_data_d1[26] = i_26;
+         i_data_d1[27] = i_27;
+         i_data_d1[28] = i_28;
+         i_data_d1[29] = i_29;
+         i_data_d1[30] = i_30;
+         i_data_d1[31] = i_31;
+         i_data_d1[32] = i_32;
+         i_data_d1[33] = i_33;
+         i_data_d1[34] = i_34;
+         i_data_d1[35] = i_35;
+         i_data_d1[36] = i_36;
+         i_data_d1[37] = i_37;
+         i_data_d1[38] = i_38;
+         i_data_d1[39] = i_39;
+         i_data_d1[40] = i_40;
+         i_data_d1[41] = i_41;
+         i_data_d1[42] = i_42;
+         i_data_d1[43] = i_43;
+         i_data_d1[44] = i_44;
+         i_data_d1[45] = i_45;
+         i_data_d1[46] = i_46;
+         i_data_d1[47] = i_47;
+         i_data_d1[48] = i_48;
+         i_data_d1[49] = i_49;
+         i_data_d1[50] = i_50;
+         i_data_d1[51] = i_51;
+         i_data_d1[52] = i_52;
+         i_data_d1[53] = i_53;
+         i_data_d1[54] = i_54;
+         i_data_d1[55] = i_55;
+         i_data_d1[56] = i_56;
+         i_data_d1[57] = i_57;
+         i_data_d1[58] = i_58;
+         i_data_d1[59] = i_59;
+         i_data_d1[60] = i_60;
+         i_data_d1[61] = i_61;
+         i_data_d1[62] = i_62;
+         i_data_d1[63] = i_63;      
+    end
+    
 
-    reg [5 : 0] count, wr_count_max, rd_count_max;
+//ram
+    reg i_valid_d1;
+    reg i_upedge_flag;
+    
+    reg [5 : 0] count;
     reg rd_vaild;//0 : wr /  1 : rd
     
-    //reviced by pr
     reg write_enable[63:0];
-    wire ram_wr_n = ~i_valid;
     reg wen_i[63:0];
-    //reviced by pr
     
-    wire ram_cs_n = (~i_valid) && (~rd_vaild);//读、写有效
+    wire ram_wr_n = ~i_upedge_flag;//ram write enable, low active
+    wire ram_cs_n = (~i_upedge_flag) && (~rd_vaild);//ram读、写有效 chip enable, low active
     //存入地址：列(ram的地址)
-    reg [5 : 0] addr[63 : 0];
+    reg [4 : 0] addr[63 : 0];
     //选择存入对应ram的数据; 存入地址：行(第几个ram)          
     reg signed [WIDTH - 1 : 0] ram_wr_data[63 : 0];
     //读出的数据
@@ -241,16 +340,66 @@ integer i;
     wire signed [WIDTH - 1 : 0] ram_rd_data[63 : 0];
 //output
     reg signed [WIDTH - 1 : 0] o_data[63 : 0];
+    reg [65:0]i_valid_d;
     
-    
-//reviced by pr
+ //out_valid 延迟   
+always@(posedge clk or negedge rst_n)
+if(!rst_n)
+    i_valid_d <= 0;
+else
+    i_valid_d <= {i_valid_d[64 : 0], i_valid};
+//i_valid延迟一拍抓取上升沿
+always @(posedge clk or negedge rst_n) begin
+    if (!rst_n) 
+        i_valid_d1 <= 0;
+    else 
+        i_valid_d1 <= i_valid;
+end
+
+always@(posedge clk or negedge rst_n)begin
+    if(!rst_n)
+        i_upedge_flag <= 0;
+    else if(i_valid & ~i_valid_d1)
+        i_upedge_flag <= 1;
+    else if(count == wr_count_max)
+        i_upedge_flag <= 0;
+end
+
+//在读写阶段的计数器,读写一次+1
+always @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+        count <= 0;
+        rd_vaild <= 0;
+    end
+    else if (i_upedge_flag) begin//写
+        if (count == wr_count_max) begin//写完
+            if (i_upedge_flag) begin
+                rd_vaild <= 1;
+            end
+            count <= 0;
+        end
+        else
+            count <= count + 1;  
+    end
+    else if (rd_vaild) begin//读
+        count <= count + 1;  
+        if (count == rd_count_max) begin//读完
+            if (rd_vaild) begin
+                rd_vaild <= 0;
+            end
+        end
+    end
+    else
+        count <= 0;
+end
+
+//write_enable is used to restrict the addr exceed 32
 always@(*)
 begin
     if (!rst_n) 
     begin
         for(i=0;i<64;i=i+1)
         begin
-            write_enable[i] <= 1'b1;
             wen_i[i] <= 1'b1;
         end
     end  
@@ -262,85 +411,28 @@ begin
         end
     end
 end
-//reviced by pr
-
-//存储/读取周期
-always @(*) begin
-    case (i_height)//存储周期
-        DCT_4   : wr_count_max <= 3 ;
-        DCT_8   : wr_count_max <= 7 ;
-        DCT_16  : wr_count_max <= 15;
-        DCT_32  : wr_count_max <= 31;
-        DCT_64  : wr_count_max <= 63;//******写32就够了，后32个全是0
-        default : wr_count_max <= 0 ;
-    endcase
-    case (i_width)//读取周期
-        DCT_4   : rd_count_max <= 3 ;
-        DCT_8   : rd_count_max <= 7 ;
-        DCT_16  : rd_count_max <= 15;
-        DCT_32  : rd_count_max <= 31;
-        DCT_64  : rd_count_max <= 31;//高频置零优化，在第二阶段减少32clk的计算时间，存储最终结果时直接补零
-        default : rd_count_max <= 0 ;
-    endcase
-end
-
-//在读写阶段的计数器,读写一次+1
-always @(posedge clk or negedge rst_n) begin
-    if (!rst_n) begin
-        count <= 0;
-        rd_vaild <= 0;
-    end
-    else if (i_valid) begin//写
-        if (count == wr_count_max) begin//写完
-            if (i_valid) begin
-                rd_vaild <= 1;
-            end
-            count <= 0;
-        end
-        else begin
-            count <= count + 1;  
-        end
-    end
-    else if (rd_vaild) begin//读
-        if (count == rd_count_max) begin//读完
-            if (rd_vaild) begin
-                rd_vaild <= 0;
-            end
-            count <= 0;
-        end
-        else begin
-            count <= count + 1;  
-        end
-    end
-end
 
 //选择当前组每个ram存的数据和地址, 读出的地址
 always @(*) begin
-    if (i_valid) begin//写数据和地址
+    for(i=0;i<64;i=i+1)
+        write_enable[i] <= 1'b1;
+    if (i_upedge_flag) begin//写数据和地址
         for (i = 0; i < 64; i = i + 1) begin//循环右移cnt输入数据
             if (i >= count) begin
                 ram_wr_data[i] <= i_data[i - count];
                 addr[i] <= i - count; 
-                
-                //reviced by pr
                 if( i-count > 31)
                     write_enable[i] <= 1;
                 else
                     write_enable[i] <= 0;
-                //reviced by pr
-                    
             end
             else begin
                 ram_wr_data[i] <= i_data[64 + i - count];
                 addr[i] <= 64 + i - count; 
-                
-                //reviced by pr
                 if( 64 + i - count > 31)
                     write_enable[i] <= 1;
                 else
                     write_enable[i] <= 0;
-                //reviced by pr
-                    
             end
         end
     end
@@ -355,7 +447,7 @@ always @(*) begin
             ram_wr_data[i] <= 0;
             addr[i] <= 0;
         end
-    end
+    end  
 end
 
 always @(posedge clk or negedge rst_n) begin
@@ -369,15 +461,6 @@ end
 always @(*) begin
     if (rd_vaild_d1) begin
         for (i = 0; i < 64; i = i + 1) begin//循环左移cnt输出数据
-            if (count == 0) begin//此时是最后一个向量
-                if (i + rd_count_max < 64) begin
-                    o_data[i] <= ram_rd_data[i + rd_count_max];
-                end
-                else begin
-                    o_data[i] <= ram_rd_data[i + rd_count_max - 64];
-                end
-            end
-            else begin
                 if (i + count < 65) begin
                     o_data[i] <= ram_rd_data[i + count - 1];
                 end
@@ -385,7 +468,6 @@ always @(*) begin
                     o_data[i] <= ram_rd_data[i + count - 65];
                 end
             end
-        end
     end
     else begin
         for (i = 0; i < 64; i = i + 1) begin
@@ -459,9 +541,11 @@ end
     ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_61(.data_o(ram_rd_data[61]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[61]), .addr_i(addr[61]), .data_i(ram_wr_data[61]), .oen_i(1'b0));
     ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_62(.data_o(ram_rd_data[62]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[62]), .addr_i(addr[62]), .data_i(ram_wr_data[62]), .oen_i(1'b0));
     ram_1p#(.Addr_Width(5), .Word_Width(WIDTH)) ram_1p_63(.data_o(ram_rd_data[63]), .clk(clk), .cen_i(ram_cs_n), .wen_i(wen_i[63]), .addr_i(addr[63]), .data_i(ram_wr_data[63]), .oen_i(1'b0));
-
+  
 //output
-    assign o_valid = rd_vaild_d1;
+    assign o_valid = i_valid_d[65];
+    assign o_width = i_width_d[65];
+    assign o_height = i_height_d[65];
     assign o_0  = o_data[0 ];
     assign o_1  = o_data[1 ];
     assign o_2  = o_data[2 ];
