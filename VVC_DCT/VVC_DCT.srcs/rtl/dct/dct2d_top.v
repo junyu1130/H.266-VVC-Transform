@@ -1,10 +1,7 @@
-//describe  : 二维DCT2，高频系数置零
+//describe  : 二维DCT2
 //input     : 64个像素残差数据
 //output    : 64个系数数据
-//delay     : [height+13] clk = 6dct + 1wr + [height-1]other + 1rd + 6dct
-//                        64x64 : 77 clk
-//a matrix process time : [height+width+12] clk = 6dct + 1wr + (height-1)other + 1rd + 6dct + (width-1)other
-//                        64x64 : 140-32=108 clk (Nx64 =>reduce 32 clk)
+//delay     : 78 clk = 6dct + 66transpose + 6dct
 module dct2d_top#(
     parameter  BIT_DEPTH = 8,
     parameter  OUT_WIDTH = 16
@@ -82,6 +79,9 @@ module dct2d_top#(
     input   signed  [BIT_DEPTH : 0]     i_61        ,
     input   signed  [BIT_DEPTH : 0]     i_62        ,
     input   signed  [BIT_DEPTH : 0]     i_63        ,
+//output parameter
+    output          [2 : 0]             o_width     ,
+    output          [2 : 0]             o_height    ,
 //output coeff
     output                              o_valid     ,
     output  signed  [OUT_WIDTH - 1 : 0] o_0         ,
@@ -150,51 +150,21 @@ module dct2d_top#(
     output  signed  [OUT_WIDTH - 1 : 0] o_63    
 );
 
-localparam  DCT_1st = 0,
-            DCT_2nd = 1;
-
-localparam  DCT_4  = 0,
-            DCT_8  = 1,
-            DCT_16 = 2,
-            DCT_32 = 3,
-            DCT_64 = 4;
-integer i;
-
 //DCT
-    reg dct_stage;
+    wire [2 : 0] dct1d_out_width, dct1d_out_height;
     wire dct1d_out_valid;
     wire signed [OUT_WIDTH - 1 : 0] dct1d_out[63 : 0];
+    wire [2 : 0] dct2d_out_width, dct2d_out_height;
     wire dct2d_out_valid;
     wire signed [OUT_WIDTH - 1 : 0] dct2d_out[63 : 0];
-//shift
-    reg [3 : 0] shift_1st, shift_2nd;
 //transpose memory
+    wire [2 : 0] transpose_out_width, transpose_out_height;
     wire transpose_out_valid;
     wire signed [OUT_WIDTH - 1 : 0] transpose_out[63 : 0];
 
-//shift
-always @(*) begin
-    case (i_width)//first stage : log2(Width) + BitDepth - 9
-        DCT_4   : shift_1st <= BIT_DEPTH - 7;
-        DCT_8   : shift_1st <= BIT_DEPTH - 6;
-        DCT_16  : shift_1st <= BIT_DEPTH - 5;
-        DCT_32  : shift_1st <= BIT_DEPTH - 4;
-        DCT_64  : shift_1st <= BIT_DEPTH - 3;
-        default : shift_1st <= 0;
-    endcase
-    case (i_height)//second stage : log2(Height) + 6
-        DCT_4   : shift_2nd <= 8;
-        DCT_8   : shift_2nd <= 9;
-        DCT_16  : shift_2nd <= 10;
-        DCT_32  : shift_2nd <= 11;
-        DCT_64  : shift_2nd <= 12;
-        default : shift_2nd <= 0;
-    endcase
-end
-
 //sub module
-//1D-DCT
-dct1d#(
+//first 1D-DCT
+dct1d_1st#(
     .IN_WIDTH   (BIT_DEPTH + 1  ),
     .OUT_WIDTH  (OUT_WIDTH      )
 )
@@ -203,8 +173,8 @@ u_dct1d_1st(
     .clk     (clk               ),
     .rst_n   (rst_n             ),
 //input parameter
-    .i_size  (i_width           ),
-    .i_shift (shift_1st         ),
+    .i_width (i_width           ),
+    .i_height(i_height          ),
 //input data
     .i_valid (i_valid           ),
     .i_0     (i_0               ),
@@ -271,6 +241,9 @@ u_dct1d_1st(
     .i_61    (i_61              ),
     .i_62    (i_62              ),
     .i_63    (i_63              ),
+//output parameter
+    .o_width (dct1d_out_width   ),
+    .o_height(dct1d_out_height  ),
 //output coeff
     .o_valid (dct1d_out_valid   ),
     .o_0     (dct1d_out[0 ]     ),
@@ -348,8 +321,8 @@ u_transpose_memory(
     .clk     (clk                   ),
     .rst_n   (rst_n                 ),
 //input parameter
-    .i_width (i_width               ),
-    .i_height(i_height              ),
+    .i_width (dct1d_out_width       ),
+    .i_height(dct1d_out_height      ),
 //1st stage's coeff
     .i_valid (dct1d_out_valid       ),
     .i_0     (dct1d_out[0 ]         ),
@@ -416,6 +389,9 @@ u_transpose_memory(
     .i_61    (dct1d_out[61]         ),
     .i_62    (dct1d_out[62]         ),
     .i_63    (dct1d_out[63]         ),
+//output parameter
+    .o_width (transpose_out_width   ),
+    .o_height(transpose_out_height  ),
 //transpose 1st stage's coeff
     .o_valid (transpose_out_valid   ),
     .o_0     (transpose_out[0 ]     ),
@@ -484,8 +460,8 @@ u_transpose_memory(
     .o_63    (transpose_out[63]     )
 );
 
-//1D-DCT
-dct1d#(
+//second 1D-DCT
+dct1d_2nd#(
     .IN_WIDTH   (OUT_WIDTH          ),
     .OUT_WIDTH  (OUT_WIDTH          )
 )
@@ -494,8 +470,8 @@ u_dct1d_2nd(
     .clk     (clk                   ),
     .rst_n   (rst_n                 ),
 //input parameter
-    .i_size  (i_height              ),
-    .i_shift (shift_2nd             ),
+    .i_width (transpose_out_width   ),
+    .i_height(transpose_out_height  ),
 //input data
     .i_valid (transpose_out_valid   ),
     .i_0     (transpose_out[0 ]     ),
@@ -562,6 +538,9 @@ u_dct1d_2nd(
     .i_61    (transpose_out[61]     ),
     .i_62    (transpose_out[62]     ),
     .i_63    (transpose_out[63]     ),
+//output parameter
+    .o_width (dct2d_out_width       ),
+    .o_height(dct2d_out_height      ),
 //output coeff
     .o_valid (dct2d_out_valid       ),
     .o_0     (dct2d_out[0 ]         ),
@@ -631,6 +610,8 @@ u_dct1d_2nd(
 );
 
 //output
+    assign o_width = dct2d_out_width;
+    assign o_height = dct2d_out_height;
     assign o_valid = dct2d_out_valid;
     assign o_0  = dct2d_out[0 ];
     assign o_1  = dct2d_out[1 ];

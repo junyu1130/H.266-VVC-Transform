@@ -1,7 +1,7 @@
-//describe  : 第二次一维DCT2, 4x4, 8x8, 16x16, 32x32, 64x64(高频置零)
+//describe  : 第二次一维DCT2
 //input     : 4-64个第一次变换系数
 //output    : 4-64个第二次变换系数
-//delay     : 6clk
+//delay     : 6 clk
 module dct1d_2nd#(
     parameter  IN_WIDTH  = 16,
     parameter  OUT_WIDTH = 16
@@ -13,9 +13,6 @@ module dct1d_2nd#(
 //input parameter
     input           [2 : 0]             i_width ,//0:DCT_4, 1:DCT_8, 2:DCT_16, 3:DCT_32, 4:DCT_64
     input           [2 : 0]             i_height,
-//output parameter
-    input           [2 : 0]             o_width ,
-    input           [2 : 0]             o_height,
 //input data
     input                               i_valid ,
     input   signed  [IN_WIDTH - 1 : 0]  i_0     ,
@@ -82,6 +79,9 @@ module dct1d_2nd#(
     input   signed  [IN_WIDTH - 1 : 0]  i_61    ,
     input   signed  [IN_WIDTH - 1 : 0]  i_62    ,
     input   signed  [IN_WIDTH - 1 : 0]  i_63    ,
+//output parameter
+    output          [2 : 0]             o_width ,
+    output          [2 : 0]             o_height,
 //output coeff
     output                              o_valid ,
     output  signed  [OUT_WIDTH - 1 : 0] o_0     ,
@@ -175,14 +175,16 @@ integer i, j;
     reg pre_coeff_16_valid_d2, pre_coeff_8_valid_d2, pre_coeff_4_valid_d2;
     reg pre_coeff_8_valid_d3, pre_coeff_4_valid_d3;
     reg pre_coeff_4_valid_d4;
-    wire signed [IN_WIDTH + 11 : 0] pre_coeff_64[63 : 0], pre_coeff_32[31 : 0], pre_coeff_16[15 : 0], pre_coeff_8[7 : 0], pre_coeff_4[3 : 0];
-    reg signed [IN_WIDTH + 11 : 0] pre_coeff_32_d1[31 : 0], pre_coeff_16_d1[15 : 0], pre_coeff_8_d1[7 : 0], pre_coeff_4_d1[3 : 0];
-    reg signed [IN_WIDTH + 11 : 0] pre_coeff_16_d2[15 : 0], pre_coeff_8_d2[7 : 0], pre_coeff_4_d2[3 : 0];
-    reg signed [IN_WIDTH + 11 : 0] pre_coeff_8_d3[7 : 0], pre_coeff_4_d3[3 : 0];
+    wire signed [IN_WIDTH + 11 : 0] pre_coeff_64[31 : 0], pre_coeff_32[15 : 0], pre_coeff_16[7 : 0], pre_coeff_8[3 : 0], pre_coeff_4[3 : 0];
+    reg signed [IN_WIDTH + 11 : 0] pre_coeff_32_d1[15 : 0], pre_coeff_16_d1[7 : 0], pre_coeff_8_d1[3 : 0], pre_coeff_4_d1[3 : 0];
+    reg signed [IN_WIDTH + 11 : 0] pre_coeff_16_d2[7 : 0], pre_coeff_8_d2[3 : 0], pre_coeff_4_d2[3 : 0];
+    reg signed [IN_WIDTH + 11 : 0] pre_coeff_8_d3[3 : 0], pre_coeff_4_d3[3 : 0];
     reg signed [IN_WIDTH + 11 : 0] pre_coeff_4_d4[3 : 0];
     reg pre_coeff_valid;
     reg signed [IN_WIDTH + 11 : 0] pre_coeff[63 : 0];
 //limited to 16bit : offset + shift
+    reg [2 : 0] i_width_d[5 : 0];
+    reg [2 : 0] i_height_d[5 : 0];
     reg [3 : 0] dct_shift;
     wire coeff_valid;
     wire signed [OUT_WIDTH - 1 : 0] coeff[63 : 0];
@@ -253,9 +255,27 @@ integer i, j;
     assign i_data[62] = i_62;
     assign i_data[63] = i_63;
 
+//parameter delay
+always @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin 
+        for (i = 0; i < 6; i = i + 1) begin
+            i_width_d[i] <= 0;
+            i_height_d[i] <= 0;
+        end
+    end
+    else begin
+        i_width_d[0] <= i_width;
+        i_height_d[0] <= i_height;
+        for (i = 0; i < 5; i = i + 1) begin
+            i_width_d[i + 1] <= i_width_d[i];
+            i_height_d[i + 1] <= i_height_d[i];
+        end
+    end
+end
+
 //shift
 always @(*) begin
-    case (i_height)//second stage : log2(Height) + 6
+    case (i_height_d[4])//second stage : log2(Height) + 6
         DCT_4   : dct_shift <= 8;
         DCT_8   : dct_shift <= 9;
         DCT_16  : dct_shift <= 10;
@@ -353,110 +373,65 @@ always @(*) begin
     endcase
 end
 
-//dct out delay 1clk
+//dct out delay
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin 
         pre_coeff_32_valid_d1 <= 0;
         pre_coeff_16_valid_d1 <= 0;
+        pre_coeff_16_valid_d2 <= 0;
         pre_coeff_8_valid_d1 <= 0;
+        pre_coeff_8_valid_d2 <= 0;
+        pre_coeff_8_valid_d3 <= 0;
         pre_coeff_4_valid_d1 <= 0;
-        for (i = 0; i < 32; i = i + 1) begin
+        pre_coeff_4_valid_d2 <= 0;
+        pre_coeff_4_valid_d3 <= 0;
+        pre_coeff_4_valid_d4 <= 0;
+        for (i = 0; i < 16; i = i + 1) begin
             pre_coeff_32_d1[i] <= 0;
         end
-        for (i = 0; i < 16; i = i + 1) begin
-            pre_coeff_16_d1[i] <= 0;
-        end
         for (i = 0; i < 8; i = i + 1) begin
+            pre_coeff_16_d1[i] <= 0;
+            pre_coeff_16_d2[i] <= 0;
+        end
+        for (i = 0; i < 4; i = i + 1) begin
             pre_coeff_8_d1[i] <= 0;
+            pre_coeff_8_d2[i] <= 0;
+            pre_coeff_8_d3[i] <= 0;
         end
         for (i = 0; i < 4; i = i + 1) begin
             pre_coeff_4_d1[i] <= 0;
+            pre_coeff_4_d2[i] <= 0;
+            pre_coeff_4_d3[i] <= 0;
+            pre_coeff_4_d4[i] <= 0;
         end
     end
     else begin
         pre_coeff_32_valid_d1 <= pre_coeff_32_valid;
         pre_coeff_16_valid_d1 <= pre_coeff_16_valid;
+        pre_coeff_16_valid_d2 <= pre_coeff_16_valid_d1;
         pre_coeff_8_valid_d1 <= pre_coeff_8_valid;
+        pre_coeff_8_valid_d2 <= pre_coeff_8_valid_d1;
+        pre_coeff_8_valid_d3 <= pre_coeff_8_valid_d2;
         pre_coeff_4_valid_d1 <= pre_coeff_4_valid;
-        for (i = 0; i < 32; i = i + 1) begin
+        pre_coeff_4_valid_d2 <= pre_coeff_4_valid_d1;
+        pre_coeff_4_valid_d3 <= pre_coeff_4_valid_d2;
+        pre_coeff_4_valid_d4 <= pre_coeff_4_valid_d3;
+        for (i = 0; i < 16; i = i + 1) begin
             pre_coeff_32_d1[i] <= pre_coeff_32[i];
         end
-        for (i = 0; i < 16; i = i + 1) begin
+        for (i = 0; i < 8; i = i + 1) begin
             pre_coeff_16_d1[i] <= pre_coeff_16[i];
-        end
-        for (i = 0; i < 8; i = i + 1) begin
-            pre_coeff_8_d1[i] <= pre_coeff_8[i];
-        end
-        for (i = 0; i < 4; i = i + 1) begin
-            pre_coeff_4_d1[i] <= pre_coeff_4[i];
-        end
-    end
-end
-//dct out delay 2clk
-always @(posedge clk or negedge rst_n) begin
-    if (!rst_n) begin 
-        pre_coeff_16_valid_d2 <= 0;
-        pre_coeff_8_valid_d2 <= 0;
-        pre_coeff_4_valid_d2 <= 0;
-        for (i = 0; i < 16; i = i + 1) begin
-            pre_coeff_16_d2[i] <= 0;
-        end
-        for (i = 0; i < 8; i = i + 1) begin
-            pre_coeff_8_d2[i] <= 0;
-        end
-        for (i = 0; i < 4; i = i + 1) begin
-            pre_coeff_4_d2[i] <= 0;
-        end
-    end
-    else begin
-        pre_coeff_16_valid_d2 <= pre_coeff_16_valid_d1;
-        pre_coeff_8_valid_d2 <= pre_coeff_8_valid_d1;
-        pre_coeff_4_valid_d2 <= pre_coeff_4_valid_d1;
-        for (i = 0; i < 16; i = i + 1) begin
             pre_coeff_16_d2[i] <= pre_coeff_16_d1[i];
         end
-        for (i = 0; i < 8; i = i + 1) begin
+        for (i = 0; i < 4; i = i + 1) begin
+            pre_coeff_8_d1[i] <= pre_coeff_8[i];
             pre_coeff_8_d2[i] <= pre_coeff_8_d1[i];
-        end
-        for (i = 0; i < 4; i = i + 1) begin
-            pre_coeff_4_d2[i] <= pre_coeff_4_d1[i];
-        end
-    end
-end
-//dct out delay 3clk
-always @(posedge clk or negedge rst_n) begin
-    if (!rst_n) begin 
-        pre_coeff_8_valid_d3 <= 0;
-        pre_coeff_4_valid_d3 <= 0;
-        for (i = 0; i < 8; i = i + 1) begin
-            pre_coeff_8_d3[i] <= 0;
-        end
-        for (i = 0; i < 4; i = i + 1) begin
-            pre_coeff_4_d3[i] <= 0;
-        end
-    end
-    else begin
-        pre_coeff_8_valid_d3 <= pre_coeff_8_valid_d2;
-        pre_coeff_4_valid_d3 <= pre_coeff_4_valid_d2;
-        for (i = 0; i < 8; i = i + 1) begin
             pre_coeff_8_d3[i] <= pre_coeff_8_d2[i];
         end
         for (i = 0; i < 4; i = i + 1) begin
+            pre_coeff_4_d1[i] <= pre_coeff_4[i];
+            pre_coeff_4_d2[i] <= pre_coeff_4_d1[i];
             pre_coeff_4_d3[i] <= pre_coeff_4_d2[i];
-        end
-    end
-end
-//dct out delay 4clk
-always @(posedge clk or negedge rst_n) begin
-    if (!rst_n) begin 
-        pre_coeff_4_valid_d4 <= 0;
-        for (i = 0; i < 4; i = i + 1) begin
-            pre_coeff_4_d4[i] <= 0;
-        end
-    end
-    else begin
-        pre_coeff_4_valid_d4 <= pre_coeff_4_valid_d3;
-        for (i = 0; i < 4; i = i + 1) begin
             pre_coeff_4_d4[i] <= pre_coeff_4_d3[i];
         end
     end
@@ -468,7 +443,7 @@ always @(*) begin
     for (i = 0; i < 64; i = i + 1) begin
         pre_coeff[i] <= 0;
     end
-    case (i_height_d6)
+    case (i_height_d[4])
         DCT_4   : begin
             pre_coeff_valid <= pre_coeff_4_valid_d4;
             for (i = 0; i < 4; i = i + 1) begin
@@ -511,7 +486,7 @@ always @(*) begin
                 pre_coeff[i] <= pre_coeff_4_d1[j];
             end
         end
-        DCT_64  : begin
+        DCT_64  : begin //because high frequency coefficients are set to zero
             pre_coeff_valid <= pre_coeff_64_valid;
             for (i = 1, j = 0; i < 32; i = i + 2, j = j + 1) begin
                 pre_coeff[i] <= pre_coeff_64[j];
@@ -684,7 +659,7 @@ u_dct1d_32(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_height_d4        ),
+    .i_size (i_height_d[2]      ),
 //input data
     .i_valid(dct_32_valid       ),
     .i_0    (i_dct_32[0 ]       ),
@@ -763,7 +738,7 @@ u_dct1d_16(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_size             ),
+    .i_size (i_height_d[2]      ),
 //input data
     .i_valid(dct_16_valid       ),
     .i_0    (i_dct_16[0 ]       ),
@@ -810,7 +785,7 @@ u_dct1d_8(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_size             ),
+    .i_size (i_height_d[2]      ),
 //input data
     .i_valid(dct_8_valid        ),
     .i_0    (i_dct_8[0 ]        ),
@@ -841,7 +816,7 @@ u_dct1d_4(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_size             ),
+    .i_size (i_height_d[2]      ),
 //input data
     .i_valid(dct_4_valid        ),
     .i_0    (i_dct_4[0 ]        ),
@@ -865,7 +840,7 @@ u_right_shift(
     .clk     (clk               ),
     .rst_n   (rst_n             ),
 //input parameter
-    .i_shift (i_shift           ),
+    .i_shift (dct_shift         ),
 //input pre_coeff
     .i_valid (pre_coeff_valid   ),
     .i_0     (pre_coeff[0 ]     ),
@@ -1001,6 +976,8 @@ u_right_shift(
 );
 
 //output
+    assign o_width  = i_width_d[5]  ;
+    assign o_height = i_height_d[5] ;
     assign o_valid  = coeff_valid   ;
     assign o_0      = coeff[0 ]     ;
     assign o_1      = coeff[1 ]     ;

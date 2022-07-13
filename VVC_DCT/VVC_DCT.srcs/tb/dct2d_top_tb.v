@@ -317,10 +317,10 @@ initial begin
     //64x64
     i_width = 4; i_height = 4;
     i_valid = 1;
-    fp_r = $fopen("E:/h.266/my_repository/H.266-VVC-Transform/result/origin_data/origin_data_64x64.txt", "r");
-    fp_w = $fopen("E:/h.266/my_repository/H.266-VVC-Transform/result/fpga_coeff/fpga_coeff_64x64.txt", "w");
-    //fp_r = $fopen("E:/Projects/VideoCoding/VVC_Transform/result/origin_data/origin_data_64x64.txt", "r");
-    //fp_w = $fopen("E:/Projects/VideoCoding/VVC_Transform/result/fpga_coeff/fpga_coeff_64x64.txt", "w");
+    // fp_r = $fopen("E:/h.266/my_repository/H.266-VVC-Transform/result/origin_data/origin_data_64x64.txt", "r");
+    // fp_w = $fopen("E:/h.266/my_repository/H.266-VVC-Transform/result/fpga_coeff/fpga_coeff_64x64.txt", "w");
+    fp_r = $fopen("E:/Projects/VideoCoding/VVC_Transform/result/origin_data/origin_data_64x64.txt", "r");
+    fp_w = $fopen("E:/Projects/VideoCoding/VVC_Transform/result/fpga_coeff/fpga_coeff_64x64.txt", "w");
     cnt = 0;
     while (cnt < DCT_64) begin
         $fscanf(fp_r, "%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d", 
@@ -347,10 +347,10 @@ initial begin
     //32x32
     i_width = 3; i_height = 3;
     i_valid = 1;
-    fp_r = $fopen("E:/h.266/my_repository/H.266-VVC-Transform/result/origin_data/origin_data_32x32.txt", "r");
-    fp_w = $fopen("E:/h.266/my_repository/H.266-VVC-Transform/result/fpga_coeff/fpga_coeff_32x32.txt", "w");
-     //fp_r = $fopen("E:/Projects/VideoCoding/VVC_Transform/result/origin_data/origin_data_32x32.txt", "r");
-    //fp_w = $fopen("E:/Projects/VideoCoding/VVC_Transform/result/fpga_coeff/fpga_coeff_32x32.txt", "w");
+    // fp_r = $fopen("E:/h.266/my_repository/H.266-VVC-Transform/result/origin_data/origin_data_32x32.txt", "r");
+    // fp_w = $fopen("E:/h.266/my_repository/H.266-VVC-Transform/result/fpga_coeff/fpga_coeff_32x32.txt", "w");
+     fp_r = $fopen("E:/Projects/VideoCoding/VVC_Transform/result/origin_data/origin_data_32x32.txt", "r");
+    fp_w = $fopen("E:/Projects/VideoCoding/VVC_Transform/result/fpga_coeff/fpga_coeff_32x32.txt", "w");
     cnt = 0;
     while (cnt < DCT_32) begin
         $fscanf(fp_r, "%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d", 
@@ -373,10 +373,10 @@ initial begin
     //16x16
     i_width = 2; i_height = 2;
     i_valid = 1;
-    fp_r = $fopen("E:/h.266/my_repository/H.266-VVC-Transform/result/origin_data/origin_data_16x16.txt", "r");
-    fp_w = $fopen("E:/h.266/my_repository/H.266-VVC-Transform/result/fpga_coeff/fpga_coeff_16x16.txt", "w");
-    //fp_r = $fopen("E:/Projects/VideoCoding/VVC_Transform/result/origin_data/origin_data_16x16.txt", "r");
-    //fp_w = $fopen("E:/Projects/VideoCoding/VVC_Transform/result/fpga_coeff/fpga_coeff_16x16.txt", "w");
+    // fp_r = $fopen("E:/h.266/my_repository/H.266-VVC-Transform/result/origin_data/origin_data_16x16.txt", "r");
+    // fp_w = $fopen("E:/h.266/my_repository/H.266-VVC-Transform/result/fpga_coeff/fpga_coeff_16x16.txt", "w");
+    fp_r = $fopen("E:/Projects/VideoCoding/VVC_Transform/result/origin_data/origin_data_16x16.txt", "r");
+    fp_w = $fopen("E:/Projects/VideoCoding/VVC_Transform/result/fpga_coeff/fpga_coeff_16x16.txt", "w");
     cnt = 0;
     while (cnt < DCT_16) begin
         $fscanf(fp_r, "%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d", i_0,i_1,i_2,i_3,i_4,i_5,i_6,i_7,i_8,i_9,i_10,i_11,i_12,i_13,i_14,i_15);
@@ -399,10 +399,10 @@ initial begin
     //8x8
     i_width = 1; i_height = 1;
     i_valid = 1;
-    fp_r = $fopen("E:/h.266/my_repository/H.266-VVC-Transform/result/origin_data/origin_data_8x8.txt", "r");
-    fp_w = $fopen("E:/h.266/my_repository/H.266-VVC-Transform/result/fpga_coeff/fpga_coeff_8x8.txt", "w");
-    //fp_r = $fopen("E:/Projects/VideoCoding/VVC_Transform/result/origin_data/origin_data_8x8.txt", "r");
-    //fp_w = $fopen("E:/Projects/VideoCoding/VVC_Transform/result/fpga_coeff/fpga_coeff_8x8.txt", "w");
+    // fp_r = $fopen("E:/h.266/my_repository/H.266-VVC-Transform/result/origin_data/origin_data_8x8.txt", "r");
+    // fp_w = $fopen("E:/h.266/my_repository/H.266-VVC-Transform/result/fpga_coeff/fpga_coeff_8x8.txt", "w");
+    fp_r = $fopen("E:/Projects/VideoCoding/VVC_Transform/result/origin_data/origin_data_8x8.txt", "r");
+    fp_w = $fopen("E:/Projects/VideoCoding/VVC_Transform/result/fpga_coeff/fpga_coeff_8x8.txt", "w");
     cnt = 0;
     while (cnt < DCT_8) begin
         $fscanf(fp_r, "%d %d %d %d %d %d %d %d", i_0,i_1,i_2,i_3,i_4,i_5,i_6,i_7);
@@ -426,10 +426,10 @@ initial begin
     //4x4
     i_width = 0; i_height = 0;
     i_valid = 1;
-    fp_r = $fopen("E:/h.266/my_repository/H.266-VVC-Transform/result/origin_data/origin_data_4x4.txt", "r");
-    fp_w = $fopen("E:/h.266/my_repository/H.266-VVC-Transform/result/fpga_coeff/fpga_coeff_4x4.txt", "w");
-    //fp_r = $fopen("E:/Projects/VideoCoding/VVC_Transform/result/origin_data/origin_data_4x4.txt", "r");
-    //fp_w = $fopen("E:/Projects/VideoCoding/VVC_Transform/result/fpga_coeff/fpga_coeff_4x4.txt", "w");
+    // fp_r = $fopen("E:/h.266/my_repository/H.266-VVC-Transform/result/origin_data/origin_data_4x4.txt", "r");
+    // fp_w = $fopen("E:/h.266/my_repository/H.266-VVC-Transform/result/fpga_coeff/fpga_coeff_4x4.txt", "w");
+    fp_r = $fopen("E:/Projects/VideoCoding/VVC_Transform/result/origin_data/origin_data_4x4.txt", "r");
+    fp_w = $fopen("E:/Projects/VideoCoding/VVC_Transform/result/fpga_coeff/fpga_coeff_4x4.txt", "w");
     cnt = 0;
     while (cnt < DCT_4) begin
         $fscanf(fp_r, "%d %d %d %d", i_0,i_1,i_2,i_3);
@@ -453,10 +453,10 @@ initial begin
     //32x64
     i_width = 4; i_height = 3;
     i_valid = 1;
-    fp_r = $fopen("E:/h.266/my_repository/H.266-VVC-Transform/result/origin_data/origin_data_32x64.txt", "r");
-     fp_w = $fopen("E:/h.266/my_repository/H.266-VVC-Transform/result/fpga_coeff/fpga_coeff_32x64.txt", "w");
-    //fp_r = $fopen("E:/Projects/VideoCoding/VVC_Transform/result/origin_data/origin_data_32x64.txt", "r");
-    //fp_w = $fopen("E:/Projects/VideoCoding/VVC_Transform/result/fpga_coeff/fpga_coeff_32x64.txt", "w");
+    // fp_r = $fopen("E:/h.266/my_repository/H.266-VVC-Transform/result/origin_data/origin_data_32x64.txt", "r");
+    //  fp_w = $fopen("E:/h.266/my_repository/H.266-VVC-Transform/result/fpga_coeff/fpga_coeff_32x64.txt", "w");
+    fp_r = $fopen("E:/Projects/VideoCoding/VVC_Transform/result/origin_data/origin_data_32x64.txt", "r");
+    fp_w = $fopen("E:/Projects/VideoCoding/VVC_Transform/result/fpga_coeff/fpga_coeff_32x64.txt", "w");
     cnt = 0;
     while (cnt < DCT_32) begin
         $fscanf(fp_r, "%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d", 

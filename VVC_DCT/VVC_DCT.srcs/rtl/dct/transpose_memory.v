@@ -1,7 +1,7 @@
-//describe  : 存储一维变换的数据(64并入，64并出，对角线式存储结构)，存完后再进行第二次一维变换
+//describe  : 存储一维变换的数据，存完后再进行第二次一维变换
 //input     : 64个一维变换系数(一列),同时存到64个ram里
-//output    : 存完一个矩阵后，取64个一维变换系数(一行)
-//delay     : 1 clk(wr) + (height-1) clk(wait) + 1 clk(rd)
+//output    : 存完一个矩阵后，取32个一维变换系数(一行)
+//delay     : 66 clk
 module transpose_memory#(
     parameter  WIDTH  = 16
 )
@@ -79,8 +79,8 @@ module transpose_memory#(
     input   signed  [WIDTH - 1 : 0]     i_62    ,
     input   signed  [WIDTH - 1 : 0]     i_63    ,
 //output parameter
-    output           [2 : 0]             o_width     ,
-    output           [2 : 0]             o_height    ,
+    output          [2 : 0]             o_width ,
+    output          [2 : 0]             o_height,
 //output coeff
     output                              o_valid ,
     output  signed  [WIDTH - 1 : 0]     o_0     ,
@@ -155,12 +155,13 @@ localparam  DCT_4  = 0,
             DCT_32 = 3,
             DCT_64 = 4;
 //存储/读取周期
-localparam [5:0] wr_count_max  = 6'd63;
-localparam [5:0] rd_count_max  = 6'd31;
-
+localparam wr_count_max  = 63;
+localparam rd_count_max  = 31;
 integer i;
-reg     [2:0]i_width_d  [65:0];
-reg     [2:0]i_height_d [65:0];
+
+reg [2 : 0] i_width_d[65 : 0];
+reg [2 : 0] i_height_d[65 : 0];
+
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin 
         for (i = 0; i < 66; i = i + 1) begin
@@ -170,8 +171,10 @@ always @(posedge clk or negedge rst_n) begin
     end
     else begin
         i_width_d[0] <= i_width;
-        for (i = 0; i < 5; i = i + 1) begin
+        i_height_d[0] <= i_height;
+        for (i = 0; i < 65; i = i + 1) begin
             i_width_d[i + 1] <= i_width_d[i];
+            i_height_d[i + 1] <= i_height_d[i];
         end
     end
 end
@@ -245,79 +248,79 @@ end
     assign i_data[62] = i_data_d1[62];
     assign i_data[63] = i_data_d1[63];
     
-    always@(posedge clk or negedge rst_n)
-    if(!rst_n)begin
-        for(i = 0; i<64;i= i+1)begin
-            i_data_d1[i]    <=  0;
+always@(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+        for(i = 0; i < 64; i = i + 1) begin
+            i_data_d1[i] <= 0;
         end
     end
     else begin
-         i_data_d1[0 ] = i_0 ;
-         i_data_d1[1 ] = i_1 ;
-         i_data_d1[2 ] = i_2 ;
-         i_data_d1[3 ] = i_3 ;
-         i_data_d1[4 ] = i_4 ;
-         i_data_d1[5 ] = i_5 ;
-         i_data_d1[6 ] = i_6 ;
-         i_data_d1[7 ] = i_7 ;
-         i_data_d1[8 ] = i_8 ;
-         i_data_d1[9 ] = i_9 ;
-         i_data_d1[10] = i_10;
-         i_data_d1[11] = i_11;
-         i_data_d1[12] = i_12;
-         i_data_d1[13] = i_13;
-         i_data_d1[14] = i_14;
-         i_data_d1[15] = i_15;
-         i_data_d1[16] = i_16;
-         i_data_d1[17] = i_17;
-         i_data_d1[18] = i_18;
-         i_data_d1[19] = i_19;
-         i_data_d1[20] = i_20;
-         i_data_d1[21] = i_21;
-         i_data_d1[22] = i_22;
-         i_data_d1[23] = i_23;
-         i_data_d1[24] = i_24;
-         i_data_d1[25] = i_25;
-         i_data_d1[26] = i_26;
-         i_data_d1[27] = i_27;
-         i_data_d1[28] = i_28;
-         i_data_d1[29] = i_29;
-         i_data_d1[30] = i_30;
-         i_data_d1[31] = i_31;
-         i_data_d1[32] = i_32;
-         i_data_d1[33] = i_33;
-         i_data_d1[34] = i_34;
-         i_data_d1[35] = i_35;
-         i_data_d1[36] = i_36;
-         i_data_d1[37] = i_37;
-         i_data_d1[38] = i_38;
-         i_data_d1[39] = i_39;
-         i_data_d1[40] = i_40;
-         i_data_d1[41] = i_41;
-         i_data_d1[42] = i_42;
-         i_data_d1[43] = i_43;
-         i_data_d1[44] = i_44;
-         i_data_d1[45] = i_45;
-         i_data_d1[46] = i_46;
-         i_data_d1[47] = i_47;
-         i_data_d1[48] = i_48;
-         i_data_d1[49] = i_49;
-         i_data_d1[50] = i_50;
-         i_data_d1[51] = i_51;
-         i_data_d1[52] = i_52;
-         i_data_d1[53] = i_53;
-         i_data_d1[54] = i_54;
-         i_data_d1[55] = i_55;
-         i_data_d1[56] = i_56;
-         i_data_d1[57] = i_57;
-         i_data_d1[58] = i_58;
-         i_data_d1[59] = i_59;
-         i_data_d1[60] = i_60;
-         i_data_d1[61] = i_61;
-         i_data_d1[62] = i_62;
-         i_data_d1[63] = i_63;      
+         i_data_d1[0 ] <= i_0 ;
+         i_data_d1[1 ] <= i_1 ;
+         i_data_d1[2 ] <= i_2 ;
+         i_data_d1[3 ] <= i_3 ;
+         i_data_d1[4 ] <= i_4 ;
+         i_data_d1[5 ] <= i_5 ;
+         i_data_d1[6 ] <= i_6 ;
+         i_data_d1[7 ] <= i_7 ;
+         i_data_d1[8 ] <= i_8 ;
+         i_data_d1[9 ] <= i_9 ;
+         i_data_d1[10] <= i_10;
+         i_data_d1[11] <= i_11;
+         i_data_d1[12] <= i_12;
+         i_data_d1[13] <= i_13;
+         i_data_d1[14] <= i_14;
+         i_data_d1[15] <= i_15;
+         i_data_d1[16] <= i_16;
+         i_data_d1[17] <= i_17;
+         i_data_d1[18] <= i_18;
+         i_data_d1[19] <= i_19;
+         i_data_d1[20] <= i_20;
+         i_data_d1[21] <= i_21;
+         i_data_d1[22] <= i_22;
+         i_data_d1[23] <= i_23;
+         i_data_d1[24] <= i_24;
+         i_data_d1[25] <= i_25;
+         i_data_d1[26] <= i_26;
+         i_data_d1[27] <= i_27;
+         i_data_d1[28] <= i_28;
+         i_data_d1[29] <= i_29;
+         i_data_d1[30] <= i_30;
+         i_data_d1[31] <= i_31;
+         i_data_d1[32] <= i_32;
+         i_data_d1[33] <= i_33;
+         i_data_d1[34] <= i_34;
+         i_data_d1[35] <= i_35;
+         i_data_d1[36] <= i_36;
+         i_data_d1[37] <= i_37;
+         i_data_d1[38] <= i_38;
+         i_data_d1[39] <= i_39;
+         i_data_d1[40] <= i_40;
+         i_data_d1[41] <= i_41;
+         i_data_d1[42] <= i_42;
+         i_data_d1[43] <= i_43;
+         i_data_d1[44] <= i_44;
+         i_data_d1[45] <= i_45;
+         i_data_d1[46] <= i_46;
+         i_data_d1[47] <= i_47;
+         i_data_d1[48] <= i_48;
+         i_data_d1[49] <= i_49;
+         i_data_d1[50] <= i_50;
+         i_data_d1[51] <= i_51;
+         i_data_d1[52] <= i_52;
+         i_data_d1[53] <= i_53;
+         i_data_d1[54] <= i_54;
+         i_data_d1[55] <= i_55;
+         i_data_d1[56] <= i_56;
+         i_data_d1[57] <= i_57;
+         i_data_d1[58] <= i_58;
+         i_data_d1[59] <= i_59;
+         i_data_d1[60] <= i_60;
+         i_data_d1[61] <= i_61;
+         i_data_d1[62] <= i_62;
+         i_data_d1[63] <= i_63;      
     end
-    
+end   
 
 //ram
     reg i_valid_d1;
@@ -344,10 +347,11 @@ end
     
  //out_valid 延迟   
 always@(posedge clk or negedge rst_n)
-if(!rst_n)
-    i_valid_d <= 0;
-else
-    i_valid_d <= {i_valid_d[64 : 0], i_valid};
+    if (!rst_n)
+        i_valid_d <= 0;
+    else
+        i_valid_d <= {i_valid_d[64 : 0], i_valid};
+
 //i_valid延迟一拍抓取上升沿
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) 
@@ -356,12 +360,12 @@ always @(posedge clk or negedge rst_n) begin
         i_valid_d1 <= i_valid;
 end
 
-always@(posedge clk or negedge rst_n)begin
-    if(!rst_n)
+always @(posedge clk or negedge rst_n) begin
+    if (!rst_n)
         i_upedge_flag <= 0;
-    else if(i_valid & ~i_valid_d1)
+    else if (i_valid & ~i_valid_d1)
         i_upedge_flag <= 1;
-    else if(count == wr_count_max)
+    else if (count == wr_count_max)
         i_upedge_flag <= 0;
 end
 
@@ -394,19 +398,14 @@ always @(posedge clk or negedge rst_n) begin
 end
 
 //write_enable is used to restrict the addr exceed 32
-always@(*)
-begin
-    if (!rst_n) 
-    begin
-        for(i=0;i<64;i=i+1)
-        begin
+always @(*) begin
+    if (!rst_n) begin
+        for (i = 0; i < 64; i = i + 1) begin
             wen_i[i] <= 1'b1;
         end
     end  
-    else
-    begin
-        for(i=0;i<64;i=i+1)
-        begin
+    else begin
+        for (i = 0; i < 64; i = i + 1) begin
             wen_i[i] <= ram_wr_n | write_enable[i];
         end
     end
@@ -414,8 +413,9 @@ end
 
 //选择当前组每个ram存的数据和地址, 读出的地址
 always @(*) begin
-    for(i=0;i<64;i=i+1)
+    for(i = 0; i < 64; i = i + 1) begin
         write_enable[i] <= 1'b1;
+    end
     if (i_upedge_flag) begin//写数据和地址
         for (i = 0; i < 64; i = i + 1) begin//循环右移cnt输入数据
             if (i >= count) begin
@@ -461,13 +461,13 @@ end
 always @(*) begin
     if (rd_vaild_d1) begin
         for (i = 0; i < 64; i = i + 1) begin//循环左移cnt输出数据
-                if (i + count < 65) begin
-                    o_data[i] <= ram_rd_data[i + count - 1];
-                end
-                else begin
-                    o_data[i] <= ram_rd_data[i + count - 65];
-                end
+            if (i + count < 65) begin
+                o_data[i] <= ram_rd_data[i + count - 1];
             end
+            else begin
+                o_data[i] <= ram_rd_data[i + count - 65];
+            end
+        end
     end
     else begin
         for (i = 0; i < 64; i = i + 1) begin
