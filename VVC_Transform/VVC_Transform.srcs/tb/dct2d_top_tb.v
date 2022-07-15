@@ -338,7 +338,6 @@ end
             if (cnt == 1) i_valid = 0; 
         end
         $fclose(fp_r);
-        #2;
         //32x32
         i_valid = 1;
         i_width = 3; i_height = 3;
@@ -415,8 +414,23 @@ end
             if (cnt == 1) i_valid = 0; 
         end 
         $fclose(fp_r);
+        //64x32
+        i_valid = 1;
+        i_width = 3; i_height = 4;
+        fp_r = $fopen("../../../../../result/origin_data/origin_data_64x32.txt", "r");
+        cnt = 0;
+        while (cnt < DCT_64) begin
+            $fscanf(fp_r, "%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d", 
+                        i_0,i_1,i_2,i_3,i_4,i_5,i_6,i_7,i_8,i_9,i_10,i_11,i_12,i_13,i_14,i_15,i_16,i_17,i_18,i_19,i_20,i_21,i_22,i_23,i_24,i_25,i_26,i_27,i_28,i_29,i_30,i_31);
+            i_32 = 0; i_33 = 0; i_34 = 0; i_35 = 0; i_36 = 0; i_37 = 0; i_38 = 0; i_39 = 0; i_40 = 0; i_41 = 0; i_42 = 0; i_43 = 0; i_44 = 0; i_45 = 0; i_46 = 0; i_47 = 0; 
+            i_48 = 0; i_49 = 0; i_50 = 0; i_51 = 0; i_52 = 0; i_53 = 0; i_54 = 0; i_55 = 0; i_56 = 0; i_57 = 0; i_58 = 0; i_59 = 0; i_60 = 0; i_61 = 0; i_62 = 0; i_63 = 0; 
+            cnt = cnt + 1;
+            #2;
+            if (cnt == 1) i_valid = 0; 
+        end 
+        $fclose(fp_r);
 
-        #10;
+        #200;
         $stop;
     end
 
@@ -478,6 +492,15 @@ end
                     o_0,o_1,o_2,o_3,o_4,o_5,o_6,o_7,o_8,o_9,o_10,o_11,o_12,o_13,o_14,o_15,o_16,o_17,o_18,o_19,o_20,o_21,o_22,o_23,o_24,o_25,o_26,o_27,o_28,o_29,o_30,o_31);
         end
         $fclose(fp_w);
+        //64x32
+        fp_w = $fopen("../../../../../result/fpga_coeff/fpga_coeff_64x32.txt", "w");
+        for (i = 0; i < DCT_32; i = i + 1) begin
+            $fwrite(fp_w, "%6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d\n", 
+                    o_0,o_1,o_2,o_3,o_4,o_5,o_6,o_7,o_8,o_9,o_10,o_11,o_12,o_13,o_14,o_15,o_16,o_17,o_18,o_19,o_20,o_21,o_22,o_23,o_24,o_25,o_26,o_27,o_28,o_29,o_30,o_31,
+                    o_32,o_33,o_34,o_35,o_36,o_37,o_38,o_39,o_40,o_41,o_42,o_43,o_44,o_45,o_46,o_47,o_48,o_49,o_50,o_51,o_52,o_53,o_54,o_55,o_56,o_57,o_58,o_59,o_60,o_61,o_62,o_63);
+            #2;
+        end
+        $fclose(fp_w);
     end
 
 `else
@@ -508,7 +531,7 @@ end
             #2;
             if (cnt == 1) i_valid = 0; 
         end 
-        #28;
+        #30;
         for (i = 0; i < DCT_32; i = i + 1) begin//高频置零优化后只有32clk
             $fwrite(fp_w, "%6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d\n", 
                     o_0,o_1,o_2,o_3,o_4,o_5,o_6,o_7,o_8,o_9,o_10,o_11,o_12,o_13,o_14,o_15,o_16,o_17,o_18,o_19,o_20,o_21,o_22,o_23,o_24,o_25,o_26,o_27,o_28,o_29,o_30,o_31,
@@ -538,7 +561,7 @@ end
             if (cnt == 1) i_valid = 0; 
         end 
         #64;
-        #28;
+        #30;
         for (i = 0; i < DCT_32; i = i + 1) begin
             $fwrite(fp_w, "%6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d\n", 
                     o_0,o_1,o_2,o_3,o_4,o_5,o_6,o_7,o_8,o_9,o_10,o_11,o_12,o_13,o_14,o_15,o_16,o_17,o_18,o_19,o_20,o_21,o_22,o_23,o_24,o_25,o_26,o_27,o_28,o_29,o_30,o_31);
@@ -562,7 +585,7 @@ end
             if (cnt == 1) i_valid = 0; 
         end 
         #96;
-        #28;
+        #30;
         for (i = 0; i < DCT_16; i = i + 1) begin
             $fwrite(fp_w, "%6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d\n", o_0,o_1,o_2,o_3,o_4,o_5,o_6,o_7,o_8,o_9,o_10,o_11,o_12,o_13,o_14,o_15);
             #2;
@@ -587,7 +610,7 @@ end
             if (cnt == 1) i_valid = 0; 
         end 
         #112;
-        #28;
+        #30;
         for (i = 0; i < DCT_8; i = i + 1) begin
             $fwrite(fp_w, "%6d %6d %6d %6d %6d %6d %6d %6d\n", o_0,o_1,o_2,o_3,o_4,o_5,o_6,o_7);
             #2;
@@ -612,7 +635,7 @@ end
             if (cnt == 1) i_valid = 0; 
         end   
         #120;
-        #28;
+        #30;
         for (i = 0; i < DCT_4; i = i + 1) begin
             $fwrite(fp_w, "%6d %6d %6d %6d\n", o_0,o_1,o_2,o_3);
             #2;
@@ -635,7 +658,7 @@ end
             if (cnt == 1) i_valid = 0; 
         end 
         #64;
-        #28;
+        #30;
         for (i = 0; i < DCT_32; i = i + 1) begin
             $fwrite(fp_w, "%6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d\n", 
                     o_0,o_1,o_2,o_3,o_4,o_5,o_6,o_7,o_8,o_9,o_10,o_11,o_12,o_13,o_14,o_15,o_16,o_17,o_18,o_19,o_20,o_21,o_22,o_23,o_24,o_25,o_26,o_27,o_28,o_29,o_30,o_31);
@@ -644,6 +667,31 @@ end
         for (i = 0; i < DCT_32; i = i + 1) begin
             $fwrite(fp_w, "%6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d\n", 
                     o_0,o_1,o_2,o_3,o_4,o_5,o_6,o_7,o_8,o_9,o_10,o_11,o_12,o_13,o_14,o_15,o_16,o_17,o_18,o_19,o_20,o_21,o_22,o_23,o_24,o_25,o_26,o_27,o_28,o_29,o_30,o_31);
+        end
+        $fclose(fp_r);
+        $fclose(fp_w);
+        #100
+        //64x32
+        i_width = 3; i_height = 4;
+        i_valid = 1;
+        fp_r = $fopen("../../../../../result/origin_data/origin_data_64x32.txt", "r");
+        fp_w = $fopen("../../../../../result/fpga_coeff/fpga_coeff_64x32.txt", "w");
+        cnt = 0;
+        while (cnt < DCT_64) begin
+            $fscanf(fp_r, "%d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d", 
+                        i_0,i_1,i_2,i_3,i_4,i_5,i_6,i_7,i_8,i_9,i_10,i_11,i_12,i_13,i_14,i_15,i_16,i_17,i_18,i_19,i_20,i_21,i_22,i_23,i_24,i_25,i_26,i_27,i_28,i_29,i_30,i_31);
+            i_32 = 0; i_33 = 0; i_34 = 0; i_35 = 0; i_36 = 0; i_37 = 0; i_38 = 0; i_39 = 0; i_40 = 0; i_41 = 0; i_42 = 0; i_43 = 0; i_44 = 0; i_45 = 0; i_46 = 0; i_47 = 0; 
+            i_48 = 0; i_49 = 0; i_50 = 0; i_51 = 0; i_52 = 0; i_53 = 0; i_54 = 0; i_55 = 0; i_56 = 0; i_57 = 0; i_58 = 0; i_59 = 0; i_60 = 0; i_61 = 0; i_62 = 0; i_63 = 0; 
+            cnt = cnt + 1;
+            #2;
+            if (cnt == 1) i_valid = 0; 
+        end 
+        #30;
+        for (i = 0; i < DCT_32; i = i + 1) begin
+            $fwrite(fp_w, "%6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d\n", 
+                    o_0,o_1,o_2,o_3,o_4,o_5,o_6,o_7,o_8,o_9,o_10,o_11,o_12,o_13,o_14,o_15,o_16,o_17,o_18,o_19,o_20,o_21,o_22,o_23,o_24,o_25,o_26,o_27,o_28,o_29,o_30,o_31,
+                    o_32,o_33,o_34,o_35,o_36,o_37,o_38,o_39,o_40,o_41,o_42,o_43,o_44,o_45,o_46,o_47,o_48,o_49,o_50,o_51,o_52,o_53,o_54,o_55,o_56,o_57,o_58,o_59,o_60,o_61,o_62,o_63);
+            #2;
         end
         $fclose(fp_r);
         $fclose(fp_w);

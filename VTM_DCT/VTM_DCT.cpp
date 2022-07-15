@@ -597,8 +597,8 @@ FwdTrans *fastFwdTrans[NUM_TRANS_TYPE][g_numTransformMatrixSizes] =
 
 int main()
 {
-  int width = 4;
-  int height = 4;
+  int width = 32;
+  int height = 64;
   int bitDepth = 8;
   int maxLog2TrDynamicRange = 15;
 
@@ -632,7 +632,7 @@ int main()
   
   //
   FILE *fp_r, *fp_w;
-  fp_r = fopen("E:/Projects/VideoCoding/result/origin_data/origin_data_4x4.txt", "r");
+  fp_r = fopen("../result/origin_data/origin_data_64x32.txt", "r");
   for (int i = 0; i < height; i++)
   {
     for (int j = 0; j < width; j++)
@@ -663,7 +663,7 @@ int main()
     fastFwdTrans[trTypeVer][transformHeightIndex]( block, coeff, shift, 1, 0, skipHeight );
   }
   
-  fp_w = fopen("E:/Projects/VideoCoding/result/vtm_coeff/vtm_coeff_4x4.txt", "w");
+  fp_w = fopen("../result/vtm_coeff/vtm_coeff_64x32.txt", "w");
   for (int i = 0; i < width; i++)
   {
     for (int j = 0; j < height; j++)

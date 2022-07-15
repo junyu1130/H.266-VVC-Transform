@@ -158,36 +158,30 @@ localparam  DCT_4  = 0,
 integer i, j;
 
 //dct select
-    wire signed [IN_WIDTH - 1 : 0] i_data[63 : 0];
+    reg i_valid_d1, i_valid_d2, i_valid_d3, i_valid_d4;
+    wire signed [IN_WIDTH - 1 : 0] i_data[0 : 63];
+    reg signed [IN_WIDTH - 1 : 0] i_data_d1[0 : 63], i_data_d2[0 : 63], i_data_d3[0 : 63], i_data_d4[0 : 63];
     reg dct_64_valid, dct_32_valid, dct_16_valid, dct_8_valid, dct_4_valid;  
-    reg  signed [IN_WIDTH - 1 : 0] i_dct_64[63 : 0];
-    reg  signed [IN_WIDTH     : 0] i_dct_32[31 : 0];
-    reg  signed [IN_WIDTH + 1 : 0] i_dct_16[15 : 0];
-    reg  signed [IN_WIDTH + 2 : 0] i_dct_8[7 : 0];
-    reg  signed [IN_WIDTH + 3 : 0] i_dct_4[3 : 0];
-    wire signed [IN_WIDTH     : 0] butterfly_64[31 : 0];
-    wire signed [IN_WIDTH + 1 : 0] butterfly_32[15 : 0];
-    wire signed [IN_WIDTH + 2 : 0] butterfly_16[7 : 0];
-    wire signed [IN_WIDTH + 3 : 0] butterfly_8[3 : 0];
+    reg  signed [IN_WIDTH - 1 : 0] i_dct_64[0 : 63];
+    reg  signed [IN_WIDTH     : 0] i_dct_32[0 : 31];
+    reg  signed [IN_WIDTH + 1 : 0] i_dct_16[0 : 15];
+    reg  signed [IN_WIDTH + 2 : 0] i_dct_8[0 : 7];
+    reg  signed [IN_WIDTH + 3 : 0] i_dct_4[0 : 3];
+    wire signed [IN_WIDTH     : 0] butterfly_64[0 : 31];
+    wire signed [IN_WIDTH + 1 : 0] butterfly_32[0 : 15];
+    wire signed [IN_WIDTH + 2 : 0] butterfly_16[0 : 7];
+    wire signed [IN_WIDTH + 3 : 0] butterfly_8[0 : 3];
 //calculate : mcm + sum
     wire pre_coeff_64_valid, pre_coeff_32_valid, pre_coeff_16_valid, pre_coeff_8_valid, pre_coeff_4_valid;
-    reg pre_coeff_32_valid_d1, pre_coeff_16_valid_d1, pre_coeff_8_valid_d1, pre_coeff_4_valid_d1;
-    reg pre_coeff_16_valid_d2, pre_coeff_8_valid_d2, pre_coeff_4_valid_d2;
-    reg pre_coeff_8_valid_d3, pre_coeff_4_valid_d3;
-    reg pre_coeff_4_valid_d4;
-    wire signed [IN_WIDTH + 11 : 0] pre_coeff_64[31 : 0], pre_coeff_32[15 : 0], pre_coeff_16[7 : 0], pre_coeff_8[3 : 0], pre_coeff_4[3 : 0];
-    reg signed [IN_WIDTH + 11 : 0] pre_coeff_32_d1[15 : 0], pre_coeff_16_d1[7 : 0], pre_coeff_8_d1[3 : 0], pre_coeff_4_d1[3 : 0];
-    reg signed [IN_WIDTH + 11 : 0] pre_coeff_16_d2[7 : 0], pre_coeff_8_d2[3 : 0], pre_coeff_4_d2[3 : 0];
-    reg signed [IN_WIDTH + 11 : 0] pre_coeff_8_d3[3 : 0], pre_coeff_4_d3[3 : 0];
-    reg signed [IN_WIDTH + 11 : 0] pre_coeff_4_d4[3 : 0];
+    wire signed [IN_WIDTH + 11 : 0] pre_coeff_64[0 : 31], pre_coeff_32[0 : 15], pre_coeff_16[0 : 7], pre_coeff_8[0 : 3], pre_coeff_4[0 : 3];
     reg pre_coeff_valid;
-    reg signed [IN_WIDTH + 11 : 0] pre_coeff[63 : 0];
+    reg signed [IN_WIDTH + 11 : 0] pre_coeff[0 : 63];
 //limited to 16bit : offset + shift
-    reg [2 : 0] i_width_d[5 : 0];
-    reg [2 : 0] i_height_d[5 : 0];
+    reg [2 : 0] i_width_d[0 : 5];
+    reg [2 : 0] i_height_d[0 : 5];
     reg [3 : 0] dct_shift;
     wire coeff_valid;
-    wire signed [OUT_WIDTH - 1 : 0] coeff[63 : 0];
+    wire signed [OUT_WIDTH - 1 : 0] coeff[0 : 63];
 
 //input
     assign i_data[0 ] = i_0 ;
@@ -285,159 +279,157 @@ always @(*) begin
     endcase
 end
 
-//dct in select
-always @(*) begin
-    dct_4_valid <= 0;
-    dct_8_valid <= 0;
-    dct_16_valid <= 0;
-    dct_32_valid <= 0;
-    dct_64_valid <= 0;
-    for (i = 0; i < 4; i = i + 1) begin
-        i_dct_4[i] <= 0;
-    end
-    for (i = 0; i < 8; i = i + 1) begin
-        i_dct_8[i] <= 0;
-    end
-    for (i = 0; i < 16; i = i + 1) begin
-        i_dct_16[i] <= 0;
-    end
-    for (i = 0; i < 32; i = i + 1) begin
-        i_dct_32[i] <= 0;
-    end
-    for (i = 0; i < 64; i = i + 1) begin
-        i_dct_64[i] <= 0;
-    end
-    case (i_width)
-        DCT_4   : begin
-            dct_4_valid <= i_valid;
-            for (i = 0; i < 4; i = i + 1) begin
-                i_dct_4[i] <= i_data[i];
-            end
-        end
-        DCT_8   : begin
-            dct_8_valid <= i_valid;
-            for (i = 0; i < 8; i = i + 1) begin
-                i_dct_8[i] <= i_data[i];
-            end
-            for (i = 0; i < 4; i = i + 1) begin
-                i_dct_4[i] <= butterfly_8[i];
-            end
-        end
-        DCT_16  : begin
-            dct_16_valid <= i_valid;
-            for (i = 0; i < 16; i = i + 1) begin
-                i_dct_16[i] <= i_data[i];
-            end
-            for (i = 0; i < 8; i = i + 1) begin
-                i_dct_8[i] <= butterfly_16[i];
-            end
-            for (i = 0; i < 4; i = i + 1) begin
-                i_dct_4[i] <= butterfly_8[i];
-            end
-        end
-        DCT_32  : begin
-            dct_32_valid <= i_valid;
-            for (i = 0; i < 32; i = i + 1) begin
-                i_dct_32[i] <= i_data[i];
-            end
-            for (i = 0; i < 16; i = i + 1) begin
-                i_dct_16[i] <= butterfly_32[i];
-            end
-            for (i = 0; i < 8; i = i + 1) begin
-                i_dct_8[i] <= butterfly_16[i];
-            end
-            for (i = 0; i < 4; i = i + 1) begin
-                i_dct_4[i] <= butterfly_8[i];
-            end
-        end
-        DCT_64  : begin
-            dct_64_valid <= i_valid;
-            for (i = 0; i < 64; i = i + 1) begin
-                i_dct_64[i] <= i_data[i];
-            end
-            for (i = 0; i < 32; i = i + 1) begin
-                i_dct_32[i] <= butterfly_64[i];
-            end
-            for (i = 0; i < 16; i = i + 1) begin
-                i_dct_16[i] <= butterfly_32[i];
-            end
-            for (i = 0; i < 8; i = i + 1) begin
-                i_dct_8[i] <= butterfly_16[i];
-            end
-            for (i = 0; i < 4; i = i + 1) begin
-                i_dct_4[i] <= butterfly_8[i];
-            end
-        end
-        default : begin
-        end
-    endcase
-end
-
-//dct out delay
+//dct in delay
 always @(posedge clk or negedge rst_n) begin
-    if (!rst_n) begin 
-        pre_coeff_32_valid_d1 <= 0;
-        pre_coeff_16_valid_d1 <= 0;
-        pre_coeff_16_valid_d2 <= 0;
-        pre_coeff_8_valid_d1 <= 0;
-        pre_coeff_8_valid_d2 <= 0;
-        pre_coeff_8_valid_d3 <= 0;
-        pre_coeff_4_valid_d1 <= 0;
-        pre_coeff_4_valid_d2 <= 0;
-        pre_coeff_4_valid_d3 <= 0;
-        pre_coeff_4_valid_d4 <= 0;
-        for (i = 0; i < 16; i = i + 1) begin
-            pre_coeff_32_d1[i] <= 0;
-        end
-        for (i = 0; i < 8; i = i + 1) begin
-            pre_coeff_16_d1[i] <= 0;
-            pre_coeff_16_d2[i] <= 0;
-        end
-        for (i = 0; i < 4; i = i + 1) begin
-            pre_coeff_8_d1[i] <= 0;
-            pre_coeff_8_d2[i] <= 0;
-            pre_coeff_8_d3[i] <= 0;
-        end
-        for (i = 0; i < 4; i = i + 1) begin
-            pre_coeff_4_d1[i] <= 0;
-            pre_coeff_4_d2[i] <= 0;
-            pre_coeff_4_d3[i] <= 0;
-            pre_coeff_4_d4[i] <= 0;
+    if (!rst_n) begin
+        i_valid_d1 <= 0; 
+        i_valid_d2 <= 0; 
+        i_valid_d3 <= 0; 
+        i_valid_d4 <= 0;
+        for (i = 0; i < 64; i = i + 1) begin
+            i_data_d1[i] <= 0; 
+            i_data_d2[i] <= 0; 
+            i_data_d3[i] <= 0; 
+            i_data_d4[i] <= 0; 
         end
     end
     else begin
-        pre_coeff_32_valid_d1 <= pre_coeff_32_valid;
-        pre_coeff_16_valid_d1 <= pre_coeff_16_valid;
-        pre_coeff_16_valid_d2 <= pre_coeff_16_valid_d1;
-        pre_coeff_8_valid_d1 <= pre_coeff_8_valid;
-        pre_coeff_8_valid_d2 <= pre_coeff_8_valid_d1;
-        pre_coeff_8_valid_d3 <= pre_coeff_8_valid_d2;
-        pre_coeff_4_valid_d1 <= pre_coeff_4_valid;
-        pre_coeff_4_valid_d2 <= pre_coeff_4_valid_d1;
-        pre_coeff_4_valid_d3 <= pre_coeff_4_valid_d2;
-        pre_coeff_4_valid_d4 <= pre_coeff_4_valid_d3;
-        for (i = 0; i < 16; i = i + 1) begin
-            pre_coeff_32_d1[i] <= pre_coeff_32[i];
-        end
-        for (i = 0; i < 8; i = i + 1) begin
-            pre_coeff_16_d1[i] <= pre_coeff_16[i];
-            pre_coeff_16_d2[i] <= pre_coeff_16_d1[i];
-        end
-        for (i = 0; i < 4; i = i + 1) begin
-            pre_coeff_8_d1[i] <= pre_coeff_8[i];
-            pre_coeff_8_d2[i] <= pre_coeff_8_d1[i];
-            pre_coeff_8_d3[i] <= pre_coeff_8_d2[i];
-        end
-        for (i = 0; i < 4; i = i + 1) begin
-            pre_coeff_4_d1[i] <= pre_coeff_4[i];
-            pre_coeff_4_d2[i] <= pre_coeff_4_d1[i];
-            pre_coeff_4_d3[i] <= pre_coeff_4_d2[i];
-            pre_coeff_4_d4[i] <= pre_coeff_4_d3[i];
+        i_valid_d1 <= i_valid; 
+        i_valid_d2 <= i_valid_d1; 
+        i_valid_d3 <= i_valid_d2; 
+        i_valid_d4 <= i_valid_d3;
+        for (i = 0; i < 64; i = i + 1) begin
+            i_data_d1[i] <= i_data[i]; 
+            i_data_d2[i] <= i_data_d1[i]; 
+            i_data_d3[i] <= i_data_d2[i]; 
+            i_data_d4[i] <= i_data_d3[i]; 
         end
     end
 end
 
-//dct out select
+//dct in select
+always @(negedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+        dct_4_valid <= 0;
+        dct_8_valid <= 0;
+        dct_16_valid <= 0;
+        dct_32_valid <= 0;
+        dct_64_valid <= 0;
+        for (i = 0; i < 4; i = i + 1) begin
+            i_dct_4[i] <= 0;
+        end
+        for (i = 0; i < 8; i = i + 1) begin
+            i_dct_8[i] <= 0;
+        end
+        for (i = 0; i < 16; i = i + 1) begin
+            i_dct_16[i] <= 0;
+        end
+        for (i = 0; i < 32; i = i + 1) begin
+            i_dct_32[i] <= 0;
+        end
+        for (i = 0; i < 64; i = i + 1) begin
+            i_dct_64[i] <= 0;
+        end
+    end
+    else begin
+        //delay 0 clk
+        case (i_width) 
+            DCT_64 : begin
+                dct_64_valid <= i_valid;
+                for (i = 0; i < 64; i = i + 1) begin
+                    i_dct_64[i] <= i_data[i];
+                end
+            end
+        endcase
+        //delay 1 clk
+        case (i_width_d[0]) 
+            DCT_64 : begin
+                for (i = 0; i < 32; i = i + 1) begin
+                    i_dct_32[i] <= butterfly_64[i];
+                end
+            end
+            DCT_32 : begin
+                dct_32_valid <= i_valid_d1;
+                for (i = 0; i < 32; i = i + 1) begin
+                    i_dct_32[i] <= i_data_d1[i];
+                end
+            end
+        endcase
+        //delay 2 clk
+        case (i_width_d[1]) 
+            DCT_64 : begin
+                for (i = 0; i < 16; i = i + 1) begin
+                    i_dct_16[i] <= butterfly_32[i];
+                end
+            end
+            DCT_32 : begin
+                for (i = 0; i < 16; i = i + 1) begin
+                    i_dct_16[i] <= butterfly_32[i];
+                end
+            end
+            DCT_16 : begin
+                dct_16_valid <= i_valid_d2;
+                for (i = 0; i < 16; i = i + 1) begin
+                    i_dct_16[i] <= i_data_d2[i];
+                end
+            end
+        endcase
+        //delay 3 clk
+        case (i_width_d[2]) 
+            DCT_64 : begin
+                for (i = 0; i < 8; i = i + 1) begin
+                    i_dct_8[i] <= butterfly_16[i];
+                end
+            end
+            DCT_32 : begin
+                for (i = 0; i < 8; i = i + 1) begin
+                    i_dct_8[i] <= butterfly_16[i];
+                end
+            end
+            DCT_16 : begin
+                for (i = 0; i < 8; i = i + 1) begin
+                    i_dct_8[i] <= butterfly_16[i];
+                end
+            end
+            DCT_8 : begin
+                dct_8_valid <= i_valid_d3;
+                for (i = 0; i < 8; i = i + 1) begin
+                    i_dct_8[i] <= i_data_d3[i];
+                end
+            end
+        endcase
+        //delay 4 clk
+        case (i_width_d[3]) 
+            DCT_64 : begin
+                for (i = 0; i < 4; i = i + 1) begin
+                    i_dct_4[i] <= butterfly_8[i];
+                end
+            end
+            DCT_32 : begin
+                for (i = 0; i < 4; i = i + 1) begin
+                    i_dct_4[i] <= butterfly_8[i];
+                end
+            end
+            DCT_16 : begin
+                for (i = 0; i < 4; i = i + 1) begin
+                    i_dct_4[i] <= butterfly_8[i];
+                end
+            end
+            DCT_8 : begin
+                for (i = 0; i < 4; i = i + 1) begin
+                    i_dct_4[i] <= butterfly_8[i];
+                end
+            end
+            DCT_4 : begin
+                dct_4_valid <= i_valid_d4;
+                for (i = 0; i < 4; i = i + 1) begin
+                    i_dct_4[i] <= i_data_d4[i];
+                end
+            end
+        endcase
+    end
+end
+
 always @(*) begin
     pre_coeff_valid <= 0;
     for (i = 0; i < 64; i = i + 1) begin
@@ -445,45 +437,45 @@ always @(*) begin
     end
     case (i_width_d[4])
         DCT_4   : begin
-            pre_coeff_valid <= pre_coeff_4_valid_d4;
+            pre_coeff_valid <= pre_coeff_4_valid;
             for (i = 0; i < 4; i = i + 1) begin
-                pre_coeff[i] <= pre_coeff_4_d4[i];
+                pre_coeff[i] <= pre_coeff_4[i];
             end
         end
         DCT_8   : begin
-            pre_coeff_valid <= pre_coeff_8_valid_d3;
+            pre_coeff_valid <= pre_coeff_8_valid;
             for (i = 1, j = 0; i < 8; i = i + 2, j = j + 1) begin
-                pre_coeff[i] <= pre_coeff_8_d3[j];
+                pre_coeff[i] <= pre_coeff_8[j];
             end
             for (i = 0, j = 0; i < 8; i = i + 2, j = j + 1) begin
-                pre_coeff[i] <= pre_coeff_4_d3[j];
+                pre_coeff[i] <= pre_coeff_4[j];
             end
         end
         DCT_16  : begin
-            pre_coeff_valid <= pre_coeff_16_valid_d2;
+            pre_coeff_valid <= pre_coeff_16_valid;
             for (i = 1, j = 0; i < 16; i = i + 2, j = j + 1) begin
-                pre_coeff[i] <= pre_coeff_16_d2[j];
+                pre_coeff[i] <= pre_coeff_16[j];
             end
             for (i = 2, j = 0; i < 16; i = i + 4, j = j + 1) begin
-                pre_coeff[i] <= pre_coeff_8_d2[j];
+                pre_coeff[i] <= pre_coeff_8[j];
             end
             for (i = 0, j = 0; i < 16; i = i + 4, j = j + 1) begin
-                pre_coeff[i] <= pre_coeff_4_d2[j];
+                pre_coeff[i] <= pre_coeff_4[j];
             end
         end
         DCT_32  : begin
-            pre_coeff_valid <= pre_coeff_32_valid_d1;
+            pre_coeff_valid <= pre_coeff_32_valid;
             for (i = 1, j = 0; i < 32; i = i + 2, j = j + 1) begin
-                pre_coeff[i] <= pre_coeff_32_d1[j];
+                pre_coeff[i] <= pre_coeff_32[j];
             end
             for (i = 2, j = 0; i < 32; i = i + 4, j = j + 1) begin
-                pre_coeff[i] <= pre_coeff_16_d1[j];
+                pre_coeff[i] <= pre_coeff_16[j];
             end
             for (i = 4, j = 0; i < 32; i = i + 8, j = j + 1) begin
-                pre_coeff[i] <= pre_coeff_8_d1[j];
+                pre_coeff[i] <= pre_coeff_8[j];
             end
             for (i = 0, j = 0; i < 32; i = i + 8, j = j + 1) begin
-                pre_coeff[i] <= pre_coeff_4_d1[j];
+                pre_coeff[i] <= pre_coeff_4[j];
             end
         end
         DCT_64  : begin //because high frequency coefficients are set to zero

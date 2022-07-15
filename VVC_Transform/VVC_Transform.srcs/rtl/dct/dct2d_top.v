@@ -1,7 +1,7 @@
 //describe  : 二维DCT2
 //input     : 64个像素残差数据
 //output    : 64个系数数据
-//delay     : 78 clk = 6dct + 66transpose + 6dct
+//delay     : 79 clk = 1in + 6dct + 66transpose + 6dct
 module dct2d_top#(
     parameter  BIT_DEPTH = 8,
     parameter  OUT_WIDTH = 16
@@ -150,17 +150,104 @@ module dct2d_top#(
     output  signed  [OUT_WIDTH - 1 : 0] o_63    
 );
 
+integer i;
+
+//input
+    reg [2 : 0] i_width_d1, i_height_d1;
+    reg i_valid_d1;
+    reg [BIT_DEPTH : 0] i_d1[0 : 63];
 //DCT
     wire [2 : 0] dct1d_out_width, dct1d_out_height;
     wire dct1d_out_valid;
-    wire signed [OUT_WIDTH - 1 : 0] dct1d_out[63 : 0];
+    wire signed [OUT_WIDTH - 1 : 0] dct1d_out[0 : 63];
     wire [2 : 0] dct2d_out_width, dct2d_out_height;
     wire dct2d_out_valid;
-    wire signed [OUT_WIDTH - 1 : 0] dct2d_out[63 : 0];
+    wire signed [OUT_WIDTH - 1 : 0] dct2d_out[0 : 63];
 //transpose memory
     wire [2 : 0] transpose_out_width, transpose_out_height;
     wire transpose_out_valid;
-    wire signed [OUT_WIDTH - 1 : 0] transpose_out[63 : 0];
+    wire signed [OUT_WIDTH - 1 : 0] transpose_out[0 : 63];
+
+//input delay 1 clk
+always @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+        i_width_d1 <= 0; 
+        i_height_d1 <= 0;
+        i_valid_d1 <= 0;
+        for (i = 0; i < 64; i = i + 1) begin
+            i_d1[i] <= 0;
+        end
+    end
+    else begin
+        i_width_d1 <= i_width; 
+        i_height_d1 <= i_height;
+        i_valid_d1 <= i_valid;
+        i_d1[0 ] <= i_0 ;
+        i_d1[1 ] <= i_1 ;
+        i_d1[2 ] <= i_2 ;
+        i_d1[3 ] <= i_3 ;
+        i_d1[4 ] <= i_4 ;
+        i_d1[5 ] <= i_5 ;
+        i_d1[6 ] <= i_6 ;
+        i_d1[7 ] <= i_7 ;
+        i_d1[8 ] <= i_8 ;
+        i_d1[9 ] <= i_9 ;
+        i_d1[10] <= i_10;
+        i_d1[11] <= i_11;
+        i_d1[12] <= i_12;
+        i_d1[13] <= i_13;
+        i_d1[14] <= i_14;
+        i_d1[15] <= i_15;
+        i_d1[16] <= i_16;
+        i_d1[17] <= i_17;
+        i_d1[18] <= i_18;
+        i_d1[19] <= i_19;
+        i_d1[20] <= i_20;
+        i_d1[21] <= i_21;
+        i_d1[22] <= i_22;
+        i_d1[23] <= i_23;
+        i_d1[24] <= i_24;
+        i_d1[25] <= i_25;
+        i_d1[26] <= i_26;
+        i_d1[27] <= i_27;
+        i_d1[28] <= i_28;
+        i_d1[29] <= i_29;
+        i_d1[30] <= i_30;
+        i_d1[31] <= i_31;
+        i_d1[32] <= i_32;
+        i_d1[33] <= i_33;
+        i_d1[34] <= i_34;
+        i_d1[35] <= i_35;
+        i_d1[36] <= i_36;
+        i_d1[37] <= i_37;
+        i_d1[38] <= i_38;
+        i_d1[39] <= i_39;
+        i_d1[40] <= i_40;
+        i_d1[41] <= i_41;
+        i_d1[42] <= i_42;
+        i_d1[43] <= i_43;
+        i_d1[44] <= i_44;
+        i_d1[45] <= i_45;
+        i_d1[46] <= i_46;
+        i_d1[47] <= i_47;
+        i_d1[48] <= i_48;
+        i_d1[49] <= i_49;
+        i_d1[50] <= i_50;
+        i_d1[51] <= i_51;
+        i_d1[52] <= i_52;
+        i_d1[53] <= i_53;
+        i_d1[54] <= i_54;
+        i_d1[55] <= i_55;
+        i_d1[56] <= i_56;
+        i_d1[57] <= i_57;
+        i_d1[58] <= i_58;
+        i_d1[59] <= i_59;
+        i_d1[60] <= i_60;
+        i_d1[61] <= i_61;
+        i_d1[62] <= i_62;
+        i_d1[63] <= i_63;
+    end
+end
 
 //sub module
 //first stage 1D-DCT
@@ -173,74 +260,74 @@ u_dct1d_1st(
     .clk     (clk               ),
     .rst_n   (rst_n             ),
 //input parameter
-    .i_width (i_width           ),
-    .i_height(i_height          ),
+    .i_width (i_width_d1        ),
+    .i_height(i_height_d1       ),
 //input data
-    .i_valid (i_valid           ),
-    .i_0     (i_0               ),
-    .i_1     (i_1               ),
-    .i_2     (i_2               ),
-    .i_3     (i_3               ),
-    .i_4     (i_4               ),
-    .i_5     (i_5               ),
-    .i_6     (i_6               ),
-    .i_7     (i_7               ),
-    .i_8     (i_8               ),
-    .i_9     (i_9               ),
-    .i_10    (i_10              ),
-    .i_11    (i_11              ),
-    .i_12    (i_12              ),
-    .i_13    (i_13              ),
-    .i_14    (i_14              ),
-    .i_15    (i_15              ),
-    .i_16    (i_16              ),
-    .i_17    (i_17              ),
-    .i_18    (i_18              ),
-    .i_19    (i_19              ),
-    .i_20    (i_20              ),
-    .i_21    (i_21              ),
-    .i_22    (i_22              ),
-    .i_23    (i_23              ),
-    .i_24    (i_24              ),
-    .i_25    (i_25              ),
-    .i_26    (i_26              ),
-    .i_27    (i_27              ),
-    .i_28    (i_28              ),
-    .i_29    (i_29              ),
-    .i_30    (i_30              ),
-    .i_31    (i_31              ),
-    .i_32    (i_32              ),
-    .i_33    (i_33              ),
-    .i_34    (i_34              ),
-    .i_35    (i_35              ),
-    .i_36    (i_36              ),
-    .i_37    (i_37              ),
-    .i_38    (i_38              ),
-    .i_39    (i_39              ),
-    .i_40    (i_40              ),
-    .i_41    (i_41              ),
-    .i_42    (i_42              ),
-    .i_43    (i_43              ),
-    .i_44    (i_44              ),
-    .i_45    (i_45              ),
-    .i_46    (i_46              ),
-    .i_47    (i_47              ),
-    .i_48    (i_48              ),
-    .i_49    (i_49              ),
-    .i_50    (i_50              ),
-    .i_51    (i_51              ),
-    .i_52    (i_52              ),
-    .i_53    (i_53              ),
-    .i_54    (i_54              ),
-    .i_55    (i_55              ),
-    .i_56    (i_56              ),
-    .i_57    (i_57              ),
-    .i_58    (i_58              ),
-    .i_59    (i_59              ),
-    .i_60    (i_60              ),
-    .i_61    (i_61              ),
-    .i_62    (i_62              ),
-    .i_63    (i_63              ),
+    .i_valid (i_valid_d1        ),
+    .i_0     (i_d1[0 ]          ),
+    .i_1     (i_d1[1 ]          ),
+    .i_2     (i_d1[2 ]          ),
+    .i_3     (i_d1[3 ]          ),
+    .i_4     (i_d1[4 ]          ),
+    .i_5     (i_d1[5 ]          ),
+    .i_6     (i_d1[6 ]          ),
+    .i_7     (i_d1[7 ]          ),
+    .i_8     (i_d1[8 ]          ),
+    .i_9     (i_d1[9 ]          ),
+    .i_10    (i_d1[10]          ),
+    .i_11    (i_d1[11]          ),
+    .i_12    (i_d1[12]          ),
+    .i_13    (i_d1[13]          ),
+    .i_14    (i_d1[14]          ),
+    .i_15    (i_d1[15]          ),
+    .i_16    (i_d1[16]          ),
+    .i_17    (i_d1[17]          ),
+    .i_18    (i_d1[18]          ),
+    .i_19    (i_d1[19]          ),
+    .i_20    (i_d1[20]          ),
+    .i_21    (i_d1[21]          ),
+    .i_22    (i_d1[22]          ),
+    .i_23    (i_d1[23]          ),
+    .i_24    (i_d1[24]          ),
+    .i_25    (i_d1[25]          ),
+    .i_26    (i_d1[26]          ),
+    .i_27    (i_d1[27]          ),
+    .i_28    (i_d1[28]          ),
+    .i_29    (i_d1[29]          ),
+    .i_30    (i_d1[30]          ),
+    .i_31    (i_d1[31]          ),
+    .i_32    (i_d1[32]          ),
+    .i_33    (i_d1[33]          ),
+    .i_34    (i_d1[34]          ),
+    .i_35    (i_d1[35]          ),
+    .i_36    (i_d1[36]          ),
+    .i_37    (i_d1[37]          ),
+    .i_38    (i_d1[38]          ),
+    .i_39    (i_d1[39]          ),
+    .i_40    (i_d1[40]          ),
+    .i_41    (i_d1[41]          ),
+    .i_42    (i_d1[42]          ),
+    .i_43    (i_d1[43]          ),
+    .i_44    (i_d1[44]          ),
+    .i_45    (i_d1[45]          ),
+    .i_46    (i_d1[46]          ),
+    .i_47    (i_d1[47]          ),
+    .i_48    (i_d1[48]          ),
+    .i_49    (i_d1[49]          ),
+    .i_50    (i_d1[50]          ),
+    .i_51    (i_d1[51]          ),
+    .i_52    (i_d1[52]          ),
+    .i_53    (i_d1[53]          ),
+    .i_54    (i_d1[54]          ),
+    .i_55    (i_d1[55]          ),
+    .i_56    (i_d1[56]          ),
+    .i_57    (i_d1[57]          ),
+    .i_58    (i_d1[58]          ),
+    .i_59    (i_d1[59]          ),
+    .i_60    (i_d1[60]          ),
+    .i_61    (i_d1[61]          ),
+    .i_62    (i_d1[62]          ),
+    .i_63    (i_d1[63]          ),
 //output parameter
     .o_width (dct1d_out_width   ),
     .o_height(dct1d_out_height  ),

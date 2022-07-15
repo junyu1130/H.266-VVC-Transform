@@ -145,10 +145,10 @@ module dct1d_64#(
 
 //butterfly
     wire butterfly_64_valid;
-    wire signed [IN_WIDTH : 0]  butterfly_64[63 : 0];
+    wire signed [IN_WIDTH : 0]  butterfly_64[0 : 63];
 //calculate : mcm + sum
     wire pre_coeff_valid;
-    wire signed [IN_WIDTH + 11 : 0] pre_coeff[31 : 0];
+    wire signed [IN_WIDTH + 11 : 0] pre_coeff[0 : 31];
 
 //sub module
 butterfly_64#(

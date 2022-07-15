@@ -51,10 +51,10 @@ module dct1d_16#(
 
 //butterfly
     wire butterfly_16_valid;
-    wire signed [IN_WIDTH : 0]  butterfly_16[15 : 0];
+    wire signed [IN_WIDTH : 0]  butterfly_16[0 : 15];
 //calculate : mcm + sum
     wire pre_coeff_valid;
-    wire signed [IN_WIDTH + 9 : 0] pre_coeff[7 : 0];
+    wire signed [IN_WIDTH + 9 : 0] pre_coeff[0 : 7];
 
 //sub module
 butterfly_16#(
