@@ -1,6 +1,6 @@
 //describe  : 第一次一维DCT2
-//input     : 4-64个残差像素
-//output    : 4-64个第一次变换系数
+//input     : 16-64个残差像素
+//output    : 16-64个第一次变换系数
 //delay     : 6 clk
 module dct1d_1st#(
     parameter  IN_WIDTH  = 9,
@@ -11,7 +11,7 @@ module dct1d_1st#(
     input                               clk     ,
     input                               rst_n   ,
 //input parameter
-    input           [2 : 0]             i_width ,//0:DCT_4, 1:DCT_8, 2:DCT_16, 3:DCT_32, 4:DCT_64
+    input           [2 : 0]             i_width ,//1:DCT_4, 2:DCT_8, 3:DCT_16, 4:DCT_32, 5:DCT_64
     input           [2 : 0]             i_height,
 //input data
     input                               i_valid ,
@@ -150,30 +150,44 @@ module dct1d_1st#(
     output  signed  [OUT_WIDTH - 1 : 0] o_63
 );
 
-localparam  DCT_4  = 0,
-            DCT_8  = 1,
-            DCT_16 = 2,
-            DCT_32 = 3,
-            DCT_64 = 4;
-integer i, j;
+localparam  DCT_4  = 1,
+            DCT_8  = 2,
+            DCT_16 = 3,
+            DCT_32 = 4,
+            DCT_64 = 5;
+integer i;
 
-//dct select
+//input
     reg i_valid_d1, i_valid_d2, i_valid_d3, i_valid_d4;
     wire signed [IN_WIDTH - 1 : 0] i_data[0 : 63];
     reg signed [IN_WIDTH - 1 : 0] i_data_d1[0 : 63], i_data_d2[0 : 63], i_data_d3[0 : 63], i_data_d4[0 : 63];
+//dct select
     reg dct_64_valid, dct_32_valid, dct_16_valid, dct_8_valid, dct_4_valid;  
-    reg  signed [IN_WIDTH - 1 : 0] i_dct_64[0 : 63];
-    reg  signed [IN_WIDTH     : 0] i_dct_32[0 : 31];
-    reg  signed [IN_WIDTH + 1 : 0] i_dct_16[0 : 15];
-    reg  signed [IN_WIDTH + 2 : 0] i_dct_8[0 : 7];
-    reg  signed [IN_WIDTH + 3 : 0] i_dct_4[0 : 3];
-    wire signed [IN_WIDTH     : 0] butterfly_64[0 : 31];
-    wire signed [IN_WIDTH + 1 : 0] butterfly_32[0 : 15];
-    wire signed [IN_WIDTH + 2 : 0] butterfly_16[0 : 7];
-    wire signed [IN_WIDTH + 3 : 0] butterfly_8[0 : 3];
+    reg  signed [IN_WIDTH - 1 : 0] i_dct_64_u0[0 : 63];
+    reg  signed [IN_WIDTH     : 0] i_dct_32_u0[0 : 31], i_dct_32_u1[0 : 31];
+    reg  signed [IN_WIDTH + 1 : 0] i_dct_16_u0[0 : 15], i_dct_16_u1[0 : 15], i_dct_16_u2[0 : 15], i_dct_16_u3[0 : 15];
+    reg  signed [IN_WIDTH + 2 : 0] i_dct_8_u0[0 : 7], i_dct_8_u1[0 : 7], i_dct_8_u2[0 : 7], i_dct_8_u3[0 : 7], 
+                                   i_dct_8_u4[0 : 7], i_dct_8_u5[0 : 7], i_dct_8_u6[0 : 7], i_dct_8_u7[0 : 7];
+    reg  signed [IN_WIDTH + 3 : 0] i_dct_4_u0[0 : 3], i_dct_4_u1[0 : 3], i_dct_4_u2[0 : 3], i_dct_4_u3[0 : 3],
+                                   i_dct_4_u4[0 : 3], i_dct_4_u5[0 : 3], i_dct_4_u6[0 : 3], i_dct_4_u7[0 : 3],
+                                   i_dct_4_u8[0 : 3], i_dct_4_u9[0 : 3], i_dct_4_u10[0 : 3], i_dct_4_u11[0 : 3],
+                                   i_dct_4_u12[0 : 3], i_dct_4_u13[0 : 3], i_dct_4_u14[0 : 3], i_dct_4_u15[0 : 3];
 //calculate : mcm + sum
+    wire signed [IN_WIDTH     : 0] butterfly_64_u0[0 : 31];
+    wire signed [IN_WIDTH + 1 : 0] butterfly_32_u0[0 : 15], butterfly_32_u1[0 : 15];
+    wire signed [IN_WIDTH + 2 : 0] butterfly_16_u0[0 : 7], butterfly_16_u1[0 : 7], butterfly_16_u2[0 : 7], butterfly_16_u3[0 : 7];
+    wire signed [IN_WIDTH + 3 : 0] butterfly_8_u0[0 : 3], butterfly_8_u1[0 : 3], butterfly_8_u2[0 : 3], butterfly_8_u3[0 : 3],
+                                   butterfly_8_u4[0 : 3], butterfly_8_u5[0 : 3], butterfly_8_u6[0 : 3], butterfly_8_u7[0 : 3];
     wire pre_coeff_64_valid, pre_coeff_32_valid, pre_coeff_16_valid, pre_coeff_8_valid, pre_coeff_4_valid;
-    wire signed [IN_WIDTH + 11 : 0] pre_coeff_64[0 : 31], pre_coeff_32[0 : 15], pre_coeff_16[0 : 7], pre_coeff_8[0 : 3], pre_coeff_4[0 : 3];
+    wire signed [IN_WIDTH + 11 : 0] pre_coeff_64_u0[0 : 31];
+    wire signed [IN_WIDTH + 11 : 0] pre_coeff_32_u0[0 : 15], pre_coeff_32_u1[0 : 15];
+    wire signed [IN_WIDTH + 11 : 0] pre_coeff_16_u0[0 : 7], pre_coeff_16_u1[0 : 7], pre_coeff_16_u2[0 : 7], pre_coeff_16_u3[0 : 7];
+    wire signed [IN_WIDTH + 11 : 0] pre_coeff_8_u0[0 : 3], pre_coeff_8_u1[0 : 3], pre_coeff_8_u2[0 : 3], pre_coeff_8_u3[0 : 3],
+                                    pre_coeff_8_u4[0 : 3], pre_coeff_8_u5[0 : 3], pre_coeff_8_u6[0 : 3], pre_coeff_8_u7[0 : 3];
+    wire signed [IN_WIDTH + 11 : 0] pre_coeff_4_u0[0 : 3], pre_coeff_4_u1[0 : 3], pre_coeff_4_u2[0 : 3], pre_coeff_4_u3[0 : 3],
+                                    pre_coeff_4_u4[0 : 3], pre_coeff_4_u5[0 : 3], pre_coeff_4_u6[0 : 3], pre_coeff_4_u7[0 : 3],
+                                    pre_coeff_4_u8[0 : 3], pre_coeff_4_u9[0 : 3], pre_coeff_4_u10[0 : 3], pre_coeff_4_u11[0 : 3],
+                                    pre_coeff_4_u12[0 : 3], pre_coeff_4_u13[0 : 3], pre_coeff_4_u14[0 : 3], pre_coeff_4_u15[0 : 3];
     reg pre_coeff_valid;
     reg signed [IN_WIDTH + 11 : 0] pre_coeff[0 : 63];
 //limited to 16bit : offset + shift
@@ -310,25 +324,29 @@ end
 //dct in select
 always @(negedge clk or negedge rst_n) begin
     if (!rst_n) begin
-        dct_4_valid <= 0;
-        dct_8_valid <= 0;
-        dct_16_valid <= 0;
-        dct_32_valid <= 0;
         dct_64_valid <= 0;
-        for (i = 0; i < 4; i = i + 1) begin
-            i_dct_4[i] <= 0;
-        end
-        for (i = 0; i < 8; i = i + 1) begin
-            i_dct_8[i] <= 0;
-        end
-        for (i = 0; i < 16; i = i + 1) begin
-            i_dct_16[i] <= 0;
+        dct_32_valid <= 0;
+        dct_16_valid <= 0;
+        dct_8_valid  <= 0;
+        dct_4_valid  <= 0;
+        for (i = 0; i < 64; i = i + 1) begin
+            i_dct_64_u0[i] <= 0;
         end
         for (i = 0; i < 32; i = i + 1) begin
-            i_dct_32[i] <= 0;
+            i_dct_32_u0[i] <= 0; i_dct_32_u1[i] <= 0;
         end
-        for (i = 0; i < 64; i = i + 1) begin
-            i_dct_64[i] <= 0;
+        for (i = 0; i < 16; i = i + 1) begin
+            i_dct_16_u0[i] <= 0; i_dct_16_u1[i] <= 0; i_dct_16_u2[i] <= 0; i_dct_16_u3[i] <= 0;
+        end
+        for (i = 0; i < 8; i = i + 1) begin
+            i_dct_8_u0[i] <= 0; i_dct_8_u1[i] <= 0; i_dct_8_u2[i] <= 0; i_dct_8_u3[i] <= 0; 
+            i_dct_8_u4[i] <= 0; i_dct_8_u5[i] <= 0; i_dct_8_u6[i] <= 0; i_dct_8_u7[i] <= 0;
+        end
+        for (i = 0; i < 4; i = i + 1) begin
+            i_dct_4_u0[i] <= 0; i_dct_4_u1[i] <= 0; i_dct_4_u2[i] <= 0; i_dct_4_u3[i] <= 0;
+            i_dct_4_u4[i] <= 0; i_dct_4_u5[i] <= 0; i_dct_4_u6[i] <= 0; i_dct_4_u7[i] <= 0;
+            i_dct_4_u8[i] <= 0; i_dct_4_u9[i] <= 0; i_dct_4_u10[i] <= 0; i_dct_4_u11[i] <= 0;
+            i_dct_4_u12[i] <= 0; i_dct_4_u13[i] <= 0; i_dct_4_u14[i] <= 0; i_dct_4_u15[i] <= 0;
         end
     end
     else begin
@@ -337,7 +355,7 @@ always @(negedge clk or negedge rst_n) begin
             DCT_64 : begin
                 dct_64_valid <= i_valid;
                 for (i = 0; i < 64; i = i + 1) begin
-                    i_dct_64[i] <= i_data[i];
+                    i_dct_64_u0[i] <= i_data[i];
                 end
             end
         endcase
@@ -345,13 +363,14 @@ always @(negedge clk or negedge rst_n) begin
         case (i_width_d[0]) 
             DCT_64 : begin
                 for (i = 0; i < 32; i = i + 1) begin
-                    i_dct_32[i] <= butterfly_64[i];
+                    i_dct_32_u0[i] <= butterfly_64_u0[i];
                 end
             end
             DCT_32 : begin
                 dct_32_valid <= i_valid_d1;
                 for (i = 0; i < 32; i = i + 1) begin
-                    i_dct_32[i] <= i_data_d1[i];
+                    i_dct_32_u0[i] <= i_data_d1[i];
+                    i_dct_32_u1[i] <= i_data_d1[i + 32];
                 end
             end
         endcase
@@ -359,18 +378,22 @@ always @(negedge clk or negedge rst_n) begin
         case (i_width_d[1]) 
             DCT_64 : begin
                 for (i = 0; i < 16; i = i + 1) begin
-                    i_dct_16[i] <= butterfly_32[i];
+                    i_dct_16_u0[i] <= butterfly_32_u0[i];
                 end
             end
             DCT_32 : begin
                 for (i = 0; i < 16; i = i + 1) begin
-                    i_dct_16[i] <= butterfly_32[i];
+                    i_dct_16_u0[i] <= butterfly_32_u0[i];
+                    i_dct_16_u1[i] <= butterfly_32_u1[i];
                 end
             end
             DCT_16 : begin
                 dct_16_valid <= i_valid_d2;
                 for (i = 0; i < 16; i = i + 1) begin
-                    i_dct_16[i] <= i_data_d2[i];
+                    i_dct_16_u0[i] <= i_data_d2[i];
+                    i_dct_16_u1[i] <= i_data_d2[i + 16];
+                    i_dct_16_u2[i] <= i_data_d2[i + 32];
+                    i_dct_16_u3[i] <= i_data_d2[i + 48];
                 end
             end
         endcase
@@ -378,23 +401,34 @@ always @(negedge clk or negedge rst_n) begin
         case (i_width_d[2]) 
             DCT_64 : begin
                 for (i = 0; i < 8; i = i + 1) begin
-                    i_dct_8[i] <= butterfly_16[i];
+                    i_dct_8_u0[i] <= butterfly_16_u0[i];
                 end
             end
             DCT_32 : begin
                 for (i = 0; i < 8; i = i + 1) begin
-                    i_dct_8[i] <= butterfly_16[i];
+                    i_dct_8_u0[i] <= butterfly_16_u0[i];
+                    i_dct_8_u1[i] <= butterfly_16_u1[i];
                 end
             end
             DCT_16 : begin
                 for (i = 0; i < 8; i = i + 1) begin
-                    i_dct_8[i] <= butterfly_16[i];
+                    i_dct_8_u0[i] <= butterfly_16_u0[i];
+                    i_dct_8_u1[i] <= butterfly_16_u1[i];
+                    i_dct_8_u2[i] <= butterfly_16_u2[i];
+                    i_dct_8_u3[i] <= butterfly_16_u3[i];
                 end
             end
             DCT_8 : begin
                 dct_8_valid <= i_valid_d3;
                 for (i = 0; i < 8; i = i + 1) begin
-                    i_dct_8[i] <= i_data_d3[i];
+                    i_dct_8_u0[i] <= i_data_d3[i];
+                    i_dct_8_u1[i] <= i_data_d3[i + 8];
+                    i_dct_8_u2[i] <= i_data_d3[i + 16];
+                    i_dct_8_u3[i] <= i_data_d3[i + 24];
+                    i_dct_8_u4[i] <= i_data_d3[i + 32];
+                    i_dct_8_u5[i] <= i_data_d3[i + 40];
+                    i_dct_8_u6[i] <= i_data_d3[i + 48];
+                    i_dct_8_u7[i] <= i_data_d3[i + 56];
                 end
             end
         endcase
@@ -402,251 +436,320 @@ always @(negedge clk or negedge rst_n) begin
         case (i_width_d[3]) 
             DCT_64 : begin
                 for (i = 0; i < 4; i = i + 1) begin
-                    i_dct_4[i] <= butterfly_8[i];
+                    i_dct_4_u0[i] <= butterfly_8_u0[i];
                 end
             end
             DCT_32 : begin
                 for (i = 0; i < 4; i = i + 1) begin
-                    i_dct_4[i] <= butterfly_8[i];
+                    i_dct_4_u0[i] <= butterfly_8_u0[i];
+                    i_dct_4_u1[i] <= butterfly_8_u1[i];
                 end
             end
             DCT_16 : begin
                 for (i = 0; i < 4; i = i + 1) begin
-                    i_dct_4[i] <= butterfly_8[i];
+                    i_dct_4_u0[i] <= butterfly_8_u0[i];
+                    i_dct_4_u1[i] <= butterfly_8_u1[i];
+                    i_dct_4_u2[i] <= butterfly_8_u2[i];
+                    i_dct_4_u3[i] <= butterfly_8_u3[i];
                 end
             end
             DCT_8 : begin
                 for (i = 0; i < 4; i = i + 1) begin
-                    i_dct_4[i] <= butterfly_8[i];
+                    i_dct_4_u0[i] <= butterfly_8_u0[i];
+                    i_dct_4_u1[i] <= butterfly_8_u1[i];
+                    i_dct_4_u2[i] <= butterfly_8_u2[i];
+                    i_dct_4_u3[i] <= butterfly_8_u3[i];
+                    i_dct_4_u4[i] <= butterfly_8_u4[i];
+                    i_dct_4_u5[i] <= butterfly_8_u5[i];
+                    i_dct_4_u6[i] <= butterfly_8_u6[i];
+                    i_dct_4_u7[i] <= butterfly_8_u7[i];
                 end
             end
             DCT_4 : begin
                 dct_4_valid <= i_valid_d4;
                 for (i = 0; i < 4; i = i + 1) begin
-                    i_dct_4[i] <= i_data_d4[i];
+                    i_dct_4_u0[i] <= i_data_d4[i];
+                    i_dct_4_u1[i] <= i_data_d4[i + 4];
+                    i_dct_4_u2[i] <= i_data_d4[i + 8];
+                    i_dct_4_u3[i] <= i_data_d4[i + 12];
+                    i_dct_4_u4[i] <= i_data_d4[i + 16];
+                    i_dct_4_u5[i] <= i_data_d4[i + 20];
+                    i_dct_4_u6[i] <= i_data_d4[i + 24];
+                    i_dct_4_u7[i] <= i_data_d4[i + 28];
+                    i_dct_4_u8[i] <= i_data_d4[i + 32];
+                    i_dct_4_u9[i] <= i_data_d4[i + 36];
+                    i_dct_4_u10[i] <= i_data_d4[i + 40];
+                    i_dct_4_u11[i] <= i_data_d4[i + 44];
+                    i_dct_4_u12[i] <= i_data_d4[i + 48];
+                    i_dct_4_u13[i] <= i_data_d4[i + 52];
+                    i_dct_4_u14[i] <= i_data_d4[i + 56];
+                    i_dct_4_u15[i] <= i_data_d4[i + 60];
                 end
             end
         endcase
     end
 end
 
+//dct out select
 always @(*) begin
     pre_coeff_valid <= 0;
     for (i = 0; i < 64; i = i + 1) begin
         pre_coeff[i] <= 0;
     end
     case (i_width_d[4])
-        DCT_4   : begin
-            pre_coeff_valid <= pre_coeff_4_valid;
+        DCT_64  : begin //high frequency coefficients are set to zero
+            pre_coeff_valid <= pre_coeff_64_valid;
+            for (i = 0; i < 16; i = i + 1) begin
+                pre_coeff[1 + 2 * i] <= pre_coeff_64_u0[i];
+            end
+            for (i = 0; i < 8; i = i + 1) begin
+                pre_coeff[2 + 4 * i] <= pre_coeff_32_u0[i];
+            end
             for (i = 0; i < 4; i = i + 1) begin
-                pre_coeff[i] <= pre_coeff_4[i];
+                pre_coeff[4 + 8 * i] <= pre_coeff_16_u0[i];
             end
-        end
-        DCT_8   : begin
-            pre_coeff_valid <= pre_coeff_8_valid;
-            for (i = 1, j = 0; i < 8; i = i + 2, j = j + 1) begin
-                pre_coeff[i] <= pre_coeff_8[j];
+            for (i = 0; i < 2; i = i + 1) begin
+                pre_coeff[8 + 16 * i] <= pre_coeff_8_u0[i];
             end
-            for (i = 0, j = 0; i < 8; i = i + 2, j = j + 1) begin
-                pre_coeff[i] <= pre_coeff_4[j];
-            end
-        end
-        DCT_16  : begin
-            pre_coeff_valid <= pre_coeff_16_valid;
-            for (i = 1, j = 0; i < 16; i = i + 2, j = j + 1) begin
-                pre_coeff[i] <= pre_coeff_16[j];
-            end
-            for (i = 2, j = 0; i < 16; i = i + 4, j = j + 1) begin
-                pre_coeff[i] <= pre_coeff_8[j];
-            end
-            for (i = 0, j = 0; i < 16; i = i + 4, j = j + 1) begin
-                pre_coeff[i] <= pre_coeff_4[j];
+            for (i = 0; i < 2; i = i + 1) begin
+                pre_coeff[0 + 16 * i] <= pre_coeff_4_u0[i];
             end
         end
         DCT_32  : begin
             pre_coeff_valid <= pre_coeff_32_valid;
-            for (i = 1, j = 0; i < 32; i = i + 2, j = j + 1) begin
-                pre_coeff[i] <= pre_coeff_32[j];
+            for (i = 0; i < 16; i = i + 1) begin
+                pre_coeff[1 + 2 * i] <= pre_coeff_32_u0[i];
+                pre_coeff[33 + 2 * i] <= pre_coeff_32_u1[i];
             end
-            for (i = 2, j = 0; i < 32; i = i + 4, j = j + 1) begin
-                pre_coeff[i] <= pre_coeff_16[j];
+            for (i = 0; i < 8; i = i + 1) begin
+                pre_coeff[2 + 4 * i] <= pre_coeff_16_u0[i];
+                pre_coeff[34 + 4 * i] <= pre_coeff_16_u1[i];
             end
-            for (i = 4, j = 0; i < 32; i = i + 8, j = j + 1) begin
-                pre_coeff[i] <= pre_coeff_8[j];
+            for (i = 0; i < 4; i = i + 1) begin
+                pre_coeff[4 + 8 * i] <= pre_coeff_8_u0[i];
+                pre_coeff[36 + 8 * i] <= pre_coeff_8_u1[i];
             end
-            for (i = 0, j = 0; i < 32; i = i + 8, j = j + 1) begin
-                pre_coeff[i] <= pre_coeff_4[j];
-            end
-        end
-        DCT_64  : begin //because high frequency coefficients are set to zero
-            pre_coeff_valid <= pre_coeff_64_valid;
-            for (i = 1, j = 0; i < 32; i = i + 2, j = j + 1) begin
-                pre_coeff[i] <= pre_coeff_64[j];
-            end
-            for (i = 2, j = 0; i < 32; i = i + 4, j = j + 1) begin
-                pre_coeff[i] <= pre_coeff_32[j];
-            end
-            for (i = 4, j = 0; i < 32; i = i + 8, j = j + 1) begin
-                pre_coeff[i] <= pre_coeff_16[j];
-            end
-            for (i = 8, j = 0; i < 32; i = i + 16, j = j + 1) begin
-                pre_coeff[i] <= pre_coeff_8[j];
-            end
-            for (i = 0, j = 0; i < 32; i = i + 16, j = j + 1) begin
-                pre_coeff[i] <= pre_coeff_4[j];
+            for (i = 0; i < 4; i = i + 1) begin
+                pre_coeff[0 + 8 * i] <= pre_coeff_4_u0[i];
+                pre_coeff[32 + 8 * i] <= pre_coeff_4_u1[i];
             end
         end
-        default : begin   
+        DCT_16  : begin
+            pre_coeff_valid <= pre_coeff_16_valid;
+            for (i = 0; i < 8; i = i + 1) begin
+                pre_coeff[1 + 2 * i] <= pre_coeff_16_u0[i];
+                pre_coeff[17 + 2 * i] <= pre_coeff_16_u1[i];
+                pre_coeff[33 + 2 * i] <= pre_coeff_16_u2[i];
+                pre_coeff[49 + 2 * i] <= pre_coeff_16_u3[i];
+            end
+            for (i = 0; i < 4; i = i + 1) begin
+                pre_coeff[2 + 4 * i] <= pre_coeff_8_u0[i];
+                pre_coeff[18 + 4 * i] <= pre_coeff_8_u1[i];
+                pre_coeff[34 + 4 * i] <= pre_coeff_8_u2[i];
+                pre_coeff[50 + 4 * i] <= pre_coeff_8_u3[i];
+            end
+            for (i = 0; i < 4; i = i + 1) begin
+                pre_coeff[0 + 4 * i] <= pre_coeff_4_u0[i];
+                pre_coeff[16 + 4 * i] <= pre_coeff_4_u1[i];
+                pre_coeff[32 + 4 * i] <= pre_coeff_4_u2[i];
+                pre_coeff[48 + 4 * i] <= pre_coeff_4_u3[i];
+            end
+        end
+        DCT_8   : begin
+            pre_coeff_valid <= pre_coeff_8_valid;
+            for (i = 0; i < 4; i = i + 1) begin
+                pre_coeff[1 + 2 * i] <= pre_coeff_8_u0[i];
+                pre_coeff[9 + 2 * i] <= pre_coeff_8_u1[i];
+                pre_coeff[17 + 2 * i] <= pre_coeff_8_u2[i];
+                pre_coeff[25 + 2 * i] <= pre_coeff_8_u3[i];
+                pre_coeff[33 + 2 * i] <= pre_coeff_8_u4[i];
+                pre_coeff[41 + 2 * i] <= pre_coeff_8_u5[i];
+                pre_coeff[49 + 2 * i] <= pre_coeff_8_u6[i];
+                pre_coeff[57 + 2 * i] <= pre_coeff_8_u7[i];
+            end
+            for (i = 0; i < 4; i = i + 1) begin
+                pre_coeff[0 + 2 * i] <= pre_coeff_4_u0[i];
+                pre_coeff[8 + 2 * i] <= pre_coeff_4_u1[i];
+                pre_coeff[16 + 2 * i] <= pre_coeff_4_u2[i];
+                pre_coeff[24 + 2 * i] <= pre_coeff_4_u3[i];
+                pre_coeff[32 + 2 * i] <= pre_coeff_4_u4[i];
+                pre_coeff[40 + 2 * i] <= pre_coeff_4_u5[i];
+                pre_coeff[48 + 2 * i] <= pre_coeff_4_u6[i];
+                pre_coeff[56 + 2 * i] <= pre_coeff_4_u7[i];
+            end
+        end
+        DCT_4   : begin
+            pre_coeff_valid <= pre_coeff_4_valid;
+            for (i = 0; i < 4; i = i + 1) begin
+                pre_coeff[0 + i] <= pre_coeff_4_u0[i];
+                pre_coeff[4 + i] <= pre_coeff_4_u1[i];
+                pre_coeff[8 + i] <= pre_coeff_4_u2[i];
+                pre_coeff[12 + i] <= pre_coeff_4_u3[i];
+                pre_coeff[16 + i] <= pre_coeff_4_u4[i];
+                pre_coeff[20 + i] <= pre_coeff_4_u5[i];
+                pre_coeff[24 + i] <= pre_coeff_4_u6[i];
+                pre_coeff[28 + i] <= pre_coeff_4_u7[i];
+                pre_coeff[32 + i] <= pre_coeff_4_u8[i];
+                pre_coeff[36 + i] <= pre_coeff_4_u9[i];
+                pre_coeff[40 + i] <= pre_coeff_4_u10[i];
+                pre_coeff[44 + i] <= pre_coeff_4_u11[i];
+                pre_coeff[48 + i] <= pre_coeff_4_u12[i];
+                pre_coeff[52 + i] <= pre_coeff_4_u13[i];
+                pre_coeff[56 + i] <= pre_coeff_4_u14[i];
+                pre_coeff[60 + i] <= pre_coeff_4_u15[i];
+            end
         end
     endcase
 end
 
 //sub module
+//64 x 64
 dct1d_64#(
     .IN_WIDTH   (IN_WIDTH)
 )
-u_dct1d_64(
+u0_dct1d_64(
 //system input
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input data
     .i_valid(dct_64_valid       ),
-    .i_0    (i_dct_64[0 ]       ),
-    .i_1    (i_dct_64[1 ]       ),
-    .i_2    (i_dct_64[2 ]       ),
-    .i_3    (i_dct_64[3 ]       ),
-    .i_4    (i_dct_64[4 ]       ),
-    .i_5    (i_dct_64[5 ]       ),
-    .i_6    (i_dct_64[6 ]       ),
-    .i_7    (i_dct_64[7 ]       ),
-    .i_8    (i_dct_64[8 ]       ),
-    .i_9    (i_dct_64[9 ]       ),
-    .i_10   (i_dct_64[10]       ),
-    .i_11   (i_dct_64[11]       ),
-    .i_12   (i_dct_64[12]       ),
-    .i_13   (i_dct_64[13]       ),
-    .i_14   (i_dct_64[14]       ),
-    .i_15   (i_dct_64[15]       ),
-    .i_16   (i_dct_64[16]       ),
-    .i_17   (i_dct_64[17]       ),
-    .i_18   (i_dct_64[18]       ),
-    .i_19   (i_dct_64[19]       ),
-    .i_20   (i_dct_64[20]       ),
-    .i_21   (i_dct_64[21]       ),
-    .i_22   (i_dct_64[22]       ),
-    .i_23   (i_dct_64[23]       ),
-    .i_24   (i_dct_64[24]       ),
-    .i_25   (i_dct_64[25]       ),
-    .i_26   (i_dct_64[26]       ),
-    .i_27   (i_dct_64[27]       ),
-    .i_28   (i_dct_64[28]       ),
-    .i_29   (i_dct_64[29]       ),
-    .i_30   (i_dct_64[30]       ),
-    .i_31   (i_dct_64[31]       ),
-    .i_32   (i_dct_64[32]       ),
-    .i_33   (i_dct_64[33]       ),
-    .i_34   (i_dct_64[34]       ),
-    .i_35   (i_dct_64[35]       ),
-    .i_36   (i_dct_64[36]       ),
-    .i_37   (i_dct_64[37]       ),
-    .i_38   (i_dct_64[38]       ),
-    .i_39   (i_dct_64[39]       ),
-    .i_40   (i_dct_64[40]       ),
-    .i_41   (i_dct_64[41]       ),
-    .i_42   (i_dct_64[42]       ),
-    .i_43   (i_dct_64[43]       ),
-    .i_44   (i_dct_64[44]       ),
-    .i_45   (i_dct_64[45]       ),
-    .i_46   (i_dct_64[46]       ),
-    .i_47   (i_dct_64[47]       ),
-    .i_48   (i_dct_64[48]       ),
-    .i_49   (i_dct_64[49]       ),
-    .i_50   (i_dct_64[50]       ),
-    .i_51   (i_dct_64[51]       ),
-    .i_52   (i_dct_64[52]       ),
-    .i_53   (i_dct_64[53]       ),
-    .i_54   (i_dct_64[54]       ),
-    .i_55   (i_dct_64[55]       ),
-    .i_56   (i_dct_64[56]       ),
-    .i_57   (i_dct_64[57]       ),
-    .i_58   (i_dct_64[58]       ),
-    .i_59   (i_dct_64[59]       ),
-    .i_60   (i_dct_64[60]       ),
-    .i_61   (i_dct_64[61]       ),
-    .i_62   (i_dct_64[62]       ),
-    .i_63   (i_dct_64[63]       ),
+    .i_0    (i_dct_64_u0[0 ]    ),
+    .i_1    (i_dct_64_u0[1 ]    ),
+    .i_2    (i_dct_64_u0[2 ]    ),
+    .i_3    (i_dct_64_u0[3 ]    ),
+    .i_4    (i_dct_64_u0[4 ]    ),
+    .i_5    (i_dct_64_u0[5 ]    ),
+    .i_6    (i_dct_64_u0[6 ]    ),
+    .i_7    (i_dct_64_u0[7 ]    ),
+    .i_8    (i_dct_64_u0[8 ]    ),
+    .i_9    (i_dct_64_u0[9 ]    ),
+    .i_10   (i_dct_64_u0[10]    ),
+    .i_11   (i_dct_64_u0[11]    ),
+    .i_12   (i_dct_64_u0[12]    ),
+    .i_13   (i_dct_64_u0[13]    ),
+    .i_14   (i_dct_64_u0[14]    ),
+    .i_15   (i_dct_64_u0[15]    ),
+    .i_16   (i_dct_64_u0[16]    ),
+    .i_17   (i_dct_64_u0[17]    ),
+    .i_18   (i_dct_64_u0[18]    ),
+    .i_19   (i_dct_64_u0[19]    ),
+    .i_20   (i_dct_64_u0[20]    ),
+    .i_21   (i_dct_64_u0[21]    ),
+    .i_22   (i_dct_64_u0[22]    ),
+    .i_23   (i_dct_64_u0[23]    ),
+    .i_24   (i_dct_64_u0[24]    ),
+    .i_25   (i_dct_64_u0[25]    ),
+    .i_26   (i_dct_64_u0[26]    ),
+    .i_27   (i_dct_64_u0[27]    ),
+    .i_28   (i_dct_64_u0[28]    ),
+    .i_29   (i_dct_64_u0[29]    ),
+    .i_30   (i_dct_64_u0[30]    ),
+    .i_31   (i_dct_64_u0[31]    ),
+    .i_32   (i_dct_64_u0[32]    ),
+    .i_33   (i_dct_64_u0[33]    ),
+    .i_34   (i_dct_64_u0[34]    ),
+    .i_35   (i_dct_64_u0[35]    ),
+    .i_36   (i_dct_64_u0[36]    ),
+    .i_37   (i_dct_64_u0[37]    ),
+    .i_38   (i_dct_64_u0[38]    ),
+    .i_39   (i_dct_64_u0[39]    ),
+    .i_40   (i_dct_64_u0[40]    ),
+    .i_41   (i_dct_64_u0[41]    ),
+    .i_42   (i_dct_64_u0[42]    ),
+    .i_43   (i_dct_64_u0[43]    ),
+    .i_44   (i_dct_64_u0[44]    ),
+    .i_45   (i_dct_64_u0[45]    ),
+    .i_46   (i_dct_64_u0[46]    ),
+    .i_47   (i_dct_64_u0[47]    ),
+    .i_48   (i_dct_64_u0[48]    ),
+    .i_49   (i_dct_64_u0[49]    ),
+    .i_50   (i_dct_64_u0[50]    ),
+    .i_51   (i_dct_64_u0[51]    ),
+    .i_52   (i_dct_64_u0[52]    ),
+    .i_53   (i_dct_64_u0[53]    ),
+    .i_54   (i_dct_64_u0[54]    ),
+    .i_55   (i_dct_64_u0[55]    ),
+    .i_56   (i_dct_64_u0[56]    ),
+    .i_57   (i_dct_64_u0[57]    ),
+    .i_58   (i_dct_64_u0[58]    ),
+    .i_59   (i_dct_64_u0[59]    ),
+    .i_60   (i_dct_64_u0[60]    ),
+    .i_61   (i_dct_64_u0[61]    ),
+    .i_62   (i_dct_64_u0[62]    ),
+    .i_63   (i_dct_64_u0[63]    ),
 //output data
     .o_valid(pre_coeff_64_valid ),
-    .o_0    (butterfly_64[0 ]   ),
-    .o_1    (butterfly_64[1 ]   ),
-    .o_2    (butterfly_64[2 ]   ),
-    .o_3    (butterfly_64[3 ]   ),
-    .o_4    (butterfly_64[4 ]   ),
-    .o_5    (butterfly_64[5 ]   ),
-    .o_6    (butterfly_64[6 ]   ),
-    .o_7    (butterfly_64[7 ]   ),
-    .o_8    (butterfly_64[8 ]   ),
-    .o_9    (butterfly_64[9 ]   ),
-    .o_10   (butterfly_64[10]   ),
-    .o_11   (butterfly_64[11]   ),
-    .o_12   (butterfly_64[12]   ),
-    .o_13   (butterfly_64[13]   ),
-    .o_14   (butterfly_64[14]   ),
-    .o_15   (butterfly_64[15]   ),
-    .o_16   (butterfly_64[16]   ),
-    .o_17   (butterfly_64[17]   ),
-    .o_18   (butterfly_64[18]   ),
-    .o_19   (butterfly_64[19]   ),
-    .o_20   (butterfly_64[20]   ),
-    .o_21   (butterfly_64[21]   ),
-    .o_22   (butterfly_64[22]   ),
-    .o_23   (butterfly_64[23]   ),
-    .o_24   (butterfly_64[24]   ),
-    .o_25   (butterfly_64[25]   ),
-    .o_26   (butterfly_64[26]   ),
-    .o_27   (butterfly_64[27]   ),
-    .o_28   (butterfly_64[28]   ),
-    .o_29   (butterfly_64[29]   ),
-    .o_30   (butterfly_64[30]   ),
-    .o_31   (butterfly_64[31]   ),
-    .o_32   (pre_coeff_64[0 ]   ),
-    .o_33   (pre_coeff_64[1 ]   ),
-    .o_34   (pre_coeff_64[2 ]   ),
-    .o_35   (pre_coeff_64[3 ]   ),
-    .o_36   (pre_coeff_64[4 ]   ),
-    .o_37   (pre_coeff_64[5 ]   ),
-    .o_38   (pre_coeff_64[6 ]   ),
-    .o_39   (pre_coeff_64[7 ]   ),
-    .o_40   (pre_coeff_64[8 ]   ),
-    .o_41   (pre_coeff_64[9 ]   ),
-    .o_42   (pre_coeff_64[10]   ),
-    .o_43   (pre_coeff_64[11]   ),
-    .o_44   (pre_coeff_64[12]   ),
-    .o_45   (pre_coeff_64[13]   ),
-    .o_46   (pre_coeff_64[14]   ),
-    .o_47   (pre_coeff_64[15]   ),
-    .o_48   (pre_coeff_64[16]   ),
-    .o_49   (pre_coeff_64[17]   ),
-    .o_50   (pre_coeff_64[18]   ),
-    .o_51   (pre_coeff_64[19]   ),
-    .o_52   (pre_coeff_64[20]   ),
-    .o_53   (pre_coeff_64[21]   ),
-    .o_54   (pre_coeff_64[22]   ),
-    .o_55   (pre_coeff_64[23]   ),
-    .o_56   (pre_coeff_64[24]   ),
-    .o_57   (pre_coeff_64[25]   ),
-    .o_58   (pre_coeff_64[26]   ),
-    .o_59   (pre_coeff_64[27]   ),
-    .o_60   (pre_coeff_64[28]   ),
-    .o_61   (pre_coeff_64[29]   ),
-    .o_62   (pre_coeff_64[30]   ),
-    .o_63   (pre_coeff_64[31]   )
+    .o_0    (butterfly_64_u0[0 ]),
+    .o_1    (butterfly_64_u0[1 ]),
+    .o_2    (butterfly_64_u0[2 ]),
+    .o_3    (butterfly_64_u0[3 ]),
+    .o_4    (butterfly_64_u0[4 ]),
+    .o_5    (butterfly_64_u0[5 ]),
+    .o_6    (butterfly_64_u0[6 ]),
+    .o_7    (butterfly_64_u0[7 ]),
+    .o_8    (butterfly_64_u0[8 ]),
+    .o_9    (butterfly_64_u0[9 ]),
+    .o_10   (butterfly_64_u0[10]),
+    .o_11   (butterfly_64_u0[11]),
+    .o_12   (butterfly_64_u0[12]),
+    .o_13   (butterfly_64_u0[13]),
+    .o_14   (butterfly_64_u0[14]),
+    .o_15   (butterfly_64_u0[15]),
+    .o_16   (butterfly_64_u0[16]),
+    .o_17   (butterfly_64_u0[17]),
+    .o_18   (butterfly_64_u0[18]),
+    .o_19   (butterfly_64_u0[19]),
+    .o_20   (butterfly_64_u0[20]),
+    .o_21   (butterfly_64_u0[21]),
+    .o_22   (butterfly_64_u0[22]),
+    .o_23   (butterfly_64_u0[23]),
+    .o_24   (butterfly_64_u0[24]),
+    .o_25   (butterfly_64_u0[25]),
+    .o_26   (butterfly_64_u0[26]),
+    .o_27   (butterfly_64_u0[27]),
+    .o_28   (butterfly_64_u0[28]),
+    .o_29   (butterfly_64_u0[29]),
+    .o_30   (butterfly_64_u0[30]),
+    .o_31   (butterfly_64_u0[31]),
+    .o_32   (pre_coeff_64_u0[0 ]),
+    .o_33   (pre_coeff_64_u0[1 ]),
+    .o_34   (pre_coeff_64_u0[2 ]),
+    .o_35   (pre_coeff_64_u0[3 ]),
+    .o_36   (pre_coeff_64_u0[4 ]),
+    .o_37   (pre_coeff_64_u0[5 ]),
+    .o_38   (pre_coeff_64_u0[6 ]),
+    .o_39   (pre_coeff_64_u0[7 ]),
+    .o_40   (pre_coeff_64_u0[8 ]),
+    .o_41   (pre_coeff_64_u0[9 ]),
+    .o_42   (pre_coeff_64_u0[10]),
+    .o_43   (pre_coeff_64_u0[11]),
+    .o_44   (pre_coeff_64_u0[12]),
+    .o_45   (pre_coeff_64_u0[13]),
+    .o_46   (pre_coeff_64_u0[14]),
+    .o_47   (pre_coeff_64_u0[15]),
+    .o_48   (pre_coeff_64_u0[16]),
+    .o_49   (pre_coeff_64_u0[17]),
+    .o_50   (pre_coeff_64_u0[18]),
+    .o_51   (pre_coeff_64_u0[19]),
+    .o_52   (pre_coeff_64_u0[20]),
+    .o_53   (pre_coeff_64_u0[21]),
+    .o_54   (pre_coeff_64_u0[22]),
+    .o_55   (pre_coeff_64_u0[23]),
+    .o_56   (pre_coeff_64_u0[24]),
+    .o_57   (pre_coeff_64_u0[25]),
+    .o_58   (pre_coeff_64_u0[26]),
+    .o_59   (pre_coeff_64_u0[27]),
+    .o_60   (pre_coeff_64_u0[28]),
+    .o_61   (pre_coeff_64_u0[29]),
+    .o_62   (pre_coeff_64_u0[30]),
+    .o_63   (pre_coeff_64_u0[31])
 );
 
+//32x32
 dct1d_32#(
     .IN_WIDTH   (IN_WIDTH + 1)
 )
-u_dct1d_32(
+u0_dct1d_32(
 //system input
     .clk    (clk                ),
     .rst_n  (rst_n              ),
@@ -654,78 +757,157 @@ u_dct1d_32(
     .i_size (i_width_d[3]       ),
 //input data
     .i_valid(dct_32_valid       ),
-    .i_0    (i_dct_32[0 ]       ),
-    .i_1    (i_dct_32[1 ]       ),
-    .i_2    (i_dct_32[2 ]       ),
-    .i_3    (i_dct_32[3 ]       ),
-    .i_4    (i_dct_32[4 ]       ),
-    .i_5    (i_dct_32[5 ]       ),
-    .i_6    (i_dct_32[6 ]       ),
-    .i_7    (i_dct_32[7 ]       ),
-    .i_8    (i_dct_32[8 ]       ),
-    .i_9    (i_dct_32[9 ]       ),
-    .i_10   (i_dct_32[10]       ),
-    .i_11   (i_dct_32[11]       ),
-    .i_12   (i_dct_32[12]       ),
-    .i_13   (i_dct_32[13]       ),
-    .i_14   (i_dct_32[14]       ),
-    .i_15   (i_dct_32[15]       ),
-    .i_16   (i_dct_32[16]       ),
-    .i_17   (i_dct_32[17]       ),
-    .i_18   (i_dct_32[18]       ),
-    .i_19   (i_dct_32[19]       ),
-    .i_20   (i_dct_32[20]       ),
-    .i_21   (i_dct_32[21]       ),
-    .i_22   (i_dct_32[22]       ),
-    .i_23   (i_dct_32[23]       ),
-    .i_24   (i_dct_32[24]       ),
-    .i_25   (i_dct_32[25]       ),
-    .i_26   (i_dct_32[26]       ),
-    .i_27   (i_dct_32[27]       ),
-    .i_28   (i_dct_32[28]       ),
-    .i_29   (i_dct_32[29]       ),
-    .i_30   (i_dct_32[30]       ),
-    .i_31   (i_dct_32[31]       ),
+    .i_0    (i_dct_32_u0[0 ]    ),
+    .i_1    (i_dct_32_u0[1 ]    ),
+    .i_2    (i_dct_32_u0[2 ]    ),
+    .i_3    (i_dct_32_u0[3 ]    ),
+    .i_4    (i_dct_32_u0[4 ]    ),
+    .i_5    (i_dct_32_u0[5 ]    ),
+    .i_6    (i_dct_32_u0[6 ]    ),
+    .i_7    (i_dct_32_u0[7 ]    ),
+    .i_8    (i_dct_32_u0[8 ]    ),
+    .i_9    (i_dct_32_u0[9 ]    ),
+    .i_10   (i_dct_32_u0[10]    ),
+    .i_11   (i_dct_32_u0[11]    ),
+    .i_12   (i_dct_32_u0[12]    ),
+    .i_13   (i_dct_32_u0[13]    ),
+    .i_14   (i_dct_32_u0[14]    ),
+    .i_15   (i_dct_32_u0[15]    ),
+    .i_16   (i_dct_32_u0[16]    ),
+    .i_17   (i_dct_32_u0[17]    ),
+    .i_18   (i_dct_32_u0[18]    ),
+    .i_19   (i_dct_32_u0[19]    ),
+    .i_20   (i_dct_32_u0[20]    ),
+    .i_21   (i_dct_32_u0[21]    ),
+    .i_22   (i_dct_32_u0[22]    ),
+    .i_23   (i_dct_32_u0[23]    ),
+    .i_24   (i_dct_32_u0[24]    ),
+    .i_25   (i_dct_32_u0[25]    ),
+    .i_26   (i_dct_32_u0[26]    ),
+    .i_27   (i_dct_32_u0[27]    ),
+    .i_28   (i_dct_32_u0[28]    ),
+    .i_29   (i_dct_32_u0[29]    ),
+    .i_30   (i_dct_32_u0[30]    ),
+    .i_31   (i_dct_32_u0[31]    ),
 //output data
     .o_valid(pre_coeff_32_valid ),
-    .o_0    (butterfly_32[0 ]   ),
-    .o_1    (butterfly_32[1 ]   ),
-    .o_2    (butterfly_32[2 ]   ),
-    .o_3    (butterfly_32[3 ]   ),
-    .o_4    (butterfly_32[4 ]   ),
-    .o_5    (butterfly_32[5 ]   ),
-    .o_6    (butterfly_32[6 ]   ),
-    .o_7    (butterfly_32[7 ]   ),
-    .o_8    (butterfly_32[8 ]   ),
-    .o_9    (butterfly_32[9 ]   ),
-    .o_10   (butterfly_32[10]   ),
-    .o_11   (butterfly_32[11]   ),
-    .o_12   (butterfly_32[12]   ),
-    .o_13   (butterfly_32[13]   ),
-    .o_14   (butterfly_32[14]   ),
-    .o_15   (butterfly_32[15]   ),
-    .o_16   (pre_coeff_32[0 ]   ),
-    .o_17   (pre_coeff_32[1 ]   ),
-    .o_18   (pre_coeff_32[2 ]   ),
-    .o_19   (pre_coeff_32[3 ]   ),
-    .o_20   (pre_coeff_32[4 ]   ),
-    .o_21   (pre_coeff_32[5 ]   ),
-    .o_22   (pre_coeff_32[6 ]   ),
-    .o_23   (pre_coeff_32[7 ]   ),
-    .o_24   (pre_coeff_32[8 ]   ),
-    .o_25   (pre_coeff_32[9 ]   ),
-    .o_26   (pre_coeff_32[10]   ),
-    .o_27   (pre_coeff_32[11]   ),
-    .o_28   (pre_coeff_32[12]   ),
-    .o_29   (pre_coeff_32[13]   ),
-    .o_30   (pre_coeff_32[14]   ),
-    .o_31   (pre_coeff_32[15]   )
+    .o_0    (butterfly_32_u0[0 ]),
+    .o_1    (butterfly_32_u0[1 ]),
+    .o_2    (butterfly_32_u0[2 ]),
+    .o_3    (butterfly_32_u0[3 ]),
+    .o_4    (butterfly_32_u0[4 ]),
+    .o_5    (butterfly_32_u0[5 ]),
+    .o_6    (butterfly_32_u0[6 ]),
+    .o_7    (butterfly_32_u0[7 ]),
+    .o_8    (butterfly_32_u0[8 ]),
+    .o_9    (butterfly_32_u0[9 ]),
+    .o_10   (butterfly_32_u0[10]),
+    .o_11   (butterfly_32_u0[11]),
+    .o_12   (butterfly_32_u0[12]),
+    .o_13   (butterfly_32_u0[13]),
+    .o_14   (butterfly_32_u0[14]),
+    .o_15   (butterfly_32_u0[15]),
+    .o_16   (pre_coeff_32_u0[0 ]),
+    .o_17   (pre_coeff_32_u0[1 ]),
+    .o_18   (pre_coeff_32_u0[2 ]),
+    .o_19   (pre_coeff_32_u0[3 ]),
+    .o_20   (pre_coeff_32_u0[4 ]),
+    .o_21   (pre_coeff_32_u0[5 ]),
+    .o_22   (pre_coeff_32_u0[6 ]),
+    .o_23   (pre_coeff_32_u0[7 ]),
+    .o_24   (pre_coeff_32_u0[8 ]),
+    .o_25   (pre_coeff_32_u0[9 ]),
+    .o_26   (pre_coeff_32_u0[10]),
+    .o_27   (pre_coeff_32_u0[11]),
+    .o_28   (pre_coeff_32_u0[12]),
+    .o_29   (pre_coeff_32_u0[13]),
+    .o_30   (pre_coeff_32_u0[14]),
+    .o_31   (pre_coeff_32_u0[15])
+);
+dct1d_32#(
+    .IN_WIDTH   (IN_WIDTH + 1)
+)
+u1_dct1d_32(
+//system input
+    .clk    (clk                ),
+    .rst_n  (rst_n              ),
+//input parameter
+    .i_size (i_width_d[3]       ),
+//input data
+    .i_valid(dct_32_valid       ),
+    .i_0    (i_dct_32_u1[0 ]    ),
+    .i_1    (i_dct_32_u1[1 ]    ),
+    .i_2    (i_dct_32_u1[2 ]    ),
+    .i_3    (i_dct_32_u1[3 ]    ),
+    .i_4    (i_dct_32_u1[4 ]    ),
+    .i_5    (i_dct_32_u1[5 ]    ),
+    .i_6    (i_dct_32_u1[6 ]    ),
+    .i_7    (i_dct_32_u1[7 ]    ),
+    .i_8    (i_dct_32_u1[8 ]    ),
+    .i_9    (i_dct_32_u1[9 ]    ),
+    .i_10   (i_dct_32_u1[10]    ),
+    .i_11   (i_dct_32_u1[11]    ),
+    .i_12   (i_dct_32_u1[12]    ),
+    .i_13   (i_dct_32_u1[13]    ),
+    .i_14   (i_dct_32_u1[14]    ),
+    .i_15   (i_dct_32_u1[15]    ),
+    .i_16   (i_dct_32_u1[16]    ),
+    .i_17   (i_dct_32_u1[17]    ),
+    .i_18   (i_dct_32_u1[18]    ),
+    .i_19   (i_dct_32_u1[19]    ),
+    .i_20   (i_dct_32_u1[20]    ),
+    .i_21   (i_dct_32_u1[21]    ),
+    .i_22   (i_dct_32_u1[22]    ),
+    .i_23   (i_dct_32_u1[23]    ),
+    .i_24   (i_dct_32_u1[24]    ),
+    .i_25   (i_dct_32_u1[25]    ),
+    .i_26   (i_dct_32_u1[26]    ),
+    .i_27   (i_dct_32_u1[27]    ),
+    .i_28   (i_dct_32_u1[28]    ),
+    .i_29   (i_dct_32_u1[29]    ),
+    .i_30   (i_dct_32_u1[30]    ),
+    .i_31   (i_dct_32_u1[31]    ),
+//output data
+    .o_valid(),
+    .o_0    (butterfly_32_u1[0 ]),
+    .o_1    (butterfly_32_u1[1 ]),
+    .o_2    (butterfly_32_u1[2 ]),
+    .o_3    (butterfly_32_u1[3 ]),
+    .o_4    (butterfly_32_u1[4 ]),
+    .o_5    (butterfly_32_u1[5 ]),
+    .o_6    (butterfly_32_u1[6 ]),
+    .o_7    (butterfly_32_u1[7 ]),
+    .o_8    (butterfly_32_u1[8 ]),
+    .o_9    (butterfly_32_u1[9 ]),
+    .o_10   (butterfly_32_u1[10]),
+    .o_11   (butterfly_32_u1[11]),
+    .o_12   (butterfly_32_u1[12]),
+    .o_13   (butterfly_32_u1[13]),
+    .o_14   (butterfly_32_u1[14]),
+    .o_15   (butterfly_32_u1[15]),
+    .o_16   (pre_coeff_32_u1[0 ]),
+    .o_17   (pre_coeff_32_u1[1 ]),
+    .o_18   (pre_coeff_32_u1[2 ]),
+    .o_19   (pre_coeff_32_u1[3 ]),
+    .o_20   (pre_coeff_32_u1[4 ]),
+    .o_21   (pre_coeff_32_u1[5 ]),
+    .o_22   (pre_coeff_32_u1[6 ]),
+    .o_23   (pre_coeff_32_u1[7 ]),
+    .o_24   (pre_coeff_32_u1[8 ]),
+    .o_25   (pre_coeff_32_u1[9 ]),
+    .o_26   (pre_coeff_32_u1[10]),
+    .o_27   (pre_coeff_32_u1[11]),
+    .o_28   (pre_coeff_32_u1[12]),
+    .o_29   (pre_coeff_32_u1[13]),
+    .o_30   (pre_coeff_32_u1[14]),
+    .o_31   (pre_coeff_32_u1[15])
 );
 
+//16x16
 dct1d_16#(
     .IN_WIDTH   (IN_WIDTH + 2)
 )
-u_dct1d_16(
+u0_dct1d_16(
 //system input
     .clk    (clk                ),
     .rst_n  (rst_n              ),
@@ -733,46 +915,185 @@ u_dct1d_16(
     .i_size (i_width_d[3]       ),
 //input data
     .i_valid(dct_16_valid       ),
-    .i_0    (i_dct_16[0 ]       ),
-    .i_1    (i_dct_16[1 ]       ),
-    .i_2    (i_dct_16[2 ]       ),
-    .i_3    (i_dct_16[3 ]       ),
-    .i_4    (i_dct_16[4 ]       ),
-    .i_5    (i_dct_16[5 ]       ),
-    .i_6    (i_dct_16[6 ]       ),
-    .i_7    (i_dct_16[7 ]       ),
-    .i_8    (i_dct_16[8 ]       ),
-    .i_9    (i_dct_16[9 ]       ),
-    .i_10   (i_dct_16[10]       ),
-    .i_11   (i_dct_16[11]       ),
-    .i_12   (i_dct_16[12]       ),
-    .i_13   (i_dct_16[13]       ),
-    .i_14   (i_dct_16[14]       ),
-    .i_15   (i_dct_16[15]       ),
+    .i_0    (i_dct_16_u0[0 ]    ),
+    .i_1    (i_dct_16_u0[1 ]    ),
+    .i_2    (i_dct_16_u0[2 ]    ),
+    .i_3    (i_dct_16_u0[3 ]    ),
+    .i_4    (i_dct_16_u0[4 ]    ),
+    .i_5    (i_dct_16_u0[5 ]    ),
+    .i_6    (i_dct_16_u0[6 ]    ),
+    .i_7    (i_dct_16_u0[7 ]    ),
+    .i_8    (i_dct_16_u0[8 ]    ),
+    .i_9    (i_dct_16_u0[9 ]    ),
+    .i_10   (i_dct_16_u0[10]    ),
+    .i_11   (i_dct_16_u0[11]    ),
+    .i_12   (i_dct_16_u0[12]    ),
+    .i_13   (i_dct_16_u0[13]    ),
+    .i_14   (i_dct_16_u0[14]    ),
+    .i_15   (i_dct_16_u0[15]    ),
 //output data
     .o_valid(pre_coeff_16_valid ),
-    .o_0    (butterfly_16[0 ]   ),
-    .o_1    (butterfly_16[1 ]   ),
-    .o_2    (butterfly_16[2 ]   ),
-    .o_3    (butterfly_16[3 ]   ),
-    .o_4    (butterfly_16[4 ]   ),
-    .o_5    (butterfly_16[5 ]   ),
-    .o_6    (butterfly_16[6 ]   ),
-    .o_7    (butterfly_16[7 ]   ),
-    .o_8    (pre_coeff_16[0 ]   ),
-    .o_9    (pre_coeff_16[1 ]   ),
-    .o_10   (pre_coeff_16[2 ]   ),
-    .o_11   (pre_coeff_16[3 ]   ),
-    .o_12   (pre_coeff_16[4 ]   ),
-    .o_13   (pre_coeff_16[5 ]   ),
-    .o_14   (pre_coeff_16[6 ]   ),
-    .o_15   (pre_coeff_16[7 ]   )
+    .o_0    (butterfly_16_u0[0 ]),
+    .o_1    (butterfly_16_u0[1 ]),
+    .o_2    (butterfly_16_u0[2 ]),
+    .o_3    (butterfly_16_u0[3 ]),
+    .o_4    (butterfly_16_u0[4 ]),
+    .o_5    (butterfly_16_u0[5 ]),
+    .o_6    (butterfly_16_u0[6 ]),
+    .o_7    (butterfly_16_u0[7 ]),
+    .o_8    (pre_coeff_16_u0[0 ]),
+    .o_9    (pre_coeff_16_u0[1 ]),
+    .o_10   (pre_coeff_16_u0[2 ]),
+    .o_11   (pre_coeff_16_u0[3 ]),
+    .o_12   (pre_coeff_16_u0[4 ]),
+    .o_13   (pre_coeff_16_u0[5 ]),
+    .o_14   (pre_coeff_16_u0[6 ]),
+    .o_15   (pre_coeff_16_u0[7 ])
+);
+dct1d_16#(
+    .IN_WIDTH   (IN_WIDTH + 2)
+)
+u1_dct1d_16(
+//system input
+    .clk    (clk                ),
+    .rst_n  (rst_n              ),
+//input parameter
+    .i_size (i_width_d[3]       ),
+//input data
+    .i_valid(dct_16_valid       ),
+    .i_0    (i_dct_16_u1[0 ]    ),
+    .i_1    (i_dct_16_u1[1 ]    ),
+    .i_2    (i_dct_16_u1[2 ]    ),
+    .i_3    (i_dct_16_u1[3 ]    ),
+    .i_4    (i_dct_16_u1[4 ]    ),
+    .i_5    (i_dct_16_u1[5 ]    ),
+    .i_6    (i_dct_16_u1[6 ]    ),
+    .i_7    (i_dct_16_u1[7 ]    ),
+    .i_8    (i_dct_16_u1[8 ]    ),
+    .i_9    (i_dct_16_u1[9 ]    ),
+    .i_10   (i_dct_16_u1[10]    ),
+    .i_11   (i_dct_16_u1[11]    ),
+    .i_12   (i_dct_16_u1[12]    ),
+    .i_13   (i_dct_16_u1[13]    ),
+    .i_14   (i_dct_16_u1[14]    ),
+    .i_15   (i_dct_16_u1[15]    ),
+//output data
+    .o_valid(),
+    .o_0    (butterfly_16_u1[0 ]),
+    .o_1    (butterfly_16_u1[1 ]),
+    .o_2    (butterfly_16_u1[2 ]),
+    .o_3    (butterfly_16_u1[3 ]),
+    .o_4    (butterfly_16_u1[4 ]),
+    .o_5    (butterfly_16_u1[5 ]),
+    .o_6    (butterfly_16_u1[6 ]),
+    .o_7    (butterfly_16_u1[7 ]),
+    .o_8    (pre_coeff_16_u1[0 ]),
+    .o_9    (pre_coeff_16_u1[1 ]),
+    .o_10   (pre_coeff_16_u1[2 ]),
+    .o_11   (pre_coeff_16_u1[3 ]),
+    .o_12   (pre_coeff_16_u1[4 ]),
+    .o_13   (pre_coeff_16_u1[5 ]),
+    .o_14   (pre_coeff_16_u1[6 ]),
+    .o_15   (pre_coeff_16_u1[7 ])
+);
+dct1d_16#(
+    .IN_WIDTH   (IN_WIDTH + 2)
+)
+u2_dct1d_16(
+//system input
+    .clk    (clk                ),
+    .rst_n  (rst_n              ),
+//input parameter
+    .i_size (i_width_d[3]       ),
+//input data
+    .i_valid(dct_16_valid       ),
+    .i_0    (i_dct_16_u2[0 ]    ),
+    .i_1    (i_dct_16_u2[1 ]    ),
+    .i_2    (i_dct_16_u2[2 ]    ),
+    .i_3    (i_dct_16_u2[3 ]    ),
+    .i_4    (i_dct_16_u2[4 ]    ),
+    .i_5    (i_dct_16_u2[5 ]    ),
+    .i_6    (i_dct_16_u2[6 ]    ),
+    .i_7    (i_dct_16_u2[7 ]    ),
+    .i_8    (i_dct_16_u2[8 ]    ),
+    .i_9    (i_dct_16_u2[9 ]    ),
+    .i_10   (i_dct_16_u2[10]    ),
+    .i_11   (i_dct_16_u2[11]    ),
+    .i_12   (i_dct_16_u2[12]    ),
+    .i_13   (i_dct_16_u2[13]    ),
+    .i_14   (i_dct_16_u2[14]    ),
+    .i_15   (i_dct_16_u2[15]    ),
+//output data
+    .o_valid(),
+    .o_0    (butterfly_16_u2[0 ]),
+    .o_1    (butterfly_16_u2[1 ]),
+    .o_2    (butterfly_16_u2[2 ]),
+    .o_3    (butterfly_16_u2[3 ]),
+    .o_4    (butterfly_16_u2[4 ]),
+    .o_5    (butterfly_16_u2[5 ]),
+    .o_6    (butterfly_16_u2[6 ]),
+    .o_7    (butterfly_16_u2[7 ]),
+    .o_8    (pre_coeff_16_u2[0 ]),
+    .o_9    (pre_coeff_16_u2[1 ]),
+    .o_10   (pre_coeff_16_u2[2 ]),
+    .o_11   (pre_coeff_16_u2[3 ]),
+    .o_12   (pre_coeff_16_u2[4 ]),
+    .o_13   (pre_coeff_16_u2[5 ]),
+    .o_14   (pre_coeff_16_u2[6 ]),
+    .o_15   (pre_coeff_16_u2[7 ])
+);
+dct1d_16#(
+    .IN_WIDTH   (IN_WIDTH + 2)
+)
+u3_dct1d_16(
+//system input
+    .clk    (clk                ),
+    .rst_n  (rst_n              ),
+//input parameter
+    .i_size (i_width_d[3]       ),
+//input data
+    .i_valid(dct_16_valid       ),
+    .i_0    (i_dct_16_u3[0 ]    ),
+    .i_1    (i_dct_16_u3[1 ]    ),
+    .i_2    (i_dct_16_u3[2 ]    ),
+    .i_3    (i_dct_16_u3[3 ]    ),
+    .i_4    (i_dct_16_u3[4 ]    ),
+    .i_5    (i_dct_16_u3[5 ]    ),
+    .i_6    (i_dct_16_u3[6 ]    ),
+    .i_7    (i_dct_16_u3[7 ]    ),
+    .i_8    (i_dct_16_u3[8 ]    ),
+    .i_9    (i_dct_16_u3[9 ]    ),
+    .i_10   (i_dct_16_u3[10]    ),
+    .i_11   (i_dct_16_u3[11]    ),
+    .i_12   (i_dct_16_u3[12]    ),
+    .i_13   (i_dct_16_u3[13]    ),
+    .i_14   (i_dct_16_u3[14]    ),
+    .i_15   (i_dct_16_u3[15]    ),
+//output data
+    .o_valid(),
+    .o_0    (butterfly_16_u3[0 ]),
+    .o_1    (butterfly_16_u3[1 ]),
+    .o_2    (butterfly_16_u3[2 ]),
+    .o_3    (butterfly_16_u3[3 ]),
+    .o_4    (butterfly_16_u3[4 ]),
+    .o_5    (butterfly_16_u3[5 ]),
+    .o_6    (butterfly_16_u3[6 ]),
+    .o_7    (butterfly_16_u3[7 ]),
+    .o_8    (pre_coeff_16_u3[0 ]),
+    .o_9    (pre_coeff_16_u3[1 ]),
+    .o_10   (pre_coeff_16_u3[2 ]),
+    .o_11   (pre_coeff_16_u3[3 ]),
+    .o_12   (pre_coeff_16_u3[4 ]),
+    .o_13   (pre_coeff_16_u3[5 ]),
+    .o_14   (pre_coeff_16_u3[6 ]),
+    .o_15   (pre_coeff_16_u3[7 ])
 );
 
+//8x8
 dct1d_8#(
     .IN_WIDTH   (IN_WIDTH + 3)
 )
-u_dct1d_8(
+u0_dct1d_8(
 //system input
     .clk    (clk                ),
     .rst_n  (rst_n              ),
@@ -780,30 +1101,241 @@ u_dct1d_8(
     .i_size (i_width_d[3]       ),
 //input data
     .i_valid(dct_8_valid        ),
-    .i_0    (i_dct_8[0 ]        ),
-    .i_1    (i_dct_8[1 ]        ),
-    .i_2    (i_dct_8[2 ]        ),
-    .i_3    (i_dct_8[3 ]        ),
-    .i_4    (i_dct_8[4 ]        ),
-    .i_5    (i_dct_8[5 ]        ),
-    .i_6    (i_dct_8[6 ]        ),
-    .i_7    (i_dct_8[7 ]        ),
+    .i_0    (i_dct_8_u0[0 ]     ),
+    .i_1    (i_dct_8_u0[1 ]     ),
+    .i_2    (i_dct_8_u0[2 ]     ),
+    .i_3    (i_dct_8_u0[3 ]     ),
+    .i_4    (i_dct_8_u0[4 ]     ),
+    .i_5    (i_dct_8_u0[5 ]     ),
+    .i_6    (i_dct_8_u0[6 ]     ),
+    .i_7    (i_dct_8_u0[7 ]     ),
 //output data
     .o_valid(pre_coeff_8_valid  ),
-    .o_0    (butterfly_8[0 ]    ),
-    .o_1    (butterfly_8[1 ]    ),
-    .o_2    (butterfly_8[2 ]    ),
-    .o_3    (butterfly_8[3 ]    ),
-    .o_4    (pre_coeff_8[0 ]    ),
-    .o_5    (pre_coeff_8[1 ]    ),
-    .o_6    (pre_coeff_8[2 ]    ),
-    .o_7    (pre_coeff_8[3 ]    )
+    .o_0    (butterfly_8_u0[0 ] ),
+    .o_1    (butterfly_8_u0[1 ] ),
+    .o_2    (butterfly_8_u0[2 ] ),
+    .o_3    (butterfly_8_u0[3 ] ),
+    .o_4    (pre_coeff_8_u0[0 ] ),
+    .o_5    (pre_coeff_8_u0[1 ] ),
+    .o_6    (pre_coeff_8_u0[2 ] ),
+    .o_7    (pre_coeff_8_u0[3 ] )
+);
+dct1d_8#(
+    .IN_WIDTH   (IN_WIDTH + 3)
+)
+u1_dct1d_8(
+//system input
+    .clk    (clk                ),
+    .rst_n  (rst_n              ),
+//input parameter
+    .i_size (i_width_d[3]       ),
+//input data
+    .i_valid(dct_8_valid        ),
+    .i_0    (i_dct_8_u1[0 ]     ),
+    .i_1    (i_dct_8_u1[1 ]     ),
+    .i_2    (i_dct_8_u1[2 ]     ),
+    .i_3    (i_dct_8_u1[3 ]     ),
+    .i_4    (i_dct_8_u1[4 ]     ),
+    .i_5    (i_dct_8_u1[5 ]     ),
+    .i_6    (i_dct_8_u1[6 ]     ),
+    .i_7    (i_dct_8_u1[7 ]     ),
+//output data
+    .o_valid(),
+    .o_0    (butterfly_8_u1[0 ] ),
+    .o_1    (butterfly_8_u1[1 ] ),
+    .o_2    (butterfly_8_u1[2 ] ),
+    .o_3    (butterfly_8_u1[3 ] ),
+    .o_4    (pre_coeff_8_u1[0 ] ),
+    .o_5    (pre_coeff_8_u1[1 ] ),
+    .o_6    (pre_coeff_8_u1[2 ] ),
+    .o_7    (pre_coeff_8_u1[3 ] )
+);
+dct1d_8#(
+    .IN_WIDTH   (IN_WIDTH + 3)
+)
+u2_dct1d_8(
+//system input
+    .clk    (clk                ),
+    .rst_n  (rst_n              ),
+//input parameter
+    .i_size (i_width_d[3]       ),
+//input data
+    .i_valid(dct_8_valid        ),
+    .i_0    (i_dct_8_u2[0 ]     ),
+    .i_1    (i_dct_8_u2[1 ]     ),
+    .i_2    (i_dct_8_u2[2 ]     ),
+    .i_3    (i_dct_8_u2[3 ]     ),
+    .i_4    (i_dct_8_u2[4 ]     ),
+    .i_5    (i_dct_8_u2[5 ]     ),
+    .i_6    (i_dct_8_u2[6 ]     ),
+    .i_7    (i_dct_8_u2[7 ]     ),
+//output data
+    .o_valid(),
+    .o_0    (butterfly_8_u2[0 ] ),
+    .o_1    (butterfly_8_u2[1 ] ),
+    .o_2    (butterfly_8_u2[2 ] ),
+    .o_3    (butterfly_8_u2[3 ] ),
+    .o_4    (pre_coeff_8_u2[0 ] ),
+    .o_5    (pre_coeff_8_u2[1 ] ),
+    .o_6    (pre_coeff_8_u2[2 ] ),
+    .o_7    (pre_coeff_8_u2[3 ] )
+);
+dct1d_8#(
+    .IN_WIDTH   (IN_WIDTH + 3)
+)
+u3_dct1d_8(
+//system input
+    .clk    (clk                ),
+    .rst_n  (rst_n              ),
+//input parameter
+    .i_size (i_width_d[3]       ),
+//input data
+    .i_valid(dct_8_valid        ),
+    .i_0    (i_dct_8_u3[0 ]     ),
+    .i_1    (i_dct_8_u3[1 ]     ),
+    .i_2    (i_dct_8_u3[2 ]     ),
+    .i_3    (i_dct_8_u3[3 ]     ),
+    .i_4    (i_dct_8_u3[4 ]     ),
+    .i_5    (i_dct_8_u3[5 ]     ),
+    .i_6    (i_dct_8_u3[6 ]     ),
+    .i_7    (i_dct_8_u3[7 ]     ),
+//output data
+    .o_valid(),
+    .o_0    (butterfly_8_u3[0 ] ),
+    .o_1    (butterfly_8_u3[1 ] ),
+    .o_2    (butterfly_8_u3[2 ] ),
+    .o_3    (butterfly_8_u3[3 ] ),
+    .o_4    (pre_coeff_8_u3[0 ] ),
+    .o_5    (pre_coeff_8_u3[1 ] ),
+    .o_6    (pre_coeff_8_u3[2 ] ),
+    .o_7    (pre_coeff_8_u3[3 ] )
+);
+dct1d_8#(
+    .IN_WIDTH   (IN_WIDTH + 3)
+)
+u4_dct1d_8(
+//system input
+    .clk    (clk                ),
+    .rst_n  (rst_n              ),
+//input parameter
+    .i_size (i_width_d[3]       ),
+//input data
+    .i_valid(dct_8_valid        ),
+    .i_0    (i_dct_8_u4[0 ]     ),
+    .i_1    (i_dct_8_u4[1 ]     ),
+    .i_2    (i_dct_8_u4[2 ]     ),
+    .i_3    (i_dct_8_u4[3 ]     ),
+    .i_4    (i_dct_8_u4[4 ]     ),
+    .i_5    (i_dct_8_u4[5 ]     ),
+    .i_6    (i_dct_8_u4[6 ]     ),
+    .i_7    (i_dct_8_u4[7 ]     ),
+//output data
+    .o_valid(),
+    .o_0    (butterfly_8_u4[0 ] ),
+    .o_1    (butterfly_8_u4[1 ] ),
+    .o_2    (butterfly_8_u4[2 ] ),
+    .o_3    (butterfly_8_u4[3 ] ),
+    .o_4    (pre_coeff_8_u4[0 ] ),
+    .o_5    (pre_coeff_8_u4[1 ] ),
+    .o_6    (pre_coeff_8_u4[2 ] ),
+    .o_7    (pre_coeff_8_u4[3 ] )
+);
+dct1d_8#(
+    .IN_WIDTH   (IN_WIDTH + 3)
+)
+u5_dct1d_8(
+//system input
+    .clk    (clk                ),
+    .rst_n  (rst_n              ),
+//input parameter
+    .i_size (i_width_d[3]       ),
+//input data
+    .i_valid(dct_8_valid        ),
+    .i_0    (i_dct_8_u5[0 ]     ),
+    .i_1    (i_dct_8_u5[1 ]     ),
+    .i_2    (i_dct_8_u5[2 ]     ),
+    .i_3    (i_dct_8_u5[3 ]     ),
+    .i_4    (i_dct_8_u5[4 ]     ),
+    .i_5    (i_dct_8_u5[5 ]     ),
+    .i_6    (i_dct_8_u5[6 ]     ),
+    .i_7    (i_dct_8_u5[7 ]     ),
+//output data
+    .o_valid(),
+    .o_0    (butterfly_8_u5[0 ] ),
+    .o_1    (butterfly_8_u5[1 ] ),
+    .o_2    (butterfly_8_u5[2 ] ),
+    .o_3    (butterfly_8_u5[3 ] ),
+    .o_4    (pre_coeff_8_u5[0 ] ),
+    .o_5    (pre_coeff_8_u5[1 ] ),
+    .o_6    (pre_coeff_8_u5[2 ] ),
+    .o_7    (pre_coeff_8_u5[3 ] )
+);
+dct1d_8#(
+    .IN_WIDTH   (IN_WIDTH + 3)
+)
+u6_dct1d_8(
+//system input
+    .clk    (clk                ),
+    .rst_n  (rst_n              ),
+//input parameter
+    .i_size (i_width_d[3]       ),
+//input data
+    .i_valid(dct_8_valid        ),
+    .i_0    (i_dct_8_u6[0 ]     ),
+    .i_1    (i_dct_8_u6[1 ]     ),
+    .i_2    (i_dct_8_u6[2 ]     ),
+    .i_3    (i_dct_8_u6[3 ]     ),
+    .i_4    (i_dct_8_u6[4 ]     ),
+    .i_5    (i_dct_8_u6[5 ]     ),
+    .i_6    (i_dct_8_u6[6 ]     ),
+    .i_7    (i_dct_8_u6[7 ]     ),
+//output data
+    .o_valid(),
+    .o_0    (butterfly_8_u6[0 ] ),
+    .o_1    (butterfly_8_u6[1 ] ),
+    .o_2    (butterfly_8_u6[2 ] ),
+    .o_3    (butterfly_8_u6[3 ] ),
+    .o_4    (pre_coeff_8_u6[0 ] ),
+    .o_5    (pre_coeff_8_u6[1 ] ),
+    .o_6    (pre_coeff_8_u6[2 ] ),
+    .o_7    (pre_coeff_8_u6[3 ] )
+);
+dct1d_8#(
+    .IN_WIDTH   (IN_WIDTH + 3)
+)
+u7_dct1d_8(
+//system input
+    .clk    (clk                ),
+    .rst_n  (rst_n              ),
+//input parameter
+    .i_size (i_width_d[3]       ),
+//input data
+    .i_valid(dct_8_valid        ),
+    .i_0    (i_dct_8_u7[0 ]     ),
+    .i_1    (i_dct_8_u7[1 ]     ),
+    .i_2    (i_dct_8_u7[2 ]     ),
+    .i_3    (i_dct_8_u7[3 ]     ),
+    .i_4    (i_dct_8_u7[4 ]     ),
+    .i_5    (i_dct_8_u7[5 ]     ),
+    .i_6    (i_dct_8_u7[6 ]     ),
+    .i_7    (i_dct_8_u7[7 ]     ),
+//output data
+    .o_valid(),
+    .o_0    (butterfly_8_u7[0 ] ),
+    .o_1    (butterfly_8_u7[1 ] ),
+    .o_2    (butterfly_8_u7[2 ] ),
+    .o_3    (butterfly_8_u7[3 ] ),
+    .o_4    (pre_coeff_8_u7[0 ] ),
+    .o_5    (pre_coeff_8_u7[1 ] ),
+    .o_6    (pre_coeff_8_u7[2 ] ),
+    .o_7    (pre_coeff_8_u7[3 ] )
 );
 
+//4x4
 dct1d_4#(
     .IN_WIDTH   (IN_WIDTH + 4)
 )
-u_dct1d_4(
+u0_dct1d_4(
 //system input
     .clk    (clk                ),
     .rst_n  (rst_n              ),
@@ -811,16 +1343,346 @@ u_dct1d_4(
     .i_size (i_width_d[3]       ),
 //input data
     .i_valid(dct_4_valid        ),
-    .i_0    (i_dct_4[0 ]        ),
-    .i_1    (i_dct_4[1 ]        ),
-    .i_2    (i_dct_4[2 ]        ),
-    .i_3    (i_dct_4[3 ]        ),
+    .i_0    (i_dct_4_u0[0 ]     ),
+    .i_1    (i_dct_4_u0[1 ]     ),
+    .i_2    (i_dct_4_u0[2 ]     ),
+    .i_3    (i_dct_4_u0[3 ]     ),
 //output data
     .o_valid(pre_coeff_4_valid  ),
-    .o_0    (pre_coeff_4[0 ]    ),
-    .o_1    (pre_coeff_4[1 ]    ),
-    .o_2    (pre_coeff_4[2 ]    ),
-    .o_3    (pre_coeff_4[3 ]    )
+    .o_0    (pre_coeff_4_u0[0 ] ),
+    .o_1    (pre_coeff_4_u0[1 ] ),
+    .o_2    (pre_coeff_4_u0[2 ] ),
+    .o_3    (pre_coeff_4_u0[3 ] )
+);
+dct1d_4#(
+    .IN_WIDTH   (IN_WIDTH + 4)
+)
+u1_dct1d_4(
+//system input
+    .clk    (clk                ),
+    .rst_n  (rst_n              ),
+//input parameter
+    .i_size (i_width_d[3]       ),
+//input data
+    .i_valid(dct_4_valid        ),
+    .i_0    (i_dct_4_u1[0 ]     ),
+    .i_1    (i_dct_4_u1[1 ]     ),
+    .i_2    (i_dct_4_u1[2 ]     ),
+    .i_3    (i_dct_4_u1[3 ]     ),
+//output data
+    .o_valid(),
+    .o_0    (pre_coeff_4_u1[0 ] ),
+    .o_1    (pre_coeff_4_u1[1 ] ),
+    .o_2    (pre_coeff_4_u1[2 ] ),
+    .o_3    (pre_coeff_4_u1[3 ] )
+);
+dct1d_4#(
+    .IN_WIDTH   (IN_WIDTH + 4)
+)
+u2_dct1d_4(
+//system input
+    .clk    (clk                ),
+    .rst_n  (rst_n              ),
+//input parameter
+    .i_size (i_width_d[3]       ),
+//input data
+    .i_valid(dct_4_valid        ),
+    .i_0    (i_dct_4_u2[0 ]     ),
+    .i_1    (i_dct_4_u2[1 ]     ),
+    .i_2    (i_dct_4_u2[2 ]     ),
+    .i_3    (i_dct_4_u2[3 ]     ),
+//output data
+    .o_valid(),
+    .o_0    (pre_coeff_4_u2[0 ] ),
+    .o_1    (pre_coeff_4_u2[1 ] ),
+    .o_2    (pre_coeff_4_u2[2 ] ),
+    .o_3    (pre_coeff_4_u2[3 ] )
+);
+dct1d_4#(
+    .IN_WIDTH   (IN_WIDTH + 4)
+)
+u3_dct1d_4(
+//system input
+    .clk    (clk                ),
+    .rst_n  (rst_n              ),
+//input parameter
+    .i_size (i_width_d[3]       ),
+//input data
+    .i_valid(dct_4_valid        ),
+    .i_0    (i_dct_4_u3[0 ]     ),
+    .i_1    (i_dct_4_u3[1 ]     ),
+    .i_2    (i_dct_4_u3[2 ]     ),
+    .i_3    (i_dct_4_u3[3 ]     ),
+//output data
+    .o_valid(),
+    .o_0    (pre_coeff_4_u3[0 ] ),
+    .o_1    (pre_coeff_4_u3[1 ] ),
+    .o_2    (pre_coeff_4_u3[2 ] ),
+    .o_3    (pre_coeff_4_u3[3 ] )
+);
+dct1d_4#(
+    .IN_WIDTH   (IN_WIDTH + 4)
+)
+u4_dct1d_4(
+//system input
+    .clk    (clk                ),
+    .rst_n  (rst_n              ),
+//input parameter
+    .i_size (i_width_d[3]       ),
+//input data
+    .i_valid(dct_4_valid        ),
+    .i_0    (i_dct_4_u4[0 ]     ),
+    .i_1    (i_dct_4_u4[1 ]     ),
+    .i_2    (i_dct_4_u4[2 ]     ),
+    .i_3    (i_dct_4_u4[3 ]     ),
+//output data
+    .o_valid(),
+    .o_0    (pre_coeff_4_u4[0 ] ),
+    .o_1    (pre_coeff_4_u4[1 ] ),
+    .o_2    (pre_coeff_4_u4[2 ] ),
+    .o_3    (pre_coeff_4_u4[3 ] )
+);
+dct1d_4#(
+    .IN_WIDTH   (IN_WIDTH + 4)
+)
+u5_dct1d_4(
+//system input
+    .clk    (clk                ),
+    .rst_n  (rst_n              ),
+//input parameter
+    .i_size (i_width_d[3]       ),
+//input data
+    .i_valid(dct_4_valid        ),
+    .i_0    (i_dct_4_u5[0 ]     ),
+    .i_1    (i_dct_4_u5[1 ]     ),
+    .i_2    (i_dct_4_u5[2 ]     ),
+    .i_3    (i_dct_4_u5[3 ]     ),
+//output data
+    .o_valid(),
+    .o_0    (pre_coeff_4_u5[0 ] ),
+    .o_1    (pre_coeff_4_u5[1 ] ),
+    .o_2    (pre_coeff_4_u5[2 ] ),
+    .o_3    (pre_coeff_4_u5[3 ] )
+);
+dct1d_4#(
+    .IN_WIDTH   (IN_WIDTH + 4)
+)
+u6_dct1d_4(
+//system input
+    .clk    (clk                ),
+    .rst_n  (rst_n              ),
+//input parameter
+    .i_size (i_width_d[3]       ),
+//input data
+    .i_valid(dct_4_valid        ),
+    .i_0    (i_dct_4_u6[0 ]     ),
+    .i_1    (i_dct_4_u6[1 ]     ),
+    .i_2    (i_dct_4_u6[2 ]     ),
+    .i_3    (i_dct_4_u6[3 ]     ),
+//output data
+    .o_valid(),
+    .o_0    (pre_coeff_4_u6[0 ] ),
+    .o_1    (pre_coeff_4_u6[1 ] ),
+    .o_2    (pre_coeff_4_u6[2 ] ),
+    .o_3    (pre_coeff_4_u6[3 ] )
+);
+dct1d_4#(
+    .IN_WIDTH   (IN_WIDTH + 4)
+)
+u7_dct1d_4(
+//system input
+    .clk    (clk                ),
+    .rst_n  (rst_n              ),
+//input parameter
+    .i_size (i_width_d[3]       ),
+//input data
+    .i_valid(dct_4_valid        ),
+    .i_0    (i_dct_4_u7[0 ]     ),
+    .i_1    (i_dct_4_u7[1 ]     ),
+    .i_2    (i_dct_4_u7[2 ]     ),
+    .i_3    (i_dct_4_u7[3 ]     ),
+//output data
+    .o_valid(),
+    .o_0    (pre_coeff_4_u7[0 ] ),
+    .o_1    (pre_coeff_4_u7[1 ] ),
+    .o_2    (pre_coeff_4_u7[2 ] ),
+    .o_3    (pre_coeff_4_u7[3 ] )
+);
+dct1d_4#(
+    .IN_WIDTH   (IN_WIDTH + 4)
+)
+u8_dct1d_4(
+//system input
+    .clk    (clk                ),
+    .rst_n  (rst_n              ),
+//input parameter
+    .i_size (i_width_d[3]       ),
+//input data
+    .i_valid(dct_4_valid        ),
+    .i_0    (i_dct_4_u8[0 ]     ),
+    .i_1    (i_dct_4_u8[1 ]     ),
+    .i_2    (i_dct_4_u8[2 ]     ),
+    .i_3    (i_dct_4_u8[3 ]     ),
+//output data
+    .o_valid(),
+    .o_0    (pre_coeff_4_u8[0 ] ),
+    .o_1    (pre_coeff_4_u8[1 ] ),
+    .o_2    (pre_coeff_4_u8[2 ] ),
+    .o_3    (pre_coeff_4_u8[3 ] )
+);
+dct1d_4#(
+    .IN_WIDTH   (IN_WIDTH + 4)
+)
+u9_dct1d_4(
+//system input
+    .clk    (clk                ),
+    .rst_n  (rst_n              ),
+//input parameter
+    .i_size (i_width_d[3]       ),
+//input data
+    .i_valid(dct_4_valid        ),
+    .i_0    (i_dct_4_u9[0 ]     ),
+    .i_1    (i_dct_4_u9[1 ]     ),
+    .i_2    (i_dct_4_u9[2 ]     ),
+    .i_3    (i_dct_4_u9[3 ]     ),
+//output data
+    .o_valid(),
+    .o_0    (pre_coeff_4_u9[0 ] ),
+    .o_1    (pre_coeff_4_u9[1 ] ),
+    .o_2    (pre_coeff_4_u9[2 ] ),
+    .o_3    (pre_coeff_4_u9[3 ] )
+);
+dct1d_4#(
+    .IN_WIDTH   (IN_WIDTH + 4)
+)
+u10_dct1d_4(
+//system input
+    .clk    (clk                ),
+    .rst_n  (rst_n              ),
+//input parameter
+    .i_size (i_width_d[3]       ),
+//input data
+    .i_valid(dct_4_valid        ),
+    .i_0    (i_dct_4_u10[0 ]    ),
+    .i_1    (i_dct_4_u10[1 ]    ),
+    .i_2    (i_dct_4_u10[2 ]    ),
+    .i_3    (i_dct_4_u10[3 ]    ),
+//output data
+    .o_valid(),
+    .o_0    (pre_coeff_4_u10[0 ]),
+    .o_1    (pre_coeff_4_u10[1 ]),
+    .o_2    (pre_coeff_4_u10[2 ]),
+    .o_3    (pre_coeff_4_u10[3 ])
+);
+dct1d_4#(
+    .IN_WIDTH   (IN_WIDTH + 4)
+)
+u11_dct1d_4(
+//system input
+    .clk    (clk                ),
+    .rst_n  (rst_n              ),
+//input parameter
+    .i_size (i_width_d[3]       ),
+//input data
+    .i_valid(dct_4_valid        ),
+    .i_0    (i_dct_4_u11[0 ]    ),
+    .i_1    (i_dct_4_u11[1 ]    ),
+    .i_2    (i_dct_4_u11[2 ]    ),
+    .i_3    (i_dct_4_u11[3 ]    ),
+//output data
+    .o_valid(),
+    .o_0    (pre_coeff_4_u11[0 ]),
+    .o_1    (pre_coeff_4_u11[1 ]),
+    .o_2    (pre_coeff_4_u11[2 ]),
+    .o_3    (pre_coeff_4_u11[3 ])
+);
+dct1d_4#(
+    .IN_WIDTH   (IN_WIDTH + 4)
+)
+u12_dct1d_4(
+//system input
+    .clk    (clk                ),
+    .rst_n  (rst_n              ),
+//input parameter
+    .i_size (i_width_d[3]       ),
+//input data
+    .i_valid(dct_4_valid        ),
+    .i_0    (i_dct_4_u12[0 ]    ),
+    .i_1    (i_dct_4_u12[1 ]    ),
+    .i_2    (i_dct_4_u12[2 ]    ),
+    .i_3    (i_dct_4_u12[3 ]    ),
+//output data
+    .o_valid(),
+    .o_0    (pre_coeff_4_u12[0 ]),
+    .o_1    (pre_coeff_4_u12[1 ]),
+    .o_2    (pre_coeff_4_u12[2 ]),
+    .o_3    (pre_coeff_4_u12[3 ])
+);
+dct1d_4#(
+    .IN_WIDTH   (IN_WIDTH + 4)
+)
+u13_dct1d_4(
+//system input
+    .clk    (clk                ),
+    .rst_n  (rst_n              ),
+//input parameter
+    .i_size (i_width_d[3]       ),
+//input data
+    .i_valid(dct_4_valid        ),
+    .i_0    (i_dct_4_u13[0 ]    ),
+    .i_1    (i_dct_4_u13[1 ]    ),
+    .i_2    (i_dct_4_u13[2 ]    ),
+    .i_3    (i_dct_4_u13[3 ]    ),
+//output data
+    .o_valid(),
+    .o_0    (pre_coeff_4_u13[0 ]),
+    .o_1    (pre_coeff_4_u13[1 ]),
+    .o_2    (pre_coeff_4_u13[2 ]),
+    .o_3    (pre_coeff_4_u13[3 ])
+);
+dct1d_4#(
+    .IN_WIDTH   (IN_WIDTH + 4)
+)
+u14_dct1d_4(
+//system input
+    .clk    (clk                ),
+    .rst_n  (rst_n              ),
+//input parameter
+    .i_size (i_width_d[3]       ),
+//input data
+    .i_valid(dct_4_valid        ),
+    .i_0    (i_dct_4_u14[0 ]    ),
+    .i_1    (i_dct_4_u14[1 ]    ),
+    .i_2    (i_dct_4_u14[2 ]    ),
+    .i_3    (i_dct_4_u14[3 ]    ),
+//output data
+    .o_valid(),
+    .o_0    (pre_coeff_4_u14[0 ]),
+    .o_1    (pre_coeff_4_u14[1 ]),
+    .o_2    (pre_coeff_4_u14[2 ]),
+    .o_3    (pre_coeff_4_u14[3 ])
+);
+dct1d_4#(
+    .IN_WIDTH   (IN_WIDTH + 4)
+)
+u15_dct1d_4(
+//system input
+    .clk    (clk                ),
+    .rst_n  (rst_n              ),
+//input parameter
+    .i_size (i_width_d[3]       ),
+//input data
+    .i_valid(dct_4_valid        ),
+    .i_0    (i_dct_4_u15[0 ]    ),
+    .i_1    (i_dct_4_u15[1 ]    ),
+    .i_2    (i_dct_4_u15[2 ]    ),
+    .i_3    (i_dct_4_u15[3 ]    ),
+//output data
+    .o_valid(),
+    .o_0    (pre_coeff_4_u15[0 ]),
+    .o_1    (pre_coeff_4_u15[1 ]),
+    .o_2    (pre_coeff_4_u15[2 ]),
+    .o_3    (pre_coeff_4_u15[3 ])
 );
 
 right_shift#(

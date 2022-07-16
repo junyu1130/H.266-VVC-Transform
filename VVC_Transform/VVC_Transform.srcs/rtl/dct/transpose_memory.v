@@ -149,11 +149,11 @@ module transpose_memory#(
     output  signed  [WIDTH - 1 : 0]     o_63
 );
 
-localparam  DCT_4  = 0,
-            DCT_8  = 1,
-            DCT_16 = 2,
-            DCT_32 = 3,
-            DCT_64 = 4;
+localparam  DCT_4  = 1,
+            DCT_8  = 2,
+            DCT_16 = 3,
+            DCT_32 = 4,
+            DCT_64 = 5;
 //´æ´¢/¶ÁÈ¡ÖÜÆÚ
 localparam wr_count_max  = 63;
 localparam rd_count_max  = 31;

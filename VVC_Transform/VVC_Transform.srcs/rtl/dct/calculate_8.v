@@ -10,7 +10,7 @@ module calculate_8#(
     input                                   clk     ,
     input                                   rst_n   ,
 //input parameter
-    input               [2 : 0]             i_size  ,//1:DCT_8, 2:DCT_16, 3:DCT_32, 4:DCT_64
+    input               [2 : 0]             i_size  ,//2:DCT_8, 3:DCT_16, 4:DCT_32, 5:DCT_64
 //input data                                         //N=64     N=32    N=16    N=8
     input                                   i_valid ,
     input       signed  [IN_WIDTH - 1 : 0]  i_0     ,//EEEO0    EEO0    EO0     O0
@@ -25,7 +25,7 @@ module calculate_8#(
     output reg  signed  [IN_WIDTH + 7 : 0]  o_3      //56(0)    28      14      7
 );
 
-localparam DCT_64 = 4;
+localparam DCT_64 = 5;
 
 //mcm
 //89 75 / 50 18

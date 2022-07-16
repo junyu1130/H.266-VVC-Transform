@@ -10,7 +10,7 @@ module calculate_4#(
     input                                   clk     ,
     input                                   rst_n   ,
 //input parameter
-    input               [2 : 0]             i_size  ,//0:DCT_4, 1:DCT_8, 2:DCT_16, 3:DCT_32, 4:DCT_64
+    input               [2 : 0]             i_size  ,//1:DCT_4, 2:DCT_8, 3:DCT_16, 4:DCT_32, 5:DCT_64
 //input data                                         //N=64     N=32    N=16    N=8     N=4
     input                                   i_valid ,
     input       signed  [IN_WIDTH - 1 : 0]  i_0     ,//EEEEE0   EEEE0   EEE0    EE0     E0
@@ -25,7 +25,7 @@ module calculate_4#(
     output reg  signed  [IN_WIDTH + 6 : 0]  o_3      //48(0)    24      12      6       3
 );
 
-localparam DCT_64 = 4;
+localparam DCT_64 = 5;
 
 //mcm
 //64 / 64

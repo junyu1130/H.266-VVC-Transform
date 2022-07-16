@@ -10,7 +10,7 @@ module calculate_32#(
     input                                   clk     ,
     input                                   rst_n   ,
 //input parameter
-    input               [2 : 0]             i_size  ,//3:DCT_32, 4:DCT_64
+    input               [2 : 0]             i_size  ,//4:DCT_32, 5:DCT_64
 //input data                                         //N=64     N=32
     input                                   i_valid ,
     input       signed  [IN_WIDTH - 1 : 0]  i_0     ,//EO0      O0 
@@ -51,7 +51,7 @@ module calculate_32#(
 
 integer i;
 
-localparam DCT_64 = 4;
+localparam DCT_64 = 5;
 
 //mcm
 //90 90 88 85 82 78 73 67 / 61 54 46 38 31 22 13 4
