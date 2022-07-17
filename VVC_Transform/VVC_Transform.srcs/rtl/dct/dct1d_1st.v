@@ -1,7 +1,7 @@
 //describe  : 第一次一维DCT2
 //input     : 16-64个残差像素
 //output    : 16-64个第一次变换系数
-//delay     : 6 clk
+//delay     : 7 clk
 module dct1d_1st#(
     parameter  IN_WIDTH  = 9,
     parameter  OUT_WIDTH = 16
@@ -191,8 +191,8 @@ integer i;
     reg pre_coeff_valid;
     reg signed [IN_WIDTH + 11 : 0] pre_coeff[0 : 63];
 //limited to 16bit : offset + shift
-    reg [2 : 0] i_width_d[0 : 5];
-    reg [2 : 0] i_height_d[0 : 5];
+    reg [2 : 0] i_width_d[0 : 6];
+    reg [2 : 0] i_height_d[0 : 6];
     reg [3 : 0] dct_shift;
     wire coeff_valid;
     wire signed [OUT_WIDTH - 1 : 0] coeff[0 : 63];
@@ -266,7 +266,7 @@ integer i;
 //parameter delay
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin 
-        for (i = 0; i < 6; i = i + 1) begin
+        for (i = 0; i < 7; i = i + 1) begin
             i_width_d[i] <= 0;
             i_height_d[i] <= 0;
         end
@@ -274,7 +274,7 @@ always @(posedge clk or negedge rst_n) begin
     else begin
         i_width_d[0] <= i_width;
         i_height_d[0] <= i_height;
-        for (i = 0; i < 5; i = i + 1) begin
+        for (i = 0; i < 6; i = i + 1) begin
             i_width_d[i + 1] <= i_width_d[i];
             i_height_d[i + 1] <= i_height_d[i];
         end
@@ -283,7 +283,7 @@ end
 
 //shift
 always @(*) begin
-    case (i_width_d[4])//first stage : log2(Width) + BitDepth - 9
+    case (i_width_d[5])//first stage : log2(Width) + BitDepth - 9
         DCT_4   : dct_shift <= IN_WIDTH - 8;
         DCT_8   : dct_shift <= IN_WIDTH - 7;
         DCT_16  : dct_shift <= IN_WIDTH - 6;
@@ -496,7 +496,7 @@ always @(*) begin
     for (i = 0; i < 64; i = i + 1) begin
         pre_coeff[i] <= 0;
     end
-    case (i_width_d[4])
+    case (i_width_d[5])
         DCT_64  : begin //high frequency coefficients are set to zero
             pre_coeff_valid <= pre_coeff_64_valid;
             for (i = 0; i < 16; i = i + 1) begin
@@ -754,7 +754,7 @@ u0_dct1d_32(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_width_d[3]       ),
+    .i_size (i_width_d[4]       ),
 //input data
     .i_valid(dct_32_valid       ),
     .i_0    (i_dct_32_u0[0 ]    ),
@@ -832,7 +832,7 @@ u1_dct1d_32(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_width_d[3]       ),
+    .i_size (i_width_d[4]       ),
 //input data
     .i_valid(dct_32_valid       ),
     .i_0    (i_dct_32_u1[0 ]    ),
@@ -912,7 +912,7 @@ u0_dct1d_16(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_width_d[3]       ),
+    .i_size (i_width_d[4]       ),
 //input data
     .i_valid(dct_16_valid       ),
     .i_0    (i_dct_16_u0[0 ]    ),
@@ -958,7 +958,7 @@ u1_dct1d_16(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_width_d[3]       ),
+    .i_size (i_width_d[4]       ),
 //input data
     .i_valid(dct_16_valid       ),
     .i_0    (i_dct_16_u1[0 ]    ),
@@ -1004,7 +1004,7 @@ u2_dct1d_16(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_width_d[3]       ),
+    .i_size (i_width_d[4]       ),
 //input data
     .i_valid(dct_16_valid       ),
     .i_0    (i_dct_16_u2[0 ]    ),
@@ -1050,7 +1050,7 @@ u3_dct1d_16(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_width_d[3]       ),
+    .i_size (i_width_d[4]       ),
 //input data
     .i_valid(dct_16_valid       ),
     .i_0    (i_dct_16_u3[0 ]    ),
@@ -1098,7 +1098,7 @@ u0_dct1d_8(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_width_d[3]       ),
+    .i_size (i_width_d[4]       ),
 //input data
     .i_valid(dct_8_valid        ),
     .i_0    (i_dct_8_u0[0 ]     ),
@@ -1128,7 +1128,7 @@ u1_dct1d_8(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_width_d[3]       ),
+    .i_size (i_width_d[4]       ),
 //input data
     .i_valid(dct_8_valid        ),
     .i_0    (i_dct_8_u1[0 ]     ),
@@ -1158,7 +1158,7 @@ u2_dct1d_8(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_width_d[3]       ),
+    .i_size (i_width_d[4]       ),
 //input data
     .i_valid(dct_8_valid        ),
     .i_0    (i_dct_8_u2[0 ]     ),
@@ -1188,7 +1188,7 @@ u3_dct1d_8(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_width_d[3]       ),
+    .i_size (i_width_d[4]       ),
 //input data
     .i_valid(dct_8_valid        ),
     .i_0    (i_dct_8_u3[0 ]     ),
@@ -1218,7 +1218,7 @@ u4_dct1d_8(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_width_d[3]       ),
+    .i_size (i_width_d[4]       ),
 //input data
     .i_valid(dct_8_valid        ),
     .i_0    (i_dct_8_u4[0 ]     ),
@@ -1248,7 +1248,7 @@ u5_dct1d_8(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_width_d[3]       ),
+    .i_size (i_width_d[4]       ),
 //input data
     .i_valid(dct_8_valid        ),
     .i_0    (i_dct_8_u5[0 ]     ),
@@ -1278,7 +1278,7 @@ u6_dct1d_8(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_width_d[3]       ),
+    .i_size (i_width_d[4]       ),
 //input data
     .i_valid(dct_8_valid        ),
     .i_0    (i_dct_8_u6[0 ]     ),
@@ -1308,7 +1308,7 @@ u7_dct1d_8(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_width_d[3]       ),
+    .i_size (i_width_d[4]       ),
 //input data
     .i_valid(dct_8_valid        ),
     .i_0    (i_dct_8_u7[0 ]     ),
@@ -1340,7 +1340,7 @@ u0_dct1d_4(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_width_d[3]       ),
+    .i_size (i_width_d[4]       ),
 //input data
     .i_valid(dct_4_valid        ),
     .i_0    (i_dct_4_u0[0 ]     ),
@@ -1362,7 +1362,7 @@ u1_dct1d_4(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_width_d[3]       ),
+    .i_size (i_width_d[4]       ),
 //input data
     .i_valid(dct_4_valid        ),
     .i_0    (i_dct_4_u1[0 ]     ),
@@ -1384,7 +1384,7 @@ u2_dct1d_4(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_width_d[3]       ),
+    .i_size (i_width_d[4]       ),
 //input data
     .i_valid(dct_4_valid        ),
     .i_0    (i_dct_4_u2[0 ]     ),
@@ -1406,7 +1406,7 @@ u3_dct1d_4(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_width_d[3]       ),
+    .i_size (i_width_d[4]       ),
 //input data
     .i_valid(dct_4_valid        ),
     .i_0    (i_dct_4_u3[0 ]     ),
@@ -1428,7 +1428,7 @@ u4_dct1d_4(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_width_d[3]       ),
+    .i_size (i_width_d[4]       ),
 //input data
     .i_valid(dct_4_valid        ),
     .i_0    (i_dct_4_u4[0 ]     ),
@@ -1450,7 +1450,7 @@ u5_dct1d_4(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_width_d[3]       ),
+    .i_size (i_width_d[4]       ),
 //input data
     .i_valid(dct_4_valid        ),
     .i_0    (i_dct_4_u5[0 ]     ),
@@ -1472,7 +1472,7 @@ u6_dct1d_4(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_width_d[3]       ),
+    .i_size (i_width_d[4]       ),
 //input data
     .i_valid(dct_4_valid        ),
     .i_0    (i_dct_4_u6[0 ]     ),
@@ -1494,7 +1494,7 @@ u7_dct1d_4(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_width_d[3]       ),
+    .i_size (i_width_d[4]       ),
 //input data
     .i_valid(dct_4_valid        ),
     .i_0    (i_dct_4_u7[0 ]     ),
@@ -1516,7 +1516,7 @@ u8_dct1d_4(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_width_d[3]       ),
+    .i_size (i_width_d[4]       ),
 //input data
     .i_valid(dct_4_valid        ),
     .i_0    (i_dct_4_u8[0 ]     ),
@@ -1538,7 +1538,7 @@ u9_dct1d_4(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_width_d[3]       ),
+    .i_size (i_width_d[4]       ),
 //input data
     .i_valid(dct_4_valid        ),
     .i_0    (i_dct_4_u9[0 ]     ),
@@ -1560,7 +1560,7 @@ u10_dct1d_4(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_width_d[3]       ),
+    .i_size (i_width_d[4]       ),
 //input data
     .i_valid(dct_4_valid        ),
     .i_0    (i_dct_4_u10[0 ]    ),
@@ -1582,7 +1582,7 @@ u11_dct1d_4(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_width_d[3]       ),
+    .i_size (i_width_d[4]       ),
 //input data
     .i_valid(dct_4_valid        ),
     .i_0    (i_dct_4_u11[0 ]    ),
@@ -1604,7 +1604,7 @@ u12_dct1d_4(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_width_d[3]       ),
+    .i_size (i_width_d[4]       ),
 //input data
     .i_valid(dct_4_valid        ),
     .i_0    (i_dct_4_u12[0 ]    ),
@@ -1626,7 +1626,7 @@ u13_dct1d_4(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_width_d[3]       ),
+    .i_size (i_width_d[4]       ),
 //input data
     .i_valid(dct_4_valid        ),
     .i_0    (i_dct_4_u13[0 ]    ),
@@ -1648,7 +1648,7 @@ u14_dct1d_4(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_width_d[3]       ),
+    .i_size (i_width_d[4]       ),
 //input data
     .i_valid(dct_4_valid        ),
     .i_0    (i_dct_4_u14[0 ]    ),
@@ -1670,7 +1670,7 @@ u15_dct1d_4(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_width_d[3]       ),
+    .i_size (i_width_d[4]       ),
 //input data
     .i_valid(dct_4_valid        ),
     .i_0    (i_dct_4_u15[0 ]    ),
@@ -1830,8 +1830,8 @@ u_right_shift(
 );
 
 //output
-    assign o_width  = i_width_d[5]  ;
-    assign o_height = i_height_d[5] ;
+    assign o_width  = i_width_d[6]  ;
+    assign o_height = i_height_d[6] ;
     assign o_valid  = coeff_valid   ;
     assign o_0      = coeff[0 ]     ;
     assign o_1      = coeff[1 ]     ;

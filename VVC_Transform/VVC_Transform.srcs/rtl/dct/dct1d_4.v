@@ -1,7 +1,7 @@
 //describe  : 4x4点DCT计算
 //input     : 4个像素残差/第一次变换系数
 //output    : 4个预变换系数(后需右移)
-//delay     : 1 clk
+//delay     : 2 clk
 module dct1d_4#(
     parameter  IN_WIDTH  = 20
 )
@@ -26,6 +26,7 @@ module dct1d_4#(
 );
 
 //butterfly
+    wire butterfly_4_valid;
     wire signed [IN_WIDTH : 0]  butterfly_4[0 : 3];
 //calculate : mcm + sum
     wire pre_coeff_valid;
@@ -36,12 +37,17 @@ butterfly_4#(
     .IN_WIDTH   (IN_WIDTH)
 )
 u_butterfly_4(
+//system input
+    .clk    (clk                ),
+    .rst_n  (rst_n              ),
 //input data
+    .i_valid(i_valid            ),
     .i_0    (i_0                ),
     .i_1    (i_1                ),
     .i_2    (i_2                ),
     .i_3    (i_3                ),
 //output data
+    .o_valid(butterfly_4_valid  ),
     .o_0    (butterfly_4[0 ]    ),//E
     .o_1    (butterfly_4[1 ]    ),
     .o_2    (butterfly_4[2 ]    ),//O
@@ -58,7 +64,7 @@ u_calculate_4(
 //input parameter
     .i_size (i_size             ),
 //input data
-    .i_valid(i_valid            ),
+    .i_valid(butterfly_4_valid  ),
     .i_0    (butterfly_4[0 ]    ),
     .i_1    (butterfly_4[1 ]    ),
     .i_2    (butterfly_4[2 ]    ),

@@ -1,7 +1,7 @@
 //describe  : 二维DCT2
 //input     : 64个像素残差数据
 //output    : 64个系数数据
-//delay     : 81 clk = 1in + 6dct + 66transpose + 6dct
+//delay     : 83 clk = 1in + 7dct + 66transpose + 7dct
 module dct2d_top#(
     parameter  BIT_DEPTH = 8,
     parameter  OUT_WIDTH = 16

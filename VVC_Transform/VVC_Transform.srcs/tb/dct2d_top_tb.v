@@ -440,83 +440,83 @@ end
         $stop;
     end
 
-    //write
-    initial begin 
-        #2;
-        #14; //delay 7 clk
-        //64x64
-        fp_w = $fopen("../../../../../result/fpga_coeff/fpga_coeff_64x64.txt", "w");
-        for (i = 0; i < 64; i = i + 1) begin
-            $fwrite(fp_w, "%6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d\n", 
-                    o_0,o_1,o_2,o_3,o_4,o_5,o_6,o_7,o_8,o_9,o_10,o_11,o_12,o_13,o_14,o_15,o_16,o_17,o_18,o_19,o_20,o_21,o_22,o_23,o_24,o_25,o_26,o_27,o_28,o_29,o_30,o_31,
-                    o_32,o_33,o_34,o_35,o_36,o_37,o_38,o_39,o_40,o_41,o_42,o_43,o_44,o_45,o_46,o_47,o_48,o_49,o_50,o_51,o_52,o_53,o_54,o_55,o_56,o_57,o_58,o_59,o_60,o_61,o_62,o_63);
-            #2;
-        end
-        $fclose(fp_w);
-        //32x32
-        fp_w = $fopen("../../../../../result/fpga_coeff/fpga_coeff_32x32.txt", "w");
-        for (i = 0; i < 16; i = i + 1) begin
-            $fwrite(fp_w, "%6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d\n", 
-                    o_0,o_1,o_2,o_3,o_4,o_5,o_6,o_7,o_8,o_9,o_10,o_11,o_12,o_13,o_14,o_15,o_16,o_17,o_18,o_19,o_20,o_21,o_22,o_23,o_24,o_25,o_26,o_27,o_28,o_29,o_30,o_31);
-            $fwrite(fp_w, "%6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d\n", 
-                    o_32,o_33,o_34,o_35,o_36,o_37,o_38,o_39,o_40,o_41,o_42,o_43,o_44,o_45,o_46,o_47,o_48,o_49,o_50,o_51,o_52,o_53,o_54,o_55,o_56,o_57,o_58,o_59,o_60,o_61,o_62,o_63);
-            #2;
-        end
-        $fclose(fp_w);
-        //16x16
-        fp_w = $fopen("../../../../../result/fpga_coeff/fpga_coeff_16x16.txt", "w");
-        for (i = 0; i < 4; i = i + 1) begin
-            $fwrite(fp_w, "%6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d\n", o_0,o_1,o_2,o_3,o_4,o_5,o_6,o_7,o_8,o_9,o_10,o_11,o_12,o_13,o_14,o_15);
-            $fwrite(fp_w, "%6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d\n", o_16,o_17,o_18,o_19,o_20,o_21,o_22,o_23,o_24,o_25,o_26,o_27,o_28,o_29,o_30,o_31);
-            $fwrite(fp_w, "%6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d\n", o_32,o_33,o_34,o_35,o_36,o_37,o_38,o_39,o_40,o_41,o_42,o_43,o_44,o_45,o_46,o_47);
-            $fwrite(fp_w, "%6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d\n", o_48,o_49,o_50,o_51,o_52,o_53,o_54,o_55,o_56,o_57,o_58,o_59,o_60,o_61,o_62,o_63);
-            #2;
-        end
-        $fclose(fp_w);
-        //8x8
-        fp_w = $fopen("../../../../../result/fpga_coeff/fpga_coeff_8x8.txt", "w");
-        for (i = 0; i < 1; i = i + 1) begin
-            $fwrite(fp_w, "%6d %6d %6d %6d %6d %6d %6d %6d\n", o_0,o_1,o_2,o_3,o_4,o_5,o_6,o_7);
-            $fwrite(fp_w, "%6d %6d %6d %6d %6d %6d %6d %6d\n", o_8,o_9,o_10,o_11,o_12,o_13,o_14,o_15);
-            $fwrite(fp_w, "%6d %6d %6d %6d %6d %6d %6d %6d\n", o_16,o_17,o_18,o_19,o_20,o_21,o_22,o_23);
-            $fwrite(fp_w, "%6d %6d %6d %6d %6d %6d %6d %6d\n", o_24,o_25,o_26,o_27,o_28,o_29,o_30,o_31);
-            $fwrite(fp_w, "%6d %6d %6d %6d %6d %6d %6d %6d\n", o_32,o_33,o_34,o_35,o_36,o_37,o_38,o_39);
-            $fwrite(fp_w, "%6d %6d %6d %6d %6d %6d %6d %6d\n", o_40,o_41,o_42,o_43,o_44,o_45,o_46,o_47);
-            $fwrite(fp_w, "%6d %6d %6d %6d %6d %6d %6d %6d\n", o_48,o_49,o_50,o_51,o_52,o_53,o_54,o_55);
-            $fwrite(fp_w, "%6d %6d %6d %6d %6d %6d %6d %6d\n", o_56,o_57,o_58,o_59,o_60,o_61,o_62,o_63);
-            #2;
-        end
-        $fclose(fp_w);
-        //4x4
-        fp_w = $fopen("../../../../../result/fpga_coeff/fpga_coeff_4x4.txt", "w"); 
-        for (i = 0; i < 1; i = i + 1) begin
-            $fwrite(fp_w, "%6d %6d %6d %6d\n", o_0,o_1,o_2,o_3);
-            $fwrite(fp_w, "%6d %6d %6d %6d\n", o_4,o_5,o_6,o_7);
-            $fwrite(fp_w, "%6d %6d %6d %6d\n", o_8,o_9,o_10,o_11);
-            $fwrite(fp_w, "%6d %6d %6d %6d\n", o_12,o_13,o_14,o_15);
-            #2;
-        end
-        $fclose(fp_w);
-        //32x64
-        fp_w = $fopen("../../../../../result/fpga_coeff/fpga_coeff_32x64.txt", "w");
-        for (i = 0; i < 32; i = i + 1) begin
-            $fwrite(fp_w, "%6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d\n", 
-                    o_0,o_1,o_2,o_3,o_4,o_5,o_6,o_7,o_8,o_9,o_10,o_11,o_12,o_13,o_14,o_15,o_16,o_17,o_18,o_19,o_20,o_21,o_22,o_23,o_24,o_25,o_26,o_27,o_28,o_29,o_30,o_31,
-                    o_32,o_33,o_34,o_35,o_36,o_37,o_38,o_39,o_40,o_41,o_42,o_43,o_44,o_45,o_46,o_47,o_48,o_49,o_50,o_51,o_52,o_53,o_54,o_55,o_56,o_57,o_58,o_59,o_60,o_61,o_62,o_63);
-            #2;
-        end
-        $fclose(fp_w);
-        //64x32
-        fp_w = $fopen("../../../../../result/fpga_coeff/fpga_coeff_64x32.txt", "w");
-        for (i = 0; i < 32; i = i + 1) begin
-            $fwrite(fp_w, "%6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d\n", 
-                    o_0,o_1,o_2,o_3,o_4,o_5,o_6,o_7,o_8,o_9,o_10,o_11,o_12,o_13,o_14,o_15,o_16,o_17,o_18,o_19,o_20,o_21,o_22,o_23,o_24,o_25,o_26,o_27,o_28,o_29,o_30,o_31);
-            $fwrite(fp_w, "%6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d\n", 
-                    o_32,o_33,o_34,o_35,o_36,o_37,o_38,o_39,o_40,o_41,o_42,o_43,o_44,o_45,o_46,o_47,o_48,o_49,o_50,o_51,o_52,o_53,o_54,o_55,o_56,o_57,o_58,o_59,o_60,o_61,o_62,o_63);
-            #2;
-        end
-        $fclose(fp_w);
-    end
+    // //write
+    // initial begin 
+    //     #2;
+    //     #16; //delay 8 clk
+    //     //64x64
+    //     fp_w = $fopen("../../../../../result/fpga_coeff/fpga_coeff_64x64.txt", "w");
+    //     for (i = 0; i < 64; i = i + 1) begin
+    //         $fwrite(fp_w, "%6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d\n", 
+    //                 o_0,o_1,o_2,o_3,o_4,o_5,o_6,o_7,o_8,o_9,o_10,o_11,o_12,o_13,o_14,o_15,o_16,o_17,o_18,o_19,o_20,o_21,o_22,o_23,o_24,o_25,o_26,o_27,o_28,o_29,o_30,o_31,
+    //                 o_32,o_33,o_34,o_35,o_36,o_37,o_38,o_39,o_40,o_41,o_42,o_43,o_44,o_45,o_46,o_47,o_48,o_49,o_50,o_51,o_52,o_53,o_54,o_55,o_56,o_57,o_58,o_59,o_60,o_61,o_62,o_63);
+    //         #2;
+    //     end
+    //     $fclose(fp_w);
+    //     //32x32
+    //     fp_w = $fopen("../../../../../result/fpga_coeff/fpga_coeff_32x32.txt", "w");
+    //     for (i = 0; i < 16; i = i + 1) begin
+    //         $fwrite(fp_w, "%6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d\n", 
+    //                 o_0,o_1,o_2,o_3,o_4,o_5,o_6,o_7,o_8,o_9,o_10,o_11,o_12,o_13,o_14,o_15,o_16,o_17,o_18,o_19,o_20,o_21,o_22,o_23,o_24,o_25,o_26,o_27,o_28,o_29,o_30,o_31);
+    //         $fwrite(fp_w, "%6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d\n", 
+    //                 o_32,o_33,o_34,o_35,o_36,o_37,o_38,o_39,o_40,o_41,o_42,o_43,o_44,o_45,o_46,o_47,o_48,o_49,o_50,o_51,o_52,o_53,o_54,o_55,o_56,o_57,o_58,o_59,o_60,o_61,o_62,o_63);
+    //         #2;
+    //     end
+    //     $fclose(fp_w);
+    //     //16x16
+    //     fp_w = $fopen("../../../../../result/fpga_coeff/fpga_coeff_16x16.txt", "w");
+    //     for (i = 0; i < 4; i = i + 1) begin
+    //         $fwrite(fp_w, "%6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d\n", o_0,o_1,o_2,o_3,o_4,o_5,o_6,o_7,o_8,o_9,o_10,o_11,o_12,o_13,o_14,o_15);
+    //         $fwrite(fp_w, "%6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d\n", o_16,o_17,o_18,o_19,o_20,o_21,o_22,o_23,o_24,o_25,o_26,o_27,o_28,o_29,o_30,o_31);
+    //         $fwrite(fp_w, "%6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d\n", o_32,o_33,o_34,o_35,o_36,o_37,o_38,o_39,o_40,o_41,o_42,o_43,o_44,o_45,o_46,o_47);
+    //         $fwrite(fp_w, "%6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d\n", o_48,o_49,o_50,o_51,o_52,o_53,o_54,o_55,o_56,o_57,o_58,o_59,o_60,o_61,o_62,o_63);
+    //         #2;
+    //     end
+    //     $fclose(fp_w);
+    //     //8x8
+    //     fp_w = $fopen("../../../../../result/fpga_coeff/fpga_coeff_8x8.txt", "w");
+    //     for (i = 0; i < 1; i = i + 1) begin
+    //         $fwrite(fp_w, "%6d %6d %6d %6d %6d %6d %6d %6d\n", o_0,o_1,o_2,o_3,o_4,o_5,o_6,o_7);
+    //         $fwrite(fp_w, "%6d %6d %6d %6d %6d %6d %6d %6d\n", o_8,o_9,o_10,o_11,o_12,o_13,o_14,o_15);
+    //         $fwrite(fp_w, "%6d %6d %6d %6d %6d %6d %6d %6d\n", o_16,o_17,o_18,o_19,o_20,o_21,o_22,o_23);
+    //         $fwrite(fp_w, "%6d %6d %6d %6d %6d %6d %6d %6d\n", o_24,o_25,o_26,o_27,o_28,o_29,o_30,o_31);
+    //         $fwrite(fp_w, "%6d %6d %6d %6d %6d %6d %6d %6d\n", o_32,o_33,o_34,o_35,o_36,o_37,o_38,o_39);
+    //         $fwrite(fp_w, "%6d %6d %6d %6d %6d %6d %6d %6d\n", o_40,o_41,o_42,o_43,o_44,o_45,o_46,o_47);
+    //         $fwrite(fp_w, "%6d %6d %6d %6d %6d %6d %6d %6d\n", o_48,o_49,o_50,o_51,o_52,o_53,o_54,o_55);
+    //         $fwrite(fp_w, "%6d %6d %6d %6d %6d %6d %6d %6d\n", o_56,o_57,o_58,o_59,o_60,o_61,o_62,o_63);
+    //         #2;
+    //     end
+    //     $fclose(fp_w);
+    //     //4x4
+    //     fp_w = $fopen("../../../../../result/fpga_coeff/fpga_coeff_4x4.txt", "w"); 
+    //     for (i = 0; i < 1; i = i + 1) begin
+    //         $fwrite(fp_w, "%6d %6d %6d %6d\n", o_0,o_1,o_2,o_3);
+    //         $fwrite(fp_w, "%6d %6d %6d %6d\n", o_4,o_5,o_6,o_7);
+    //         $fwrite(fp_w, "%6d %6d %6d %6d\n", o_8,o_9,o_10,o_11);
+    //         $fwrite(fp_w, "%6d %6d %6d %6d\n", o_12,o_13,o_14,o_15);
+    //         #2;
+    //     end
+    //     $fclose(fp_w);
+    //     //32x64
+    //     fp_w = $fopen("../../../../../result/fpga_coeff/fpga_coeff_32x64.txt", "w");
+    //     for (i = 0; i < 32; i = i + 1) begin
+    //         $fwrite(fp_w, "%6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d\n", 
+    //                 o_0,o_1,o_2,o_3,o_4,o_5,o_6,o_7,o_8,o_9,o_10,o_11,o_12,o_13,o_14,o_15,o_16,o_17,o_18,o_19,o_20,o_21,o_22,o_23,o_24,o_25,o_26,o_27,o_28,o_29,o_30,o_31,
+    //                 o_32,o_33,o_34,o_35,o_36,o_37,o_38,o_39,o_40,o_41,o_42,o_43,o_44,o_45,o_46,o_47,o_48,o_49,o_50,o_51,o_52,o_53,o_54,o_55,o_56,o_57,o_58,o_59,o_60,o_61,o_62,o_63);
+    //         #2;
+    //     end
+    //     $fclose(fp_w);
+    //     //64x32
+    //     fp_w = $fopen("../../../../../result/fpga_coeff/fpga_coeff_64x32.txt", "w");
+    //     for (i = 0; i < 32; i = i + 1) begin
+    //         $fwrite(fp_w, "%6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d\n", 
+    //                 o_0,o_1,o_2,o_3,o_4,o_5,o_6,o_7,o_8,o_9,o_10,o_11,o_12,o_13,o_14,o_15,o_16,o_17,o_18,o_19,o_20,o_21,o_22,o_23,o_24,o_25,o_26,o_27,o_28,o_29,o_30,o_31);
+    //         $fwrite(fp_w, "%6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d %6d\n", 
+    //                 o_32,o_33,o_34,o_35,o_36,o_37,o_38,o_39,o_40,o_41,o_42,o_43,o_44,o_45,o_46,o_47,o_48,o_49,o_50,o_51,o_52,o_53,o_54,o_55,o_56,o_57,o_58,o_59,o_60,o_61,o_62,o_63);
+    //         #2;
+    //     end
+    //     $fclose(fp_w);
+    // end
 
 `elsif use_pipeline0
     //read

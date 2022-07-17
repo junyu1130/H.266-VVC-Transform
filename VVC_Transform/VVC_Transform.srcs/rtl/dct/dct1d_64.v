@@ -1,7 +1,7 @@
 //describe  : 64x64点DCT计算，高频系数置零
 //input     : 64个像素残差/第一次变换系数
 //output    : 32个预变换系数(后需右移)+32个64_E
-//delay     : 64_E : 1 clk , 64_precoeff : 5 clk
+//delay     : 64_E : 1 clk , 64_precoeff : 6 clk
 module dct1d_64#(
     parameter  IN_WIDTH  = 16
 )

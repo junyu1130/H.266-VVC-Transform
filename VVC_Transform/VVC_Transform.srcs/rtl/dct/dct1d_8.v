@@ -1,7 +1,7 @@
 //describe  : 8x8点DCT计算
 //input     : 8个像素残差/第一次变换系数
 //output    : 4个预变换系数(后需右移)+4个8_E
-//delay     : 8_E : 1 clk , 8_precoeff : 2 clk
+//delay     : 8_E : 1 clk , 8_precoeff : 3 clk
 module dct1d_8#(
     parameter  IN_WIDTH  = 19
 )
