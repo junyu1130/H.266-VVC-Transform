@@ -1,3 +1,7 @@
+//describe  : ×ªÖÃ´æ´¢Æ÷£¬¶Ô½Ç´æ´¢
+//input     : 64 data(col)
+//output    : 64 data(row)
+//delay     : 66 clk
 module transpose_memory#(
     parameter  WIDTH  = 16
 )
@@ -340,7 +344,7 @@ always @(*) begin
         {MATRIX_64X16} : {o_height_t, o_width_t} <= {DCT_64, DCT_16 };
         {MATRIX_64X32} : {o_height_t, o_width_t} <= {DCT_64, DCT_32 };
         {MATRIX_64X64} : {o_height_t, o_width_t} <= {DCT_64, DCT_64 };
-        default        : {o_height_t, o_width_t} <= {DCT_4, DCT_4 };
+        default        : {o_height_t, o_width_t} <= {3'd0, 3'd0 };
     endcase
 end
 
@@ -2739,6 +2743,7 @@ always @(*) begin
                             wr_data[i + 20] <= i_data[(i - wr_count) * 8 + 34];
                             wr_data[i + 21] <= i_data[(i - wr_count) * 8 + 42];
                             wr_data[i + 22] <= i_data[(i - wr_count) * 8 + 50];
+                
                             wr_data[i + 23] <= i_data[(i - wr_count) * 8 + 58];
                             wr_data[i + 24] <= i_data[(i - wr_count) * 8 + 3];
                             wr_data[i + 25] <= i_data[(i - wr_count) * 8 + 11];
@@ -5044,12 +5049,7 @@ end
                 end
                 default        : begin
                     for (i = 0; i < 64; i = i + 1) begin
-                        if (i + rd_count_d1 < 64) begin
-                            o_data[i * 1 + 0] <= rd_data[i +  0 + rd_count_d1];
-                        end
-                        else begin
-                            o_data[i * 1 + 0] <= rd_data[i + -64 + rd_count_d1];
-                        end
+                        o_data[i] <= 0;
                     end
                 end
             endcase

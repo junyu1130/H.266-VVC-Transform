@@ -1,6 +1,6 @@
 //describe  : 64x64点DCT计算，高频系数置零
 //input     : 64个像素残差/第一次变换系数
-//output    : 32个预变换系数(后需右移)+32个64_E
+//output    : 16个预变换系数(后需右移)+32个64_E
 //delay     : 64_E : 1 clk , 64_precoeff : 6 clk
 module dct1d_64#(
     parameter  IN_WIDTH  = 16
@@ -124,23 +124,7 @@ module dct1d_64#(
     output  signed  [IN_WIDTH + 11 : 0] o_44    ,
     output  signed  [IN_WIDTH + 11 : 0] o_45    ,
     output  signed  [IN_WIDTH + 11 : 0] o_46    ,
-    output  signed  [IN_WIDTH + 11 : 0] o_47    ,
-    output  signed  [IN_WIDTH + 11 : 0] o_48    ,
-    output  signed  [IN_WIDTH + 11 : 0] o_49    ,
-    output  signed  [IN_WIDTH + 11 : 0] o_50    ,
-    output  signed  [IN_WIDTH + 11 : 0] o_51    ,
-    output  signed  [IN_WIDTH + 11 : 0] o_52    ,
-    output  signed  [IN_WIDTH + 11 : 0] o_53    ,
-    output  signed  [IN_WIDTH + 11 : 0] o_54    ,
-    output  signed  [IN_WIDTH + 11 : 0] o_55    ,
-    output  signed  [IN_WIDTH + 11 : 0] o_56    ,
-    output  signed  [IN_WIDTH + 11 : 0] o_57    ,
-    output  signed  [IN_WIDTH + 11 : 0] o_58    ,
-    output  signed  [IN_WIDTH + 11 : 0] o_59    ,
-    output  signed  [IN_WIDTH + 11 : 0] o_60    ,
-    output  signed  [IN_WIDTH + 11 : 0] o_61    ,
-    output  signed  [IN_WIDTH + 11 : 0] o_62    ,
-    output  signed  [IN_WIDTH + 11 : 0] o_63
+    output  signed  [IN_WIDTH + 11 : 0] o_47    
 );
 
 //butterfly
@@ -148,7 +132,7 @@ module dct1d_64#(
     wire signed [IN_WIDTH : 0]  butterfly_64[0 : 63];
 //calculate : mcm + sum
     wire pre_coeff_valid;
-    wire signed [IN_WIDTH + 11 : 0] pre_coeff[0 : 31];
+    wire signed [IN_WIDTH + 11 : 0] pre_coeff[0 : 15];
 
 //sub module
 butterfly_64#(
@@ -350,23 +334,7 @@ u_calculate_64(
     .o_12   (pre_coeff[12]      ),
     .o_13   (pre_coeff[13]      ),
     .o_14   (pre_coeff[14]      ),
-    .o_15   (pre_coeff[15]      ),
-    .o_16   (pre_coeff[16]      ),
-    .o_17   (pre_coeff[17]      ),
-    .o_18   (pre_coeff[18]      ),
-    .o_19   (pre_coeff[19]      ),
-    .o_20   (pre_coeff[20]      ),
-    .o_21   (pre_coeff[21]      ),
-    .o_22   (pre_coeff[22]      ),
-    .o_23   (pre_coeff[23]      ),
-    .o_24   (pre_coeff[24]      ),
-    .o_25   (pre_coeff[25]      ),
-    .o_26   (pre_coeff[26]      ),
-    .o_27   (pre_coeff[27]      ),
-    .o_28   (pre_coeff[28]      ),
-    .o_29   (pre_coeff[29]      ),
-    .o_30   (pre_coeff[30]      ),
-    .o_31   (pre_coeff[31]      )
+    .o_15   (pre_coeff[15]      )
 );
 
 //output
@@ -419,21 +387,5 @@ u_calculate_64(
     assign o_45    = pre_coeff[13];//27
     assign o_46    = pre_coeff[14];//29
     assign o_47    = pre_coeff[15];//31
-    assign o_48    = pre_coeff[16];//33
-    assign o_49    = pre_coeff[17];//35
-    assign o_50    = pre_coeff[18];//37
-    assign o_51    = pre_coeff[19];//39
-    assign o_52    = pre_coeff[20];//41
-    assign o_53    = pre_coeff[21];//43
-    assign o_54    = pre_coeff[22];//45
-    assign o_55    = pre_coeff[23];//47
-    assign o_56    = pre_coeff[24];//49
-    assign o_57    = pre_coeff[25];//51
-    assign o_58    = pre_coeff[26];//53
-    assign o_59    = pre_coeff[27];//55
-    assign o_60    = pre_coeff[28];//57
-    assign o_61    = pre_coeff[29];//59
-    assign o_62    = pre_coeff[30];//61
-    assign o_63    = pre_coeff[31];//63
 
 endmodule

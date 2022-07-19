@@ -1,6 +1,6 @@
 //describe  : MCM(RAG-n算法)生成乘法单元，求和得到结果
 //input     : 32个蝶形单元
-//output    : 32个系数结果(后需右移)
+//output    : 16个系数结果(后需右移), 剩余16个被高频置零
 //delay     : 5 clk
 module calculate_64#(
     parameter IN_WIDTH = 17
@@ -60,23 +60,7 @@ module calculate_64#(
     output reg  signed  [IN_WIDTH + 10 : 0] o_12    ,//25
     output reg  signed  [IN_WIDTH + 10 : 0] o_13    ,//27
     output reg  signed  [IN_WIDTH + 10 : 0] o_14    ,//29
-    output reg  signed  [IN_WIDTH + 10 : 0] o_15    ,//31
-    output reg  signed  [IN_WIDTH + 10 : 0] o_16    ,//33(0)
-    output reg  signed  [IN_WIDTH + 10 : 0] o_17    ,//35(0)
-    output reg  signed  [IN_WIDTH + 10 : 0] o_18    ,//37(0)
-    output reg  signed  [IN_WIDTH + 10 : 0] o_19    ,//39(0)
-    output reg  signed  [IN_WIDTH + 10 : 0] o_20    ,//41(0)
-    output reg  signed  [IN_WIDTH + 10 : 0] o_21    ,//43(0)
-    output reg  signed  [IN_WIDTH + 10 : 0] o_22    ,//45(0)
-    output reg  signed  [IN_WIDTH + 10 : 0] o_23    ,//47(0)
-    output reg  signed  [IN_WIDTH + 10 : 0] o_24    ,//49(0)
-    output reg  signed  [IN_WIDTH + 10 : 0] o_25    ,//51(0)
-    output reg  signed  [IN_WIDTH + 10 : 0] o_26    ,//53(0)
-    output reg  signed  [IN_WIDTH + 10 : 0] o_27    ,//55(0)
-    output reg  signed  [IN_WIDTH + 10 : 0] o_28    ,//57(0)
-    output reg  signed  [IN_WIDTH + 10 : 0] o_29    ,//59(0)
-    output reg  signed  [IN_WIDTH + 10 : 0] o_30    ,//61(0)
-    output reg  signed  [IN_WIDTH + 10 : 0] o_31     //63(0)
+    output reg  signed  [IN_WIDTH + 10 : 0] o_15     //31
 );
 
 integer i;
@@ -1199,22 +1183,6 @@ always @(posedge clk or negedge rst_n) begin
         o_13 <= 0;
         o_14 <= 0;
         o_15 <= 0;
-        o_16 <= 0;
-        o_17 <= 0;
-        o_18 <= 0;
-        o_19 <= 0;
-        o_20 <= 0;
-        o_21 <= 0;
-        o_22 <= 0;
-        o_23 <= 0;
-        o_24 <= 0;
-        o_25 <= 0;
-        o_26 <= 0;
-        o_27 <= 0;
-        o_28 <= 0;
-        o_29 <= 0;
-        o_30 <= 0;
-        o_31 <= 0;
     end
     else begin//高频置零
         o_valid <= i_valid_d4;
@@ -1234,22 +1202,6 @@ always @(posedge clk or negedge rst_n) begin
         o_13 <= sum3_0[13] - sum3_1[13];
         o_14 <= sum3_0[14] - sum3_1[14];
         o_15 <= sum3_0[15] + sum3_1[15];
-        o_16 <= 0;
-        o_17 <= 0;
-        o_18 <= 0;
-        o_19 <= 0;
-        o_20 <= 0;
-        o_21 <= 0;
-        o_22 <= 0;
-        o_23 <= 0;
-        o_24 <= 0;
-        o_25 <= 0;
-        o_26 <= 0;
-        o_27 <= 0;
-        o_28 <= 0;
-        o_29 <= 0;
-        o_30 <= 0;
-        o_31 <= 0;
     end
 end
 
