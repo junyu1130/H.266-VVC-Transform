@@ -151,7 +151,7 @@ always @(negedge clk or negedge rst_n) begin
     if (!rst_n) begin
         count_max <= 0;
     end
-    else if (i_valid) begin
+    else begin
         case (i_width) 
             SIZE64  : count_max <= 3;
             SIZE32  : count_max <= 1;

@@ -185,13 +185,11 @@ always @(posedge clk or negedge rst_n) begin
         count_max <= 0;
     end
     else begin
-        if (i_valid_d3) begin
-            case (i_width_d[2]) 
-                SIZE64  : count_max <= 3;
-                SIZE32  : count_max <= 1;
-                default : count_max <= 0;
-            endcase
-        end
+        case (i_width_d[2]) 
+            SIZE64  : count_max <= 3;
+            SIZE32  : count_max <= 1;
+            default : count_max <= 0;
+        endcase
     end
 end
 
