@@ -198,43 +198,43 @@ always @(negedge clk or negedge rst_n) begin
         end
     end
     else begin
+        //delay 0 clk
+        case (i_height) 
+            SIZE32 : begin
+                tr_in_32_valid <= i_valid;
+                for (i = 0; i < 32; i = i + 1) begin
+                    tr_in_32_u0[i] <= i_data[i];
+                end
+            end
+        endcase
         //delay 1 clk
         case (i_height_d[0]) 
-            SIZE32 : begin
-                tr_in_32_valid <= i_valid_d1;
-                for (i = 0; i < 32; i = i + 1) begin
-                    tr_in_32_u0[i] <= i_data_d1[i];
+            SIZE16 : begin
+                tr_in_16_valid <= i_valid_d1;
+                for (i = 0; i < 16; i = i + 1) begin
+                    tr_in_16_u0[i] <= i_data_d1[i];
                 end
             end
         endcase
         //delay 2 clk
         case (i_height_d[1]) 
-            SIZE16 : begin
-                tr_in_16_valid <= i_valid_d2;
-                for (i = 0; i < 16; i = i + 1) begin
-                    tr_in_16_u0[i] <= i_data_d2[i];
+            SIZE8 : begin
+                tr_in_8_valid <= i_valid_d2;
+                for (i = 0; i < 8; i = i + 1) begin
+                    tr_in_8_u0[i] <= i_data_d2[i];
+                    tr_in_8_u1[i] <= i_data_d2[i + 8];
                 end
             end
         endcase
         //delay 3 clk
         case (i_height_d[2]) 
-            SIZE8 : begin
-                tr_in_8_valid <= i_valid_d3;
-                for (i = 0; i < 8; i = i + 1) begin
-                    tr_in_8_u0[i] <= i_data_d3[i];
-                    tr_in_8_u1[i] <= i_data_d3[i + 8];
-                end
-            end
-        endcase
-        //delay 4 clk
-        case (i_height_d[3]) 
             SIZE4 : begin
-                tr_in_4_valid <= i_valid_d4;
+                tr_in_4_valid <= i_valid_d3;
                 for (i = 0; i < 4; i = i + 1) begin
-                    tr_in_4_u0[i] <= i_data_d4[i];
-                    tr_in_4_u1[i] <= i_data_d4[i + 4];
-                    tr_in_4_u2[i] <= i_data_d4[i + 8];
-                    tr_in_4_u3[i] <= i_data_d4[i + 12];
+                    tr_in_4_u0[i] <= i_data_d3[i];
+                    tr_in_4_u1[i] <= i_data_d3[i + 4];
+                    tr_in_4_u2[i] <= i_data_d3[i + 8];
+                    tr_in_4_u3[i] <= i_data_d3[i + 12];
                 end
             end
         endcase

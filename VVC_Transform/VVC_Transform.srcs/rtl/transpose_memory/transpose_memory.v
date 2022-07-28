@@ -71,13 +71,13 @@ integer i, j, k;
     reg         [255 : 0]       i_valid_d;
     reg         [7 : 0]         transpose_delay;
 //ram wr
-    reg                         wr_en,wr_en_d1;
+    reg                         wr_en, wr_en_d1;
     reg  signed [WIDTH - 1 : 0] wr_data[0 : 15];
     reg  signed [WIDTH - 1 : 0] wr_data_shift[0 : 15];
     reg         [7 : 0]         wr_addr[0 : 15]; 
     reg         [7 : 0]         wr_addr_shift[0 : 15];  
-    reg         [7 : 0]         wr_count,wr_count_d1;
-    reg         [7 : 0]         wr_count_max,wr_count_max_d1;
+    reg         [7 : 0]         wr_count, wr_count_d1;
+    reg         [7 : 0]         wr_count_max, wr_count_max_d1;
     reg         [7 : 0]         wr_point;
     reg         [3 : 0]         wr_shift;
     wire                        is_maxblock_zero_data;
@@ -189,11 +189,12 @@ always @(posedge clk or negedge rst_n) begin
         wr_en <= 0;
 end
 
-always@(posedge clk or negedge rst_n)
-    if(!rst_n)
-        wr_en_d1    <=  0;
+always @(posedge clk or negedge rst_n) begin
+    if (!rst_n)
+        wr_en_d1 <= 0;
     else
-        wr_en_d1    <=  wr_en;
+        wr_en_d1 <= wr_en;
+end
 
 //decide the wr_count_max
 always @(posedge clk or negedge rst_n) begin
@@ -232,11 +233,12 @@ always @(posedge clk or negedge rst_n) begin
     end
 end
 
-always@(posedge clk or negedge rst_n)
-    if(!rst_n)
-        wr_count_max_d1 <=  0;
+always @(posedge clk or negedge rst_n) begin
+    if (!rst_n)
+        wr_count_max_d1 <= 0;
     else
-        wr_count_max_d1 <=  wr_count_max;
+        wr_count_max_d1 <= wr_count_max;
+end
 
 //wr count 
 always @(posedge clk or negedge rst_n) begin
@@ -249,13 +251,12 @@ always @(posedge clk or negedge rst_n) begin
             wr_count <= wr_count + 1;
 end
 
-always@(posedge clk or negedge rst_n)
-    if(!rst_n) begin 
-        wr_count_d1 <=  0;
-    end
-    else begin
-        wr_count_d1 <=  wr_count;
-    end
+always @(posedge clk or negedge rst_n) begin
+    if (!rst_n)  
+        wr_count_d1 <= 0;
+    else 
+        wr_count_d1 <= wr_count;
+end
 
 assign is_maxblock_zero_data = (i_width_d[wr_count_d1] == SIZE64 && i_height_d[wr_count_d1] == SIZE64) && (wr_count_d1 % 4 > 1);//64x64高频置零的无效数据
 
@@ -716,9 +717,10 @@ end
 
 //wr shift
 always @(posedge clk or negedge rst_n) begin
-    if(!rst_n)
-        wr_shift    <=  0;
-    else
+    if (!rst_n) begin
+        wr_shift <= 0;
+    end
+    else begin
         case (i_width_d[wr_count])
             SIZE4   : wr_shift <= 4;
             SIZE8   : wr_shift <= 2;
@@ -727,6 +729,7 @@ always @(posedge clk or negedge rst_n) begin
             SIZE64  : wr_shift <= 1;
             default : wr_shift <= 0;
         endcase
+    end
 end
 
 always @(posedge clk or negedge rst_n) begin

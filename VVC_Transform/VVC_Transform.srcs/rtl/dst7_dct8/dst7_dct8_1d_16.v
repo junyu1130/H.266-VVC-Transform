@@ -1,7 +1,7 @@
 //describe  : 正序输入DST7，倒序输入DCT8(1/3/5/7/9/11/13/15输出反号)，大小为16
 //input     : 16个像素残差
 //output    : 16个系数
-//delay     : 4 clk
+//delay     : 5 clk
 module dst7_dct8_1d_16#(
     parameter IN_WIDTH = 16
 )
@@ -52,15 +52,8 @@ integer i;
 //input
     wire signed [IN_WIDTH - 1 : 0] i_data[0 : 15];
     reg signed [IN_WIDTH - 1 : 0] i_data_d1[0 : 15];
-    reg i_valid_d1, i_valid_d2, i_valid_d3;;
-//butterfly
-    reg signed [IN_WIDTH + 10 : 0] a[0 : 4];
-    reg signed [IN_WIDTH + 10 : 0] b[0 : 4];
-    reg signed [IN_WIDTH + 10 : 0] c[0 : 4];
-    reg signed [IN_WIDTH + 10 : 0] d[0 : 4];
-    reg signed [IN_WIDTH + 10 : 0] t;
+    reg i_valid_d1, i_valid_d2, i_valid_d3, i_valid_d4;
 
-//input
     assign i_data[0 ] = i_0 ;
     assign i_data[1 ] = i_1 ;
     assign i_data[2 ] = i_2 ;
@@ -78,12 +71,19 @@ integer i;
     assign i_data[14] = i_14;
     assign i_data[15] = i_15;
 
-//butterfly
+//stage 1 butterfly
     wire signed [IN_WIDTH + 10 : 0] i_10_4 = i_10 <<< 2;
     wire signed [IN_WIDTH + 10 : 0] i_10_3 = i_10_4 - i_10;
     wire signed [IN_WIDTH + 10 : 0] i_10_5 = i_10 + i_10_4;
     wire signed [IN_WIDTH + 10 : 0] i_10_80 = i_10_5 <<< 4;
     wire signed [IN_WIDTH + 10 : 0] i_10_77 = i_10_80 - i_10_3;
+    reg signed [IN_WIDTH + 10 : 0] a[0 : 4];
+    reg signed [IN_WIDTH + 10 : 0] b[0 : 4];
+    reg signed [IN_WIDTH + 10 : 0] c[0 : 4];
+    reg signed [IN_WIDTH + 10 : 0] d[0 : 4];
+    reg signed [IN_WIDTH + 10 : 0] t;
+    reg signed [IN_WIDTH + 10 : 0] t_5[0 : 2];
+
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         i_valid_d1 <= 0;
@@ -94,9 +94,9 @@ always @(posedge clk or negedge rst_n) begin
             d[i] <= 0;
         end
         t <= 0;
-        for (i = 0; i < 16; i = i + 1) begin
-            i_data_d1[i] <= 0;
-        end
+        t_5[0] <= 0;
+        t_5[1] <= 0;
+        t_5[2] <= 0;
     end
     else begin
         i_valid_d1 <= i_valid;
@@ -107,9 +107,7 @@ always @(posedge clk or negedge rst_n) begin
             d[i] <= i_data[    i] + i_data[ 9 - i] - i_data[11 + i];
         end
         t <= i_10_77;
-        for (i = 0; i < 16; i = i + 1) begin
-            i_data_d1[i] <= i_data[i];
-        end
+        t_5[0] <= i_data[ 0] + i_data[ 1] - i_data[ 3] - i_data[ 4]; t_5[1] <= i_data[ 6] + i_data[ 7] - i_data[ 9] - i_data[10]; t_5[2] <= i_data[12] + i_data[13] - i_data[15]; 
     end
 end
 
@@ -214,7 +212,7 @@ end
     wire signed [IN_WIDTH + 10 : 0] b0_55 = b0_128 - b0_73;
     wire signed [IN_WIDTH + 10 : 0] b0_8 = b[0] <<< 3;
     wire signed [IN_WIDTH + 10 : 0] b0_68 = b0_17 <<< 2;
-//c[0] : 40 62 17 17
+//c[0] : 40 62 17
     wire signed [IN_WIDTH + 10 : 0] c0_4 = c[0] <<< 2;
     wire signed [IN_WIDTH + 10 : 0] c0_5 = c[0] + c0_4;
     wire signed [IN_WIDTH + 10 : 0] c0_16 = c[0] <<< 4;
@@ -223,7 +221,7 @@ end
     wire signed [IN_WIDTH + 10 : 0] c0_31 = c0_32 - c[0];
     wire signed [IN_WIDTH + 10 : 0] c0_40 = c0_5 <<< 3;
     wire signed [IN_WIDTH + 10 : 0] c0_62 = c0_31 <<< 1;
-//a[1] : 17 40 62 40
+//a[1] : 17 40 62
     wire signed [IN_WIDTH + 10 : 0] a1_4 = a[1] <<< 2;
     wire signed [IN_WIDTH + 10 : 0] a1_5 = a[1] + a1_4;
     wire signed [IN_WIDTH + 10 : 0] a1_16 = a[1] <<< 4;
@@ -277,7 +275,7 @@ end
     wire signed [IN_WIDTH + 10 : 0] a2_55 = a2_128 - a2_73;
     wire signed [IN_WIDTH + 10 : 0] a2_68 = a2_17 <<< 2;
     wire signed [IN_WIDTH + 10 : 0] a2_8 = a[2] <<< 3;
-//b[2] : 62 40 17 62 40
+//b[2] : 62 40 17
     wire signed [IN_WIDTH + 10 : 0] b2_4 = b[2] <<< 2;
     wire signed [IN_WIDTH + 10 : 0] b2_5 = b[2] + b2_4;
     wire signed [IN_WIDTH + 10 : 0] b2_16 = b[2] <<< 4;
@@ -380,47 +378,115 @@ end
     wire signed [IN_WIDTH + 10 : 0] c4_8 = c[4] <<< 3;
     wire signed [IN_WIDTH + 10 : 0] c4_68 = c4_17 <<< 2;
 
-//sum
-    reg signed  [IN_WIDTH + 10 : 0] sum0_0[0 : 15], sum0_1[0 : 15], sum0_2[0 : 15], sum0_3[0 : 15], sum0_4[0 : 15], sum0_5[0 : 15];
-    reg signed  [IN_WIDTH + 10 : 0] sum1_0[0 : 15], sum1_1[0 : 15];
-//stage 1
+//stage 2 reg 
+    reg signed  [IN_WIDTH + 10 : 0] d0_25_r, d0_48_r, d0_68_r, d0_81_r, d0_88_r;
+    reg signed  [IN_WIDTH + 10 : 0] d1_25_r, d1_48_r, d1_68_r, d1_81_r, d1_88_r;
+    reg signed  [IN_WIDTH + 10 : 0] d2_25_r, d2_48_r, d2_68_r, d2_81_r, d2_88_r;
+    reg signed  [IN_WIDTH + 10 : 0] d3_25_r, d3_48_r, d3_68_r, d3_81_r, d3_88_r;
+    reg signed  [IN_WIDTH + 10 : 0] d4_25_r, d4_48_r, d4_68_r, d4_81_r, d4_88_r;
+    reg signed  [IN_WIDTH + 10 : 0] a0_8_r, a0_55_r, a0_68_r, a0_73_r, a0_33_r, a0_48_r, a0_25_r;
+    reg signed  [IN_WIDTH + 10 : 0] b0_73_r, b0_48_r, b0_33_r, b0_8_r, b0_25_r, b0_55_r, b0_68_r;
+    reg signed  [IN_WIDTH + 10 : 0] c0_40_r, c0_62_r, c0_17_r;
+    reg signed  [IN_WIDTH + 10 : 0] a1_17_r, a1_40_r, a1_62_r;
+    reg signed  [IN_WIDTH + 10 : 0] b1_68_r, b1_8_r, b1_33_r, b1_73_r, b1_48_r, b1_25_r, b1_55_r;
+    reg signed  [IN_WIDTH + 10 : 0] c1_73_r, c1_25_r, c1_55_r, c1_8_r, c1_68_r, c1_48_r, c1_33_r;
+    reg signed  [IN_WIDTH + 10 : 0] a2_25_r, a2_48_r, a2_68_r, a2_33_r, a2_8_r, a2_55_r, a2_73_r;
+    reg signed  [IN_WIDTH + 10 : 0] b2_62_r, b2_40_r, b2_17_r;
+    reg signed  [IN_WIDTH + 10 : 0] c2_55_r, c2_73_r, c2_33_r, c2_68_r, c2_25_r, c2_8_r, c2_48_r;
+    reg signed  [IN_WIDTH + 10 : 0] a3_33_r, a3_73_r, a3_55_r, a3_8_r, a3_68_r, a3_25_r, a3_48_r;
+    reg signed  [IN_WIDTH + 10 : 0] b3_55_r, b3_48_r, b3_68_r, b3_8_r, b3_33_r, b3_73_r, b3_25_r;
+    reg signed  [IN_WIDTH + 10 : 0] c3_17_r, c3_40_r, c3_62_r;
+    reg signed  [IN_WIDTH + 10 : 0] a4_40_r, a4_62_r, a4_17_r;
+    reg signed  [IN_WIDTH + 10 : 0] b4_48_r, b4_25_r, b4_68_r, b4_73_r, b4_55_r, b4_33_r, b4_8_r;
+    reg signed  [IN_WIDTH + 10 : 0] c4_8_r, c4_25_r, c4_33_r, c4_48_r, c4_55_r, c4_68_r, c4_73_r;
+    reg signed  [IN_WIDTH + 10 : 0] t_5_r;
+    reg signed  [IN_WIDTH + 10 : 0] t_r;
+
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         i_valid_d2 <= 0;
+        t_5_r <= 0;
+        t_r <= 0;
+        a0_8_r  <= 0; b0_73_r <= 0; a1_17_r <= 0; b1_68_r <= 0; a2_25_r <= 0; b2_62_r <= 0; a3_33_r <= 0; b3_55_r <= 0; a4_40_r <= 0; b4_48_r <= 0;
+        d0_25_r <= 0; d1_48_r <= 0; d2_68_r <= 0; d3_81_r <= 0; d4_88_r <= 0;             
+        c0_40_r <= 0; b0_48_r <= 0; c1_73_r <= 0; b1_8_r  <= 0; c2_55_r <= 0; a2_33_r <= 0; c3_17_r <= 0; a3_68_r <= 0; a4_62_r <= 0; b4_25_r <= 0; 
+        a0_55_r <= 0; b0_33_r <= 0; c1_25_r <= 0; a1_62_r <= 0; c2_73_r <= 0; a2_8_r  <= 0; c3_40_r <= 0; b3_48_r <= 0; a4_17_r <= 0; b4_68_r <= 0;
+        d0_68_r <= 0; d1_88_r <= 0; d2_48_r <= 0; d3_25_r <= 0; d4_81_r <= 0;            
+        a0_68_r <= 0; c0_17_r <= 0; c1_55_r <= 0; b1_33_r <= 0; a2_48_r <= 0; b2_40_r <= 0; c3_62_r <= 0; a3_25_r <= 0; c4_8_r  <= 0; b4_73_r <= 0;
+        d0_88_r <= 0; d1_25_r <= 0; d2_81_r <= 0; d3_48_r <= 0; d4_68_r <= 0;             
+        c0_40_r <= 0; a0_48_r <= 0; c1_8_r  <= 0; b1_73_r <= 0; c2_33_r <= 0; a2_55_r <= 0; c3_17_r <= 0; b3_68_r <= 0; c4_25_r <= 0; a4_62_r <= 0; 
+        c0_62_r <= 0; a0_25_r <= 0; a1_40_r <= 0; b1_48_r <= 0; c2_68_r <= 0; b2_17_r <= 0; a3_73_r <= 0; b3_8_r  <= 0; c4_33_r <= 0; b4_55_r <= 0; 
+        d0_81_r <= 0; d1_68_r <= 0; d2_25_r <= 0; d3_88_r <= 0; d4_48_r <= 0;             
+        a0_73_r <= 0; b0_8_r  <= 0; c1_68_r <= 0; a1_17_r <= 0; c2_25_r <= 0; b2_62_r <= 0; a3_55_r <= 0; b3_33_r <= 0; c4_48_r <= 0; a4_40_r <= 0;
+        c0_62_r <= 0; b0_25_r <= 0; c1_48_r <= 0; a1_40_r <= 0; a2_68_r <= 0; b2_17_r <= 0; a3_8_r  <= 0; b3_73_r <= 0; c4_55_r <= 0; b4_33_r <= 0; 
+        d0_48_r <= 0; d1_81_r <= 0; d2_88_r <= 0; d3_68_r <= 0; d4_25_r <= 0;             
+        a0_33_r <= 0; b0_55_r <= 0; a1_62_r <= 0; b1_25_r <= 0; c2_8_r  <= 0; a2_73_r <= 0; c3_40_r <= 0; a3_48_r <= 0; c4_68_r <= 0; a4_17_r <= 0;
+        c0_17_r <= 0; b0_68_r <= 0; c1_33_r <= 0; b1_55_r <= 0; c2_48_r <= 0; b2_40_r <= 0; c3_62_r <= 0; b3_25_r <= 0; c4_73_r <= 0; b4_8_r  <= 0; 
+    end
+    else begin
+        i_valid_d2 <= i_valid_d1;
+        t_5_r <= t_5[0] + t_5[1] + t_5[2];
+        t_r <= t;
+        a0_8_r  <= a0_8 ; b0_73_r <= b0_73; a1_17_r <= a1_17; b1_68_r <= b1_68; a2_25_r <= a2_25; b2_62_r <= b2_62; a3_33_r <= a3_33; b3_55_r <= b3_55; a4_40_r <= a4_40; b4_48_r <= b4_48;
+        d0_25_r <= d0_25; d1_48_r <= d1_48; d2_68_r <= d2_68; d3_81_r <= d3_81; d4_88_r <= d4_88;             
+        c0_40_r <= c0_40; b0_48_r <= b0_48; c1_73_r <= c1_73; b1_8_r  <= b1_8 ; c2_55_r <= c2_55; a2_33_r <= a2_33; c3_17_r <= c3_17; a3_68_r <= a3_68; a4_62_r <= a4_62; b4_25_r <= b4_25; 
+        a0_55_r <= a0_55; b0_33_r <= b0_33; c1_25_r <= c1_25; a1_62_r <= a1_62; c2_73_r <= c2_73; a2_8_r  <= a2_8 ; c3_40_r <= c3_40; b3_48_r <= b3_48; a4_17_r <= a4_17; b4_68_r <= b4_68;
+        d0_68_r <= d0_68; d1_88_r <= d1_88; d2_48_r <= d2_48; d3_25_r <= d3_25; d4_81_r <= d4_81;            
+        a0_68_r <= a0_68; c0_17_r <= c0_17; c1_55_r <= c1_55; b1_33_r <= b1_33; a2_48_r <= a2_48; b2_40_r <= b2_40; c3_62_r <= c3_62; a3_25_r <= a3_25; c4_8_r  <= c4_8 ; b4_73_r <= b4_73;
+        d0_88_r <= d0_88; d1_25_r <= d1_25; d2_81_r <= d2_81; d3_48_r <= d3_48; d4_68_r <= d4_68;             
+        c0_40_r <= c0_40; a0_48_r <= a0_48; c1_8_r  <= c1_8 ; b1_73_r <= b1_73; c2_33_r <= c2_33; a2_55_r <= a2_55; c3_17_r <= c3_17; b3_68_r <= b3_68; c4_25_r <= c4_25; a4_62_r <= a4_62; 
+        c0_62_r <= c0_62; a0_25_r <= a0_25; a1_40_r <= a1_40; b1_48_r <= b1_48; c2_68_r <= c2_68; b2_17_r <= b2_17; a3_73_r <= a3_73; b3_8_r  <= b3_8 ; c4_33_r <= c4_33; b4_55_r <= b4_55; 
+        d0_81_r <= d0_81; d1_68_r <= d1_68; d2_25_r <= d2_25; d3_88_r <= d3_88; d4_48_r <= d4_48;             
+        a0_73_r <= a0_73; b0_8_r  <= b0_8 ; c1_68_r <= c1_68; a1_17_r <= a1_17; c2_25_r <= c2_25; b2_62_r <= b2_62; a3_55_r <= a3_55; b3_33_r <= b3_33; c4_48_r <= c4_48; a4_40_r <= a4_40;
+        c0_62_r <= c0_62; b0_25_r <= b0_25; c1_48_r <= c1_48; a1_40_r <= a1_40; a2_68_r <= a2_68; b2_17_r <= b2_17; a3_8_r  <= a3_8 ; b3_73_r <= b3_73; c4_55_r <= c4_55; b4_33_r <= b4_33; 
+        d0_48_r <= d0_48; d1_81_r <= d1_81; d2_88_r <= d2_88; d3_68_r <= d3_68; d4_25_r <= d4_25;             
+        a0_33_r <= a0_33; b0_55_r <= b0_55; a1_62_r <= a1_62; b1_25_r <= b1_25; c2_8_r  <= c2_8 ; a2_73_r <= a2_73; c3_40_r <= c3_40; a3_48_r <= a3_48; c4_68_r <= c4_68; a4_17_r <= a4_17;
+        c0_17_r <= c0_17; b0_68_r <= b0_68; c1_33_r <= c1_33; b1_55_r <= b1_55; c2_48_r <= c2_48; b2_40_r <= b2_40; c3_62_r <= c3_62; b3_25_r <= b3_25; c4_73_r <= c4_73; b4_8_r  <= b4_8 ; 
+    end
+end
+
+//stage 3 sum
+    reg signed  [IN_WIDTH + 10 : 0] sum0_0[0 : 15], sum0_1[0 : 15], sum0_2[0 : 15], sum0_3[0 : 15], sum0_4[0 : 15], sum0_5[0 : 15];
+    reg signed  [IN_WIDTH + 10 : 0] sum1_0[0 : 15], sum1_1[0 : 15];
+
+always @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+        i_valid_d3 <= 0;
         for (i = 0; i < 16; i = i + 1) begin
             sum0_0[i] <= 0; sum0_1[i] <= 0; sum0_2[i] <= 0; sum0_3[i] <= 0; sum0_4[i] <= 0; sum0_5[i] <= 0; 
         end
     end
     else begin
-        i_valid_d2 <= i_valid_d1;
-        sum0_0[0 ] <= a0_8  + b0_73; sum0_1[0 ] <= a1_17 + b1_68;  sum0_2[0 ] <= a2_25 + b2_62;  sum0_3[0 ] <= a3_33 + b3_55;  sum0_4[0 ] <= a4_40 + b4_48;      sum0_5[0 ] <= t;
-        sum0_0[1 ] <= d0_25;         sum0_1[1 ] <= d1_48;          sum0_2[1 ] <= d2_68;          sum0_3[1 ] <= d3_81;          sum0_4[1 ] <= d4_88;              
-        sum0_0[2 ] <= c0_40 - b0_48; sum0_1[2 ] <= c1_73 - b1_8 ;  sum0_2[2 ] <= c2_55 + a2_33;  sum0_3[2 ] <= c3_17 + a3_68;  sum0_4[2 ] <= a4_62 + b4_25;      sum0_5[2 ] <= - t;
-        sum0_0[3 ] <= a0_55 + b0_33; sum0_1[3 ] <= c1_25 + a1_62;  sum0_2[3 ] <= c2_73 + a2_8 ;  sum0_3[3 ] <= c3_40 - b3_48;  sum0_4[3 ] <= -a4_17 - b4_68;     sum0_5[3 ] <= t;
-        sum0_0[4 ] <= d0_68;         sum0_1[4 ] <= d1_88;          sum0_2[4 ] <= d2_48;          sum0_3[4 ] <= -d3_25;         sum0_4[4 ] <= -d4_81;             
-        sum0_0[5 ] <= i_data_d1[0] + i_data_d1[1]; sum0_1[5 ] <= - i_data_d1[3] - i_data_d1[4]; sum0_2[5 ] <= i_data_d1[6] + i_data_d1[7]; sum0_3[5 ] <= - i_data_d1[9] - i_data_d1[10]; sum0_4[5 ] <= i_data_d1[12] + i_data_d1[13] - i_data_d1[15]; 
-        sum0_0[6 ] <= a0_68 + c0_17; sum0_1[6 ] <= c1_55 - b1_33;  sum0_2[6 ] <= -a2_48 - b2_40; sum0_3[6 ] <= -c3_62 - a3_25; sum0_4[6 ] <= -c4_8 + b4_73;      sum0_5[6 ] <= t;
-        sum0_0[7 ] <= d0_88;         sum0_1[7 ] <= d1_25;          sum0_2[7 ] <= -d2_81;         sum0_3[7 ] <= - d3_48;        sum0_4[7 ] <= d4_68;              
-        sum0_0[8 ] <= c0_40 + a0_48; sum0_1[8 ] <= -c1_8 + b1_73;  sum0_2[8 ] <= -c2_33 - a2_55; sum0_3[8 ] <= c3_17 - b3_68;  sum0_4[8 ] <= c4_25 + a4_62;      sum0_5[8 ] <= - t;
-        sum0_0[9 ] <= c0_62 + a0_25; sum0_1[9 ] <= -a1_40 - b1_48; sum0_2[9 ] <= -c2_68 + b2_17; sum0_3[9 ] <= a3_73 + b3_8;   sum0_4[9 ] <= c4_33 - b4_55;      sum0_5[9 ] <= t;
-        sum0_0[10] <= d0_81;         sum0_1[10] <= - d1_68;        sum0_2[10] <= - d2_25;        sum0_3[10] <= d3_88;          sum0_4[10] <= - d4_48;              
-        sum0_0[11] <= a0_73 + b0_8;  sum0_1[11] <= -c1_68 - a1_17; sum0_2[11] <= c2_25 - b2_62;  sum0_3[11] <= a3_55 + b3_33;  sum0_4[11] <= -c4_48 - a4_40;     sum0_5[11] <= - t;
-        sum0_0[12] <= c0_62 - b0_25; sum0_1[12] <= -c1_48 - a1_40; sum0_2[12] <= a2_68 + b2_17;  sum0_3[12] <= -a3_8 - b3_73;  sum0_4[12] <= -c4_55 + b4_33;     sum0_5[12] <= t;
-        sum0_0[13] <= d0_48;         sum0_1[13] <= - d1_81;        sum0_2[13] <= d2_88;          sum0_3[13] <= - d3_68;        sum0_4[13] <= d4_25;              
-        sum0_0[14] <= a0_33 + b0_55; sum0_1[14] <= -a1_62 - b1_25; sum0_2[14] <= c2_8 + a2_73;   sum0_3[14] <= -c3_40 - a3_48; sum0_4[14] <= c4_68 + a4_17;      sum0_5[14] <= - t;
-        sum0_0[15] <= c0_17 - b0_68; sum0_1[15] <= -c1_33 + b1_55; sum0_2[15] <= c2_48 - b2_40;  sum0_3[15] <= -c3_62 + b3_25; sum0_4[15] <= c4_73 - b4_8;       sum0_5[15] <= t;
+        i_valid_d3 <= i_valid_d2;
+        sum0_0[0 ] <= a0_8_r  + b0_73_r; sum0_1[0 ] <= a1_17_r + b1_68_r;   sum0_2[0 ] <= a2_25_r + b2_62_r;   sum0_3[0 ] <=   a3_33_r + b3_55_r; sum0_4[0 ] <=   a4_40_r + b4_48_r; sum0_5[0 ] <= t_r;
+        sum0_0[1 ] <= d0_25_r;           sum0_1[1 ] <= d1_48_r;             sum0_2[1 ] <= d2_68_r;             sum0_3[1 ] <=   d3_81_r;           sum0_4[1 ] <=   d4_88_r;              
+        sum0_0[2 ] <= c0_40_r - b0_48_r; sum0_1[2 ] <= c1_73_r - b1_8_r ;   sum0_2[2 ] <= c2_55_r + a2_33_r;   sum0_3[2 ] <=   c3_17_r + a3_68_r; sum0_4[2 ] <=   a4_62_r + b4_25_r; sum0_5[2 ] <= - t_r;
+        sum0_0[3 ] <= a0_55_r + b0_33_r; sum0_1[3 ] <= c1_25_r + a1_62_r;   sum0_2[3 ] <= c2_73_r + a2_8_r ;   sum0_3[3 ] <=   c3_40_r - b3_48_r; sum0_4[3 ] <= - a4_17_r - b4_68_r; sum0_5[3 ] <= t_r;
+        sum0_0[4 ] <= d0_68_r;           sum0_1[4 ] <= d1_88_r;             sum0_2[4 ] <= d2_48_r;             sum0_3[4 ] <= - d3_25_r;           sum0_4[4 ] <= - d4_81_r;             
+        sum0_0[5 ] <= t_5_r;
+        sum0_0[6 ] <= a0_68_r + c0_17_r; sum0_1[6 ] <=   c1_55_r - b1_33_r; sum0_2[6 ] <= - a2_48_r - b2_40_r; sum0_3[6 ] <= - c3_62_r - a3_25_r; sum0_4[6 ] <= - c4_8_r  + b4_73_r; sum0_5[6 ] <= t_r;
+        sum0_0[7 ] <= d0_88_r;           sum0_1[7 ] <=   d1_25_r;           sum0_2[7 ] <= - d2_81_r;           sum0_3[7 ] <= - d3_48_r;           sum0_4[7 ] <=   d4_68_r;              
+        sum0_0[8 ] <= c0_40_r + a0_48_r; sum0_1[8 ] <= - c1_8_r  + b1_73_r; sum0_2[8 ] <= - c2_33_r - a2_55_r; sum0_3[8 ] <=   c3_17_r - b3_68_r; sum0_4[8 ] <=   c4_25_r + a4_62_r; sum0_5[8 ] <= - t_r;
+        sum0_0[9 ] <= c0_62_r + a0_25_r; sum0_1[9 ] <= - a1_40_r - b1_48_r; sum0_2[9 ] <= - c2_68_r + b2_17_r; sum0_3[9 ] <=   a3_73_r + b3_8_r ; sum0_4[9 ] <=   c4_33_r - b4_55_r; sum0_5[9 ] <= t_r;
+        sum0_0[10] <= d0_81_r;           sum0_1[10] <= - d1_68_r;           sum0_2[10] <= - d2_25_r;           sum0_3[10] <=   d3_88_r;           sum0_4[10] <= - d4_48_r;              
+        sum0_0[11] <= a0_73_r + b0_8_r ; sum0_1[11] <= - c1_68_r - a1_17_r; sum0_2[11] <=   c2_25_r - b2_62_r; sum0_3[11] <=   a3_55_r + b3_33_r; sum0_4[11] <= - c4_48_r - a4_40_r; sum0_5[11] <= - t_r;
+        sum0_0[12] <= c0_62_r - b0_25_r; sum0_1[12] <= - c1_48_r - a1_40_r; sum0_2[12] <=   a2_68_r + b2_17_r; sum0_3[12] <= - a3_8_r  - b3_73_r; sum0_4[12] <= - c4_55_r + b4_33_r; sum0_5[12] <= t_r;
+        sum0_0[13] <= d0_48_r;           sum0_1[13] <= - d1_81_r;           sum0_2[13] <=   d2_88_r;           sum0_3[13] <= - d3_68_r;           sum0_4[13] <=   d4_25_r;              
+        sum0_0[14] <= a0_33_r + b0_55_r; sum0_1[14] <= - a1_62_r - b1_25_r; sum0_2[14] <=   c2_8_r  + a2_73_r; sum0_3[14] <= - c3_40_r - a3_48_r; sum0_4[14] <=   c4_68_r + a4_17_r; sum0_5[14] <= - t_r;
+        sum0_0[15] <= c0_17_r - b0_68_r; sum0_1[15] <= - c1_33_r + b1_55_r; sum0_2[15] <=   c2_48_r - b2_40_r; sum0_3[15] <= - c3_62_r + b3_25_r; sum0_4[15] <=   c4_73_r - b4_8_r ; sum0_5[15] <= t_r;
     end
 end
-//stage 2
+
+//stage 4
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-        i_valid_d3 <= 0;
+        i_valid_d4 <= 0;
         for (i = 0; i < 16; i = i + 1) begin
             sum1_0[i] <= 0; sum1_1[i] <= 0;
         end
     end
     else begin
-        i_valid_d3 <= i_valid_d2;
+        i_valid_d4 <= i_valid_d3;
         sum1_0[0 ] <= sum0_0[0 ] + sum0_1[0 ] + sum0_2[0 ]; sum1_1[0 ] <= sum0_3[0 ] + sum0_4[0 ] + sum0_5[0 ];
         sum1_0[1 ] <= sum0_0[1 ] + sum0_1[1 ] + sum0_2[1 ]; sum1_1[1 ] <= sum0_3[1 ] + sum0_4[1 ];
         sum1_0[2 ] <= sum0_0[2 ] + sum0_1[2 ] + sum0_2[2 ]; sum1_1[2 ] <= sum0_3[2 ] + sum0_4[2 ] + sum0_5[2 ];
@@ -440,13 +506,14 @@ always @(posedge clk or negedge rst_n) begin
     end
 end
 
+//stage 5
     wire signed [IN_WIDTH + 10 : 0] o_data_5 = sum1_0[5 ] + sum1_1[5 ];
     wire signed [IN_WIDTH + 10 : 0] o_data_5_4 = o_data_5 <<< 2;
     wire signed [IN_WIDTH + 10 : 0] o_data_5_3 = o_data_5_4 - o_data_5;
     wire signed [IN_WIDTH + 10 : 0] o_data_5_5 = o_data_5 + o_data_5_4;
     wire signed [IN_WIDTH + 10 : 0] o_data_5_80 = o_data_5_5 <<< 4;
     wire signed [IN_WIDTH + 10 : 0] o_data_5_77 = o_data_5_80 - o_data_5_3;
-//stage 3
+
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         o_valid <= 0;
@@ -468,7 +535,7 @@ always @(posedge clk or negedge rst_n) begin
         o_15 <= 0;
     end
     else begin
-        o_valid <= i_valid_d3;
+        o_valid <= i_valid_d4;
         o_0  <= sum1_0[0 ] + sum1_1[0 ];
         o_1  <= sum1_0[1 ] + sum1_1[1 ];
         o_2  <= sum1_0[2 ] + sum1_1[2 ];

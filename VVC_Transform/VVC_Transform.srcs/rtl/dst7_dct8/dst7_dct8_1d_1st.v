@@ -76,9 +76,9 @@ localparam  SIZE4  = 3'd1,
 integer i;
 
 //input
-    reg i_valid_d1, i_valid_d2, i_valid_d3, i_valid_d4;
+    reg i_valid_d1, i_valid_d2, i_valid_d3;
     wire signed [IN_WIDTH - 1 : 0] i_data[0 : 31];
-    reg signed [IN_WIDTH - 1 : 0] i_data_d1[0 : 31], i_data_d2[0 : 31], i_data_d3[0 : 31], i_data_d4[0 : 31];
+    reg signed [IN_WIDTH - 1 : 0] i_data_d1[0 : 31], i_data_d2[0 : 31], i_data_d3[0 : 31];
     reg [2 : 0] i_width_d[0 : 5];
     reg [2 : 0] i_height_d[0 : 5];
 //size mux in
@@ -155,24 +155,20 @@ always @(posedge clk or negedge rst_n) begin
         i_valid_d1 <= 0; 
         i_valid_d2 <= 0; 
         i_valid_d3 <= 0; 
-        i_valid_d4 <= 0;
         for (i = 0; i < 32; i = i + 1) begin
             i_data_d1[i] <= 0; 
             i_data_d2[i] <= 0; 
             i_data_d3[i] <= 0; 
-            i_data_d4[i] <= 0; 
         end
     end
     else begin
         i_valid_d1 <= i_valid; 
         i_valid_d2 <= i_valid_d1; 
         i_valid_d3 <= i_valid_d2; 
-        i_valid_d4 <= i_valid_d3;
         for (i = 0; i < 32; i = i + 1) begin
             i_data_d1[i] <= i_data[i]; 
             i_data_d2[i] <= i_data_d1[i]; 
             i_data_d3[i] <= i_data_d2[i]; 
-            i_data_d4[i] <= i_data_d3[i]; 
         end
     end
 end
@@ -198,43 +194,43 @@ always @(negedge clk or negedge rst_n) begin
         end
     end
     else begin
+        //delay 0 clk
+        case (i_width) 
+            SIZE32 : begin
+                tr_in_32_valid <= i_valid;
+                for (i = 0; i < 32; i = i + 1) begin
+                    tr_in_32_u0[i] <= i_data[i];
+                end
+            end
+        endcase
         //delay 1 clk
         case (i_width_d[0]) 
-            SIZE32 : begin
-                tr_in_32_valid <= i_valid_d1;
-                for (i = 0; i < 32; i = i + 1) begin
-                    tr_in_32_u0[i] <= i_data_d1[i];
+            SIZE16 : begin
+                tr_in_16_valid <= i_valid_d1;
+                for (i = 0; i < 16; i = i + 1) begin
+                    tr_in_16_u0[i] <= i_data_d1[i];
                 end
             end
         endcase
         //delay 2 clk
         case (i_width_d[1]) 
-            SIZE16 : begin
-                tr_in_16_valid <= i_valid_d2;
-                for (i = 0; i < 16; i = i + 1) begin
-                    tr_in_16_u0[i] <= i_data_d2[i];
+            SIZE8 : begin
+                tr_in_8_valid <= i_valid_d2;
+                for (i = 0; i < 8; i = i + 1) begin
+                    tr_in_8_u0[i] <= i_data_d2[i];
+                    tr_in_8_u1[i] <= i_data_d2[i + 8];
                 end
             end
         endcase
         //delay 3 clk
         case (i_width_d[2]) 
-            SIZE8 : begin
-                tr_in_8_valid <= i_valid_d3;
-                for (i = 0; i < 8; i = i + 1) begin
-                    tr_in_8_u0[i] <= i_data_d3[i];
-                    tr_in_8_u1[i] <= i_data_d3[i + 8];
-                end
-            end
-        endcase
-        //delay 4 clk
-        case (i_width_d[3]) 
             SIZE4 : begin
-                tr_in_4_valid <= i_valid_d4;
+                tr_in_4_valid <= i_valid_d3;
                 for (i = 0; i < 4; i = i + 1) begin
-                    tr_in_4_u0[i] <= i_data_d4[i];
-                    tr_in_4_u1[i] <= i_data_d4[i + 4];
-                    tr_in_4_u2[i] <= i_data_d4[i + 8];
-                    tr_in_4_u3[i] <= i_data_d4[i + 12];
+                    tr_in_4_u0[i] <= i_data_d3[i];
+                    tr_in_4_u1[i] <= i_data_d3[i + 4];
+                    tr_in_4_u2[i] <= i_data_d3[i + 8];
+                    tr_in_4_u3[i] <= i_data_d3[i + 12];
                 end
             end
         endcase
