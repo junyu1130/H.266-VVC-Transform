@@ -132,10 +132,10 @@ always @(posedge clk or negedge rst_n) begin
     end
     else begin
         o_valid <= i_valid_d2;
-        o_0 = c_0_29_r + c_1_55_r + c_3_r;
-        o_1 = c_4_74_r;
-        o_2 = c_2_29_r + c_0_55_r - c_3_r;
-        o_3 = c_2_55_r - c_1_29_r + c_3_r;
+        o_0 <= c_0_29_r + c_1_55_r + c_3_r;
+        o_1 <= c_4_74_r;
+        o_2 <= c_2_29_r + c_0_55_r - c_3_r;
+        o_3 <= c_2_55_r - c_1_29_r + c_3_r;
     end
 end
 

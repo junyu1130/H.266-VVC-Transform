@@ -34,17 +34,17 @@ module dct2_butterfly_4#(
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         o_valid <= 0;
-        o_0  <= 0;
-        o_1  <= 0;
-        o_2  <= 0;
-        o_3  <= 0;
+        o_0     <= 0;
+        o_1     <= 0;
+        o_2     <= 0;
+        o_3     <= 0;
     end
     else begin
         o_valid <= i_valid;
-        o_0 = E_0;
-        o_1 = E_1;
-        o_2 = O_0;
-        o_3 = O_1;
+        o_0     <= E_0;
+        o_1     <= E_1;
+        o_2     <= O_0;
+        o_3     <= O_1;
     end
 end
 

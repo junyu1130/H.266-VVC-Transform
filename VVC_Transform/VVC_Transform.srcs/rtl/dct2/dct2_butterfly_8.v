@@ -46,25 +46,25 @@ module dct2_butterfly_8#(
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         o_valid <= 0;
-        o_0  <= 0;
-        o_1  <= 0;
-        o_2  <= 0;
-        o_3  <= 0;
-        o_4  <= 0;
-        o_5  <= 0;
-        o_6  <= 0;
-        o_7  <= 0;
+        o_0     <= 0;
+        o_1     <= 0;
+        o_2     <= 0;
+        o_3     <= 0;
+        o_4     <= 0;
+        o_5     <= 0;
+        o_6     <= 0;
+        o_7     <= 0;
     end
     else begin
         o_valid <= i_valid;
-        o_0  = E_0;
-        o_1  = E_1;
-        o_2  = E_2;
-        o_3  = E_3;
-        o_4  = O_0;
-        o_5  = O_1;
-        o_6  = O_2;
-        o_7  = O_3;
+        o_0     <= E_0;
+        o_1     <= E_1;
+        o_2     <= E_2;
+        o_3     <= E_3;
+        o_4     <= O_0;
+        o_5     <= O_1;
+        o_6     <= O_2;
+        o_7     <= O_3;
     end
 end
 
