@@ -1,7 +1,7 @@
 //describe  : 第一次一维正变换(DCT2/DCT8/DST7)
 //input     : 16个像素残差
 //output    : 16个一维变换系数
-//delay     : 12 clk
+//delay     : 11 clk
 module transform1d_1st#(
     parameter  IN_WIDTH = 9,
     parameter  OUT_WIDTH = 16
@@ -87,7 +87,7 @@ integer i;
     wire [2 : 0] dst7_dct8_out_width, dst7_dct8_out_height;
     wire dst7_dct8_out_valid;
     wire signed [IN_WIDTH + 10 : 0] dst7_dct8_out_data[0 : 15];
-    reg [1 : 0] tr_in_type_d[0 : 5];
+    reg [1 : 0] tr_in_type_d[0 : 4];
     reg [2 : 0] tr_out_width, tr_out_height;
     reg tr_out_valid;
     reg signed [IN_WIDTH + 11 : 0] tr_out_data[0 : 31];
@@ -292,13 +292,13 @@ end
 //type delay
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin 
-        for (i = 0; i < 6; i = i + 1) begin
+        for (i = 0; i < 5; i = i + 1) begin
             tr_in_type_d[i] <= 0;
         end
     end
     else begin
         tr_in_type_d[0] <= tr_in_type;
-        for (i = 0; i < 5; i = i + 1) begin
+        for (i = 0; i < 4; i = i + 1) begin
             tr_in_type_d[i + 1] <= tr_in_type_d[i];
         end
     end
@@ -496,7 +496,7 @@ always @(*) begin
     for (i = 0; i < 32; i = i + 1) begin
         tr_out_data[i] <= 0;
     end
-    case (tr_in_type_d[5]) 
+    case (tr_in_type_d[4]) 
         DCT2    : begin
             tr_out_width <= dct2_out_width;
             tr_out_height <= dct2_out_height;
@@ -548,7 +548,7 @@ u_right_shift(
     .clk        (clk                ),
     .rst_n      (rst_n              ),
 //input parameter
-    .i_type     (tr_in_type_d[5]    ),
+    .i_type     (tr_in_type_d[4]    ),
     .i_width    (tr_out_width       ),
     .i_height   (tr_out_height      ),
     .i_shift    (tr_shift           ),

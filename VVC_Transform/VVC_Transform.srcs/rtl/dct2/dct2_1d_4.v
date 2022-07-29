@@ -1,7 +1,7 @@
 //describe  : 4x4点DCT计算
 //input     : 4个像素残差/一维变换系数
 //output    : 4个预变换系数(后需右移)
-//delay     : 2 clk
+//delay     : 1 clk
 module dct2_1d_4#(
     parameter  IN_WIDTH  = 20
 )

@@ -1,7 +1,7 @@
 //describe  : 正序输入DST7，倒序输入DCT8(1/3/5/7输出反号)，大小为8
 //input     : 8个像素残差
 //output    : 8个系数
-//delay     : 4 clk
+//delay     : 3 clk
 module dst7_dct8_1d_8#(
     parameter IN_WIDTH = 16
 )
@@ -34,7 +34,7 @@ module dst7_dct8_1d_8#(
 integer i;
 
 //input
-    reg i_valid_d1, i_valid_d2, i_valid_d3;
+    reg i_valid_d1, i_valid_d2;
 //mcm
 //17 46 71 85 86 78 60 32 
     wire signed [IN_WIDTH + 10 : 0] i_0_16 = i_0 <<< 4;
@@ -165,75 +165,40 @@ integer i;
     wire signed [IN_WIDTH + 10 : 0] i_7_46 = i_7_23 <<< 1;
     wire signed [IN_WIDTH + 10 : 0] i_7_32 = i_7 <<< 5;
 
-//stage1 reg
-    reg signed [IN_WIDTH + 10 : 0] i_0_17_r, i_0_46_r, i_0_71_r, i_0_85_r, i_0_86_r, i_0_78_r, i_0_60_r, i_0_32_r; 
-    reg signed [IN_WIDTH + 10 : 0] i_1_32_r, i_1_78_r, i_1_85_r, i_1_46_r, i_1_17_r, i_1_71_r, i_1_86_r, i_1_60_r;
-    reg signed [IN_WIDTH + 10 : 0] i_2_46_r, i_2_86_r, i_2_32_r, i_2_60_r, i_2_85_r, i_2_17_r, i_2_71_r, i_2_78_r; 
-    reg signed [IN_WIDTH + 10 : 0] i_3_60_r, i_3_71_r, i_3_46_r, i_3_78_r, i_3_32_r, i_3_85_r, i_3_17_r, i_3_86_r;
-    reg signed [IN_WIDTH + 10 : 0] i_4_71_r, i_4_32_r, i_4_86_r, i_4_17_r, i_4_78_r, i_4_60_r, i_4_46_r, i_4_85_r;
-    reg signed [IN_WIDTH + 10 : 0] i_5_78_r, i_5_17_r, i_5_60_r, i_5_86_r, i_5_46_r, i_5_32_r, i_5_85_r, i_5_71_r;
-    reg signed [IN_WIDTH + 10 : 0] i_6_85_r, i_6_60_r, i_6_17_r, i_6_32_r, i_6_71_r, i_6_86_r, i_6_78_r, i_6_46_r;
-    reg signed [IN_WIDTH + 10 : 0] i_7_86_r, i_7_85_r, i_7_78_r, i_7_71_r, i_7_60_r, i_7_46_r, i_7_32_r, i_7_17_r;
-
-always @(posedge clk or negedge rst_n) begin
-    if (!rst_n) begin
-        i_valid_d1 <= 0;
-        i_0_17_r <= 0; i_1_32_r <= 0; i_2_46_r <= 0; i_3_60_r <= 0; i_4_71_r <= 0; i_5_78_r <= 0; i_6_85_r <= 0; i_7_86_r <= 0;
-        i_0_46_r <= 0; i_1_78_r <= 0; i_2_86_r <= 0; i_3_71_r <= 0; i_4_32_r <= 0; i_5_17_r <= 0; i_6_60_r <= 0; i_7_85_r <= 0;
-        i_0_71_r <= 0; i_1_85_r <= 0; i_2_32_r <= 0; i_3_46_r <= 0; i_4_86_r <= 0; i_5_60_r <= 0; i_6_17_r <= 0; i_7_78_r <= 0;
-        i_0_85_r <= 0; i_1_46_r <= 0; i_2_60_r <= 0; i_3_78_r <= 0; i_4_17_r <= 0; i_5_86_r <= 0; i_6_32_r <= 0; i_7_71_r <= 0;
-        i_0_86_r <= 0; i_1_17_r <= 0; i_2_85_r <= 0; i_3_32_r <= 0; i_4_78_r <= 0; i_5_46_r <= 0; i_6_71_r <= 0; i_7_60_r <= 0;
-        i_0_78_r <= 0; i_1_71_r <= 0; i_2_17_r <= 0; i_3_85_r <= 0; i_4_60_r <= 0; i_5_32_r <= 0; i_6_86_r <= 0; i_7_46_r <= 0;
-        i_0_60_r <= 0; i_1_86_r <= 0; i_2_71_r <= 0; i_3_17_r <= 0; i_4_46_r <= 0; i_5_85_r <= 0; i_6_78_r <= 0; i_7_32_r <= 0;
-        i_0_32_r <= 0; i_1_60_r <= 0; i_2_78_r <= 0; i_3_86_r <= 0; i_4_85_r <= 0; i_5_71_r <= 0; i_6_46_r <= 0; i_7_17_r <= 0;
-    end
-    else begin
-        i_valid_d1 <= i_valid;
-        i_0_17_r <= i_0_17; i_1_32_r <= i_1_32; i_2_46_r <= i_2_46; i_3_60_r <= i_3_60; i_4_71_r <= i_4_71; i_5_78_r <= i_5_78; i_6_85_r <= i_6_85; i_7_86_r <= i_7_86;
-        i_0_46_r <= i_0_46; i_1_78_r <= i_1_78; i_2_86_r <= i_2_86; i_3_71_r <= i_3_71; i_4_32_r <= i_4_32; i_5_17_r <= i_5_17; i_6_60_r <= i_6_60; i_7_85_r <= i_7_85;
-        i_0_71_r <= i_0_71; i_1_85_r <= i_1_85; i_2_32_r <= i_2_32; i_3_46_r <= i_3_46; i_4_86_r <= i_4_86; i_5_60_r <= i_5_60; i_6_17_r <= i_6_17; i_7_78_r <= i_7_78;
-        i_0_85_r <= i_0_85; i_1_46_r <= i_1_46; i_2_60_r <= i_2_60; i_3_78_r <= i_3_78; i_4_17_r <= i_4_17; i_5_86_r <= i_5_86; i_6_32_r <= i_6_32; i_7_71_r <= i_7_71;
-        i_0_86_r <= i_0_86; i_1_17_r <= i_1_17; i_2_85_r <= i_2_85; i_3_32_r <= i_3_32; i_4_78_r <= i_4_78; i_5_46_r <= i_5_46; i_6_71_r <= i_6_71; i_7_60_r <= i_7_60;
-        i_0_78_r <= i_0_78; i_1_71_r <= i_1_71; i_2_17_r <= i_2_17; i_3_85_r <= i_3_85; i_4_60_r <= i_4_60; i_5_32_r <= i_5_32; i_6_86_r <= i_6_86; i_7_46_r <= i_7_46;
-        i_0_60_r <= i_0_60; i_1_86_r <= i_1_86; i_2_71_r <= i_2_71; i_3_17_r <= i_3_17; i_4_46_r <= i_4_46; i_5_85_r <= i_5_85; i_6_78_r <= i_6_78; i_7_32_r <= i_7_32;
-        i_0_32_r <= i_0_32; i_1_60_r <= i_1_60; i_2_78_r <= i_2_78; i_3_86_r <= i_3_86; i_4_85_r <= i_4_85; i_5_71_r <= i_5_71; i_6_46_r <= i_6_46; i_7_17_r <= i_7_17;
-    end
-end
-
-//stage 2 sum
+//stage 1 sum
 reg signed  [IN_WIDTH + 10 : 0] sum0_0[0 : 7], sum0_1[0 : 7], sum0_2[0 : 7], sum0_3[0 : 7];
 reg signed  [IN_WIDTH + 10 : 0] sum1_0[0 : 7], sum1_1[0 : 7];
 
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-        i_valid_d2 <= 0;
+        i_valid_d1 <= 0;
         for (i = 0; i < 8; i = i + 1) begin
             sum0_0[i] <= 0; sum0_1[i] <= 0; sum0_2[i] <= 0; sum0_3[i] <= 0; 
         end
     end
     else begin
-        i_valid_d2 <= i_valid_d1;
-        sum0_0[0] <= i_0_17_r + i_1_32_r; sum0_1[0] <= i_2_46_r + i_3_60_r; sum0_2[0] <= i_4_71_r + i_5_78_r; sum0_3[0] <= i_6_85_r + i_7_86_r;
-        sum0_0[1] <= i_0_46_r + i_1_78_r; sum0_1[1] <= i_2_86_r + i_3_71_r; sum0_2[1] <= i_4_32_r - i_5_17_r; sum0_3[1] <= i_6_60_r + i_7_85_r;
-        sum0_0[2] <= i_0_71_r + i_1_85_r; sum0_1[2] <= i_2_32_r - i_3_46_r; sum0_2[2] <= i_4_86_r + i_5_60_r; sum0_3[2] <= i_6_17_r + i_7_78_r;
-        sum0_0[3] <= i_0_85_r + i_1_46_r; sum0_1[3] <= i_2_60_r + i_3_78_r; sum0_2[3] <= i_4_17_r + i_5_86_r; sum0_3[3] <= i_6_32_r - i_7_71_r;
-        sum0_0[4] <= i_0_86_r - i_1_17_r; sum0_1[4] <= i_2_85_r - i_3_32_r; sum0_2[4] <= i_4_78_r - i_5_46_r; sum0_3[4] <= i_6_71_r - i_7_60_r;
-        sum0_0[5] <= i_0_78_r - i_1_71_r; sum0_1[5] <= i_2_17_r - i_3_85_r; sum0_2[5] <= i_4_60_r + i_5_32_r; sum0_3[5] <= i_6_86_r - i_7_46_r;
-        sum0_0[6] <= i_0_60_r - i_1_86_r; sum0_1[6] <= i_2_71_r - i_3_17_r; sum0_2[6] <= i_4_46_r - i_5_85_r; sum0_3[6] <= i_6_78_r - i_7_32_r;
-        sum0_0[7] <= i_0_32_r - i_1_60_r; sum0_1[7] <= i_2_78_r - i_3_86_r; sum0_2[7] <= i_4_85_r - i_5_71_r; sum0_3[7] <= i_6_46_r - i_7_17_r;
+        i_valid_d1 <= i_valid;
+        sum0_0[0] <= i_0_17 + i_1_32; sum0_1[0] <= i_2_46 + i_3_60; sum0_2[0] <= i_4_71 + i_5_78; sum0_3[0] <= i_6_85 + i_7_86;
+        sum0_0[1] <= i_0_46 + i_1_78; sum0_1[1] <= i_2_86 + i_3_71; sum0_2[1] <= i_4_32 - i_5_17; sum0_3[1] <= i_6_60 + i_7_85;
+        sum0_0[2] <= i_0_71 + i_1_85; sum0_1[2] <= i_2_32 - i_3_46; sum0_2[2] <= i_4_86 + i_5_60; sum0_3[2] <= i_6_17 + i_7_78;
+        sum0_0[3] <= i_0_85 + i_1_46; sum0_1[3] <= i_2_60 + i_3_78; sum0_2[3] <= i_4_17 + i_5_86; sum0_3[3] <= i_6_32 - i_7_71;
+        sum0_0[4] <= i_0_86 - i_1_17; sum0_1[4] <= i_2_85 - i_3_32; sum0_2[4] <= i_4_78 - i_5_46; sum0_3[4] <= i_6_71 - i_7_60;
+        sum0_0[5] <= i_0_78 - i_1_71; sum0_1[5] <= i_2_17 - i_3_85; sum0_2[5] <= i_4_60 + i_5_32; sum0_3[5] <= i_6_86 - i_7_46;
+        sum0_0[6] <= i_0_60 - i_1_86; sum0_1[6] <= i_2_71 - i_3_17; sum0_2[6] <= i_4_46 - i_5_85; sum0_3[6] <= i_6_78 - i_7_32;
+        sum0_0[7] <= i_0_32 - i_1_60; sum0_1[7] <= i_2_78 - i_3_86; sum0_2[7] <= i_4_85 - i_5_71; sum0_3[7] <= i_6_46 - i_7_17;
     end
 end
 
-//stage 3
+//stage 2
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-        i_valid_d3 <= 0;
+        i_valid_d2 <= 0;
         for (i = 0; i < 8; i = i + 1) begin
             sum1_0[i] <= 0; sum1_1[i] <= 0;
         end
     end
     else begin
-        i_valid_d3 <= i_valid_d2;
+        i_valid_d2 <= i_valid_d1;
         sum1_0[0] <= sum0_0[0] + sum0_1[0]; sum1_1[0] <= sum0_2[0] + sum0_3[0];
         sum1_0[1] <= sum0_0[1] + sum0_1[1]; sum1_1[1] <= sum0_2[1] - sum0_3[1];
         sum1_0[2] <= sum0_0[2] + sum0_1[2]; sum1_1[2] <= sum0_2[2] - sum0_3[2];
@@ -245,7 +210,7 @@ always @(posedge clk or negedge rst_n) begin
     end
 end
 
-//stage 4
+//stage 3
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         o_valid <= 0;
@@ -259,7 +224,7 @@ always @(posedge clk or negedge rst_n) begin
         o_7 <= 0;
     end
     else begin
-        o_valid <= i_valid_d3;
+        o_valid <= i_valid_d2;
         o_0 <= sum1_0[0] + sum1_1[0];
         o_1 <= sum1_0[1] + sum1_1[1];
         o_2 <= sum1_0[2] - sum1_1[2];

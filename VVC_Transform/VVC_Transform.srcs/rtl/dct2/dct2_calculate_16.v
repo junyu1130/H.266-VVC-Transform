@@ -1,7 +1,7 @@
 //describe  : MCM(RAG-n算法)生成乘法单元，求和得到结果
 //input     : 8个蝶形单元
 //output    : 8个系数结果(后需右移)
-//delay     : 3 clk
+//delay     : 2 clk
 module dct2_calculate_16#(
     parameter IN_WIDTH = 19
 )
@@ -36,7 +36,7 @@ module dct2_calculate_16#(
 integer i;
 localparam SIZE64 = 3'd5;
 
-//mcm
+//mcm (depth = 4)
 //90 87 80 70 / 57 43 25 9
     wire signed [IN_WIDTH + 8 : 0] i_0_4 = i_0 <<< 2;
     wire signed [IN_WIDTH + 8 : 0] i_0_5 = i_0 + i_0_4;
@@ -191,9 +191,8 @@ localparam SIZE64 = 3'd5;
     wire signed [IN_WIDTH + 8 : 0] i_7_70 = i_7_35 <<< 1;
 
 //sum
-reg i_valid_d1, i_valid_d2;
+reg i_valid_d1;
 reg signed  [IN_WIDTH + 8 : 0] sum0_0[0 : 7], sum0_1[0 : 7], sum0_2[0 : 7], sum0_3[0 : 7];
-reg signed  [IN_WIDTH + 8 : 0] sum1_0[0 : 7], sum1_1[0 : 7];
 //stage 1
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
@@ -217,26 +216,6 @@ end
 //stage 2
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-        i_valid_d2 <= 0;
-        for (i = 0; i < 8; i = i + 1) begin
-            sum1_0[i] <= 0; sum1_1[i] <= 0;
-        end
-    end
-    else begin
-        i_valid_d2 <= i_valid_d1;
-        sum1_0[0] <= sum0_0[0] + sum0_1[0]; sum1_1[0] <= sum0_2[0] + sum0_3[0];
-        sum1_0[1] <= sum0_0[1] + sum0_1[1]; sum1_1[1] <= sum0_2[1] + sum0_3[1];
-        sum1_0[2] <= sum0_0[2] - sum0_1[2]; sum1_1[2] <= sum0_2[2] - sum0_3[2];
-        sum1_0[3] <= sum0_0[3] - sum0_1[3]; sum1_1[3] <= sum0_2[3] - sum0_3[3];
-        sum1_0[4] <= sum0_0[4] - sum0_1[4]; sum1_1[4] <= sum0_2[4] - sum0_3[4];
-        sum1_0[5] <= sum0_0[5] + sum0_1[5]; sum1_1[5] <= sum0_2[5] - sum0_3[5];
-        sum1_0[6] <= sum0_0[6] + sum0_1[6]; sum1_1[6] <= sum0_2[6] - sum0_3[6];
-        sum1_0[7] <= sum0_0[7] + sum0_1[7]; sum1_1[7] <= sum0_2[7] + sum0_3[7];
-    end
-end
-//stage 3
-always @(posedge clk or negedge rst_n) begin
-    if (!rst_n) begin
         o_valid <= 0;
         o_0 <= 0;
         o_1 <= 0;
@@ -248,26 +227,26 @@ always @(posedge clk or negedge rst_n) begin
         o_7 <= 0;
     end
     else if (i_size == SIZE64) begin//高频置零
-        o_valid <= i_valid_d2;
-        o_0 <= sum1_0[0] + sum1_1[0];
-        o_1 <= sum1_0[1] - sum1_1[1];
-        o_2 <= sum1_0[2] - sum1_1[2];
-        o_3 <= sum1_0[3] + sum1_1[3];
+        o_valid <= i_valid_d1;
+        o_0 <= sum0_0[0] + sum0_1[0] + sum0_2[0] + sum0_3[0];
+        o_1 <= sum0_0[1] + sum0_1[1] - sum0_2[1] - sum0_3[1];
+        o_2 <= sum0_0[2] - sum0_1[2] - sum0_2[2] + sum0_3[2];
+        o_3 <= sum0_0[3] - sum0_1[3] + sum0_2[3] - sum0_3[3];
         o_4 <= 0;
         o_5 <= 0;
         o_6 <= 0;
         o_7 <= 0;
     end
     else begin
-        o_valid <= i_valid_d2;
-        o_0 <= sum1_0[0] + sum1_1[0];
-        o_1 <= sum1_0[1] - sum1_1[1];
-        o_2 <= sum1_0[2] - sum1_1[2];
-        o_3 <= sum1_0[3] + sum1_1[3];
-        o_4 <= sum1_0[4] - sum1_1[4];
-        o_5 <= sum1_0[5] - sum1_1[5];
-        o_6 <= sum1_0[6] + sum1_1[6];
-        o_7 <= sum1_0[7] + sum1_1[7];
+        o_valid <= i_valid_d1;
+        o_0 <= sum0_0[0] + sum0_1[0] + sum0_2[0] + sum0_3[0];
+        o_1 <= sum0_0[1] + sum0_1[1] - sum0_2[1] - sum0_3[1];
+        o_2 <= sum0_0[2] - sum0_1[2] - sum0_2[2] + sum0_3[2];
+        o_3 <= sum0_0[3] - sum0_1[3] + sum0_2[3] - sum0_3[3];
+        o_4 <= sum0_0[4] - sum0_1[4] - sum0_2[4] + sum0_3[4];
+        o_5 <= sum0_0[5] + sum0_1[5] - sum0_2[5] + sum0_3[5];
+        o_6 <= sum0_0[6] + sum0_1[6] + sum0_2[6] - sum0_3[6];
+        o_7 <= sum0_0[7] + sum0_1[7] + sum0_2[7] + sum0_3[7];
     end
 end
 

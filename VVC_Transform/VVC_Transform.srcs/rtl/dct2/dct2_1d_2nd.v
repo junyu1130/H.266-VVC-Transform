@@ -1,7 +1,7 @@
 //describe  : 第二次一维DCT2
 //input     : 16-64个一维变换系数
 //output    : 16-32个二维变换系数
-//delay     : 6 clk
+//delay     : 5 clk
 module dct2_1d_2nd#(
     parameter  IN_WIDTH  = 16
 )
@@ -128,8 +128,8 @@ integer i;
     reg i_valid_d1, i_valid_d2, i_valid_d3, i_valid_d4;
     wire signed [IN_WIDTH - 1 : 0] i_data[0 : 63];
     reg signed [IN_WIDTH - 1 : 0] i_data_d1[0 : 63], i_data_d2[0 : 63], i_data_d3[0 : 63], i_data_d4[0 : 63];
-    reg [2 : 0] i_width_d[0 : 5];
-    reg [2 : 0] i_height_d[0 : 5];
+    reg [2 : 0] i_width_d[0 : 4];
+    reg [2 : 0] i_height_d[0 : 4];
 //size mux in
     reg tr_in_64_valid, tr_in_32_valid, tr_in_16_valid, tr_in_8_valid, tr_in_4_valid;  
     reg  signed [IN_WIDTH - 1 : 0] tr_in_64_u0[0 : 63];
@@ -221,7 +221,7 @@ integer i;
 //parameter delay
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin 
-        for (i = 0; i < 6; i = i + 1) begin
+        for (i = 0; i < 5; i = i + 1) begin
             i_width_d[i] <= 0;
             i_height_d[i] <= 0;
         end
@@ -229,7 +229,7 @@ always @(posedge clk or negedge rst_n) begin
     else begin
         i_width_d[0] <= i_width;
         i_height_d[0] <= i_height;
-        for (i = 0; i < 5; i = i + 1) begin
+        for (i = 0; i < 4; i = i + 1) begin
             i_width_d[i + 1] <= i_width_d[i];
             i_height_d[i + 1] <= i_height_d[i];
         end
@@ -265,131 +265,127 @@ always @(posedge clk or negedge rst_n) begin
 end
 
 //size mux in
-always @(negedge clk or negedge rst_n) begin
-    if (!rst_n) begin
-        tr_in_64_valid <= 0;
-        tr_in_32_valid <= 0;
-        tr_in_16_valid <= 0;
-        tr_in_8_valid  <= 0;
-        tr_in_4_valid  <= 0;
-        for (i = 0; i < 64; i = i + 1) begin
-            tr_in_64_u0[i] <= 0;
-        end
-        for (i = 0; i < 32; i = i + 1) begin
-            tr_in_32_u0[i] <= 0;
-        end
-        for (i = 0; i < 16; i = i + 1) begin
-            tr_in_16_u0[i] <= 0;
-        end
-        for (i = 0; i < 8; i = i + 1) begin
-            tr_in_8_u0[i] <= 0; tr_in_8_u1[i] <= 0;
-        end
-        for (i = 0; i < 4; i = i + 1) begin
-            tr_in_4_u0[i] <= 0; tr_in_4_u1[i] <= 0; tr_in_4_u2[i] <= 0; tr_in_4_u3[i] <= 0;
-        end
+always @(*) begin
+    tr_in_64_valid <= 0;
+    tr_in_32_valid <= 0;
+    tr_in_16_valid <= 0;
+    tr_in_8_valid  <= 0;
+    tr_in_4_valid  <= 0;
+    for (i = 0; i < 64; i = i + 1) begin
+        tr_in_64_u0[i] <= 0;
     end
-    else begin
-        //delay 0 clk
-        case (i_height) 
-            SIZE64 : begin
-                tr_in_64_valid <= i_valid;
-                for (i = 0; i < 64; i = i + 1) begin
-                    tr_in_64_u0[i] <= i_data[i];
-                end
-            end
-        endcase
-        //delay 1 clk
-        case (i_height_d[0]) 
-            SIZE64 : begin
-                for (i = 0; i < 32; i = i + 1) begin
-                    tr_in_32_u0[i] <= butterfly_64_u0[i];
-                end
-            end
-            SIZE32 : begin
-                tr_in_32_valid <= i_valid_d1;
-                for (i = 0; i < 32; i = i + 1) begin
-                    tr_in_32_u0[i] <= i_data_d1[i];
-                end
-            end
-        endcase
-        //delay 2 clk
-        case (i_height_d[1]) 
-            SIZE64 : begin
-                for (i = 0; i < 16; i = i + 1) begin
-                    tr_in_16_u0[i] <= butterfly_32_u0[i];
-                end
-            end
-            SIZE32 : begin
-                for (i = 0; i < 16; i = i + 1) begin
-                    tr_in_16_u0[i] <= butterfly_32_u0[i];
-                end
-            end
-            SIZE16 : begin
-                tr_in_16_valid <= i_valid_d2;
-                for (i = 0; i < 16; i = i + 1) begin
-                    tr_in_16_u0[i] <= i_data_d2[i];
-                end
-            end
-        endcase
-        //delay 3 clk
-        case (i_height_d[2]) 
-            SIZE64 : begin
-                for (i = 0; i < 8; i = i + 1) begin
-                    tr_in_8_u0[i] <= butterfly_16_u0[i];
-                end
-            end
-            SIZE32 : begin
-                for (i = 0; i < 8; i = i + 1) begin
-                    tr_in_8_u0[i] <= butterfly_16_u0[i];
-                end
-            end
-            SIZE16 : begin
-                for (i = 0; i < 8; i = i + 1) begin
-                    tr_in_8_u0[i] <= butterfly_16_u0[i];
-                end
-            end
-            SIZE8 : begin
-                tr_in_8_valid <= i_valid_d3;
-                for (i = 0; i < 8; i = i + 1) begin
-                    tr_in_8_u0[i] <= i_data_d3[i];
-                    tr_in_8_u1[i] <= i_data_d3[i + 8];
-                end
-            end
-        endcase
-        //delay 4 clk
-        case (i_height_d[3]) 
-            SIZE64 : begin
-                for (i = 0; i < 4; i = i + 1) begin
-                    tr_in_4_u0[i] <= butterfly_8_u0[i];
-                end
-            end
-            SIZE32 : begin
-                for (i = 0; i < 4; i = i + 1) begin
-                    tr_in_4_u0[i] <= butterfly_8_u0[i];
-                end
-            end
-            SIZE16 : begin
-                for (i = 0; i < 4; i = i + 1) begin
-                    tr_in_4_u0[i] <= butterfly_8_u0[i];
-                end
-            end
-            SIZE8 : begin
-                for (i = 0; i < 4; i = i + 1) begin
-                    tr_in_4_u0[i] <= butterfly_8_u0[i];
-                    tr_in_4_u1[i] <= butterfly_8_u1[i];
-                end
-            end
-            SIZE4 : begin
-                tr_in_4_valid <= i_valid_d4;
-                for (i = 0; i < 4; i = i + 1) begin
-                    tr_in_4_u0[i] <= i_data_d4[i];
-                    tr_in_4_u1[i] <= i_data_d4[i + 4];
-                    tr_in_4_u2[i] <= i_data_d4[i + 8];
-                    tr_in_4_u3[i] <= i_data_d4[i + 12];
-                end
-            end
-        endcase
+    for (i = 0; i < 32; i = i + 1) begin
+        tr_in_32_u0[i] <= 0;
     end
+    for (i = 0; i < 16; i = i + 1) begin
+        tr_in_16_u0[i] <= 0;
+    end
+    for (i = 0; i < 8; i = i + 1) begin
+        tr_in_8_u0[i] <= 0; tr_in_8_u1[i] <= 0;
+    end
+    for (i = 0; i < 4; i = i + 1) begin
+        tr_in_4_u0[i] <= 0; tr_in_4_u1[i] <= 0; tr_in_4_u2[i] <= 0; tr_in_4_u3[i] <= 0;
+    end
+    //delay 0 clk
+    case (i_height) 
+        SIZE64 : begin
+            tr_in_64_valid <= i_valid;
+            for (i = 0; i < 64; i = i + 1) begin
+                tr_in_64_u0[i] <= i_data[i];
+            end
+        end
+    endcase
+    //delay 1 clk
+    case (i_height_d[0]) 
+        SIZE64 : begin
+            for (i = 0; i < 32; i = i + 1) begin
+                tr_in_32_u0[i] <= butterfly_64_u0[i];
+            end
+        end
+        SIZE32 : begin
+            tr_in_32_valid <= i_valid_d1;
+            for (i = 0; i < 32; i = i + 1) begin
+                tr_in_32_u0[i] <= i_data_d1[i];
+            end
+        end
+    endcase
+    //delay 2 clk
+    case (i_height_d[1]) 
+        SIZE64 : begin
+            for (i = 0; i < 16; i = i + 1) begin
+                tr_in_16_u0[i] <= butterfly_32_u0[i];
+            end
+        end
+        SIZE32 : begin
+            for (i = 0; i < 16; i = i + 1) begin
+                tr_in_16_u0[i] <= butterfly_32_u0[i];
+            end
+        end
+        SIZE16 : begin
+            tr_in_16_valid <= i_valid_d2;
+            for (i = 0; i < 16; i = i + 1) begin
+                tr_in_16_u0[i] <= i_data_d2[i];
+            end
+        end
+    endcase
+    //delay 3 clk
+    case (i_height_d[2]) 
+        SIZE64 : begin
+            for (i = 0; i < 8; i = i + 1) begin
+                tr_in_8_u0[i] <= butterfly_16_u0[i];
+            end
+        end
+        SIZE32 : begin
+            for (i = 0; i < 8; i = i + 1) begin
+                tr_in_8_u0[i] <= butterfly_16_u0[i];
+            end
+        end
+        SIZE16 : begin
+            for (i = 0; i < 8; i = i + 1) begin
+                tr_in_8_u0[i] <= butterfly_16_u0[i];
+            end
+        end
+        SIZE8 : begin
+            tr_in_8_valid <= i_valid_d3;
+            for (i = 0; i < 8; i = i + 1) begin
+                tr_in_8_u0[i] <= i_data_d3[i];
+                tr_in_8_u1[i] <= i_data_d3[i + 8];
+            end
+        end
+    endcase
+    //delay 4 clk
+    case (i_height_d[3]) 
+        SIZE64 : begin
+            for (i = 0; i < 4; i = i + 1) begin
+                tr_in_4_u0[i] <= butterfly_8_u0[i];
+            end
+        end
+        SIZE32 : begin
+            for (i = 0; i < 4; i = i + 1) begin
+                tr_in_4_u0[i] <= butterfly_8_u0[i];
+            end
+        end
+        SIZE16 : begin
+            for (i = 0; i < 4; i = i + 1) begin
+                tr_in_4_u0[i] <= butterfly_8_u0[i];
+            end
+        end
+        SIZE8 : begin
+            for (i = 0; i < 4; i = i + 1) begin
+                tr_in_4_u0[i] <= butterfly_8_u0[i];
+                tr_in_4_u1[i] <= butterfly_8_u1[i];
+            end
+        end
+        SIZE4 : begin
+            tr_in_4_valid <= i_valid_d4;
+            for (i = 0; i < 4; i = i + 1) begin
+                tr_in_4_u0[i] <= i_data_d4[i];
+                tr_in_4_u1[i] <= i_data_d4[i + 4];
+                tr_in_4_u2[i] <= i_data_d4[i + 8];
+                tr_in_4_u3[i] <= i_data_d4[i + 12];
+            end
+        end
+    endcase
 end
 
 //size mux out
@@ -398,7 +394,7 @@ always @(*) begin
     for (i = 0; i < 32; i = i + 1) begin
         pre_coeff[i] <= 0;
     end
-    case (i_height_d[5])
+    case (i_height_d[4])
         SIZE64  : begin //high frequency coefficients are set to zero
             pre_coeff_valid <= pre_coeff_64_valid;
             for (i = 0; i < 16; i = i + 1) begin
@@ -603,7 +599,7 @@ u0_dct2_1d_32(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_height_d[4]      ),
+    .i_size (i_height_d[3]      ),
 //input data
     .i_valid(tr_in_32_valid     ),
     .i_0    (tr_in_32_u0[0 ]    ),
@@ -683,7 +679,7 @@ u0_dct2_1d_16(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_height_d[4]      ),
+    .i_size (i_height_d[3]      ),
 //input data
     .i_valid(tr_in_16_valid     ),
     .i_0    (tr_in_16_u0[0 ]    ),
@@ -731,7 +727,7 @@ u0_dct2_1d_8(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_height_d[4]      ),
+    .i_size (i_height_d[3]      ),
 //input data
     .i_valid(tr_in_8_valid      ),
     .i_0    (tr_in_8_u0[0 ]     ),
@@ -761,7 +757,7 @@ u1_dct2_1d_8(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_height_d[4]      ),
+    .i_size (i_height_d[3]      ),
 //input data
     .i_valid(tr_in_8_valid      ),
     .i_0    (tr_in_8_u1[0 ]     ),
@@ -793,7 +789,7 @@ u0_dct2_1d_4(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_height_d[4]      ),
+    .i_size (i_height_d[3]      ),
 //input data
     .i_valid(tr_in_4_valid      ),
     .i_0    (tr_in_4_u0[0 ]     ),
@@ -815,7 +811,7 @@ u1_dct2_1d_4(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_height_d[4]      ),
+    .i_size (i_height_d[3]      ),
 //input data
     .i_valid(tr_in_4_valid      ),
     .i_0    (tr_in_4_u1[0 ]     ),
@@ -837,7 +833,7 @@ u2_dct2_1d_4(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_height_d[4]      ),
+    .i_size (i_height_d[3]      ),
 //input data
     .i_valid(tr_in_4_valid      ),
     .i_0    (tr_in_4_u2[0 ]     ),
@@ -859,7 +855,7 @@ u3_dct2_1d_4(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_height_d[4]      ),
+    .i_size (i_height_d[3]      ),
 //input data
     .i_valid(tr_in_4_valid      ),
     .i_0    (tr_in_4_u3[0 ]     ),
@@ -875,8 +871,8 @@ u3_dct2_1d_4(
 );
 
 //output
-    assign o_width  = i_width_d[5]  ;
-    assign o_height = i_height_d[5] ;
+    assign o_width  = i_width_d[4]  ;
+    assign o_height = i_height_d[4] ;
     assign o_valid  = pre_coeff_valid;
     assign o_0      = pre_coeff[0 ]  ;
     assign o_1      = pre_coeff[1 ]  ;

@@ -1,7 +1,7 @@
 //describe  : 正序输入DST7，倒序输入DCT8(1、3输出反号)，大小为4
 //input     : 4个像素残差
 //output    : 4个系数
-//delay     : 3 clk
+//delay     : 2 clk
 module dst7_dct8_1d_4#(
     parameter IN_WIDTH = 16
 )
@@ -24,7 +24,7 @@ module dst7_dct8_1d_4#(
 );
 
 //input
-    reg i_valid_d1, i_valid_d2;
+    reg i_valid_d1;
 
 //stage 1 butterfly
     wire signed [IN_WIDTH + 10 : 0] i_2_4 = i_2 <<< 2;
@@ -86,42 +86,7 @@ end
     wire signed [IN_WIDTH + 10 : 0] c_4_37 = c_4_5 + c_4_32;
     wire signed [IN_WIDTH + 10 : 0] c_4_74 = c_4_37 <<< 1;
 
-//stage 2 reg
-    reg signed [IN_WIDTH + 10 : 0] c_3_r;
-    reg signed [IN_WIDTH + 10 : 0] c_0_29_r;
-    reg signed [IN_WIDTH + 10 : 0] c_1_55_r;
-    reg signed [IN_WIDTH + 10 : 0] c_4_74_r;
-    reg signed [IN_WIDTH + 10 : 0] c_2_29_r;
-    reg signed [IN_WIDTH + 10 : 0] c_0_55_r;
-    reg signed [IN_WIDTH + 10 : 0] c_2_55_r;
-    reg signed [IN_WIDTH + 10 : 0] c_1_29_r;
-    
-always @(posedge clk or negedge rst_n) begin
-    if (!rst_n) begin
-        i_valid_d2 <= 0;
-        c_3_r      <= 0;
-        c_0_29_r   <= 0;
-        c_1_55_r   <= 0;
-        c_4_74_r   <= 0;
-        c_2_29_r   <= 0;
-        c_0_55_r   <= 0;
-        c_2_55_r   <= 0;
-        c_1_29_r   <= 0;
-    end
-    else begin
-        i_valid_d2 <= i_valid_d1;
-        c_3_r      <= c_3;
-        c_0_29_r   <= c_0_29;
-        c_1_55_r   <= c_1_55;
-        c_4_74_r   <= c_4_74;
-        c_2_29_r   <= c_2_29;
-        c_0_55_r   <= c_0_55;
-        c_2_55_r   <= c_2_55;
-        c_1_29_r   <= c_1_29;
-    end
-end
-
-//stage 3 output
+//stage 2
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         o_valid <= 0;
@@ -131,11 +96,11 @@ always @(posedge clk or negedge rst_n) begin
         o_3  <= 0;
     end
     else begin
-        o_valid <= i_valid_d2;
-        o_0 <= c_0_29_r + c_1_55_r + c_3_r;
-        o_1 <= c_4_74_r;
-        o_2 <= c_2_29_r + c_0_55_r - c_3_r;
-        o_3 <= c_2_55_r - c_1_29_r + c_3_r;
+        o_valid <= i_valid_d1;
+        o_0 <= c_0_29 + c_1_55 + c_3;
+        o_1 <= c_4_74;
+        o_2 <= c_2_29 + c_0_55 - c_3;
+        o_3 <= c_2_55 - c_1_29 + c_3;
     end
 end
 

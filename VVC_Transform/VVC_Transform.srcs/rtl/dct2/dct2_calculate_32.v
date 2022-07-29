@@ -1,7 +1,7 @@
 //describe  : MCM(RAG-n算法)生成乘法单元，求和得到结果
 //input     : 16个蝶形单元
 //output    : 16个系数结果(后需右移)
-//delay     : 4 clk
+//delay     : 3 clk
 module dct2_calculate_32#(
     parameter IN_WIDTH = 18
 )
@@ -535,11 +535,10 @@ localparam SIZE64 = 3'd5;
     wire signed [IN_WIDTH + 9 : 0] i_15_38 = i_15_19 <<< 1;
 
 //sum
-reg i_valid_d1, i_valid_d2, i_valid_d3;
+reg i_valid_d1, i_valid_d2;
 reg signed  [IN_WIDTH + 9 : 0] sum0_0[0 : 15], sum0_1[0 : 15], sum0_2[0 : 15], sum0_3[0 : 15], 
                                sum0_4[0 : 15], sum0_5[0 : 15], sum0_6[0 : 15], sum0_7[0 : 15];
-reg signed  [IN_WIDTH + 9 : 0] sum1_0[0 : 15], sum1_1[0 : 15], sum1_2[0 : 15], sum1_3[0 : 15];
-reg signed  [IN_WIDTH + 9 : 0] sum2_0[0 : 15], sum2_1[0 : 15];
+reg signed  [IN_WIDTH + 9 : 0] sum1_0[0 : 15], sum1_1[0 : 15];
 //stage 1
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
@@ -591,58 +590,30 @@ always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         i_valid_d2 <= 0;
         for (i = 0; i < 16; i = i + 1) begin
-            sum1_0[i] <= 0; sum1_1[i] <= 0; sum1_2[i] <= 0; sum1_3[i] <= 0; 
+            sum1_0[i] <= 0; sum1_1[i] <= 0;
         end
     end
     else begin
         i_valid_d2 <= i_valid_d1;
-        sum1_0[0 ] <= sum0_0[0 ] + sum0_1[0 ]; sum1_1[0 ] <= sum0_2[0 ] + sum0_3[0 ]; sum1_2[0 ] <= sum0_4[0 ] + sum0_5[0 ]; sum1_3[0 ] <= sum0_6[0 ] + sum0_7[0 ];
-        sum1_0[1 ] <= sum0_0[1 ] + sum0_1[1 ]; sum1_1[1 ] <= sum0_2[1 ] - sum0_3[1 ]; sum1_2[1 ] <= sum0_4[1 ] + sum0_5[1 ]; sum1_3[1 ] <= sum0_6[1 ] + sum0_7[1 ];
-        sum1_0[2 ] <= sum0_0[2 ] + sum0_1[2 ]; sum1_1[2 ] <= sum0_2[2 ] + sum0_3[2 ]; sum1_2[2 ] <= sum0_4[2 ] - sum0_5[2 ]; sum1_3[2 ] <= sum0_6[2 ] + sum0_7[2 ];
-        sum1_0[3 ] <= sum0_0[3 ] - sum0_1[3 ]; sum1_1[3 ] <= sum0_2[3 ] + sum0_3[3 ]; sum1_2[3 ] <= sum0_4[3 ] + sum0_5[3 ]; sum1_3[3 ] <= sum0_6[3 ] + sum0_7[3 ];
-        sum1_0[4 ] <= sum0_0[4 ] - sum0_1[4 ]; sum1_1[4 ] <= sum0_2[4 ] - sum0_3[4 ]; sum1_2[4 ] <= sum0_4[4 ] - sum0_5[4 ]; sum1_3[4 ] <= sum0_6[4 ] + sum0_7[4 ];
-        sum1_0[5 ] <= sum0_0[5 ] - sum0_1[5 ]; sum1_1[5 ] <= sum0_2[5 ] + sum0_3[5 ]; sum1_2[5 ] <= sum0_4[5 ] - sum0_5[5 ]; sum1_3[5 ] <= sum0_6[5 ] - sum0_7[5 ];
-        sum1_0[6 ] <= sum0_0[6 ] - sum0_1[6 ]; sum1_1[6 ] <= sum0_2[6 ] - sum0_3[6 ]; sum1_2[6 ] <= sum0_4[6 ] - sum0_5[6 ]; sum1_3[6 ] <= sum0_6[6 ] - sum0_7[6 ];
-        sum1_0[7 ] <= sum0_0[7 ] - sum0_1[7 ]; sum1_1[7 ] <= sum0_2[7 ] - sum0_3[7 ]; sum1_2[7 ] <= sum0_4[7 ] - sum0_5[7 ]; sum1_3[7 ] <= sum0_6[7 ] - sum0_7[7 ];
-        sum1_0[8 ] <= sum0_0[8 ] - sum0_1[8 ]; sum1_1[8 ] <= sum0_2[8 ] - sum0_3[8 ]; sum1_2[8 ] <= sum0_4[8 ] - sum0_5[8 ]; sum1_3[8 ] <= sum0_6[8 ] - sum0_7[8 ];
-        sum1_0[9 ] <= sum0_0[9 ] - sum0_1[9 ]; sum1_1[9 ] <= sum0_2[9 ] - sum0_3[9 ]; sum1_2[9 ] <= sum0_4[9 ] - sum0_5[9 ]; sum1_3[9 ] <= sum0_6[9 ] + sum0_7[9 ];
-        sum1_0[10] <= sum0_0[10] + sum0_1[10]; sum1_1[10] <= sum0_2[10] - sum0_3[10]; sum1_2[10] <= sum0_4[10] - sum0_5[10]; sum1_3[10] <= sum0_6[10] + sum0_7[10];
-        sum1_0[11] <= sum0_0[11] + sum0_1[11]; sum1_1[11] <= sum0_2[11] + sum0_3[11]; sum1_2[11] <= sum0_4[11] + sum0_5[11]; sum1_3[11] <= sum0_6[11] - sum0_7[11];
-        sum1_0[12] <= sum0_0[12] + sum0_1[12]; sum1_1[12] <= sum0_2[12] - sum0_3[12]; sum1_2[12] <= sum0_4[12] - sum0_5[12]; sum1_3[12] <= sum0_6[12] - sum0_7[12];
-        sum1_0[13] <= sum0_0[13] + sum0_1[13]; sum1_1[13] <= sum0_2[13] - sum0_3[13]; sum1_2[13] <= sum0_4[13] + sum0_5[13]; sum1_3[13] <= sum0_6[13] - sum0_7[13];
-        sum1_0[14] <= sum0_0[14] + sum0_1[14]; sum1_1[14] <= sum0_2[14] + sum0_3[14]; sum1_2[14] <= sum0_4[14] + sum0_5[14]; sum1_3[14] <= sum0_6[14] + sum0_7[14];
-        sum1_0[15] <= sum0_0[15] + sum0_1[15]; sum1_1[15] <= sum0_2[15] + sum0_3[15]; sum1_2[15] <= sum0_4[15] + sum0_5[15]; sum1_3[15] <= sum0_6[15] + sum0_7[15];
+        sum1_0[0 ] <= sum0_0[0 ] + sum0_1[0 ] + sum0_2[0 ] + sum0_3[0 ]; sum1_1[0 ] <= sum0_4[0 ] + sum0_5[0 ] + sum0_6[0 ] + sum0_7[0 ];
+        sum1_0[1 ] <= sum0_0[1 ] + sum0_1[1 ] + sum0_2[1 ] - sum0_3[1 ]; sum1_1[1 ] <= sum0_4[1 ] + sum0_5[1 ] + sum0_6[1 ] + sum0_7[1 ];
+        sum1_0[2 ] <= sum0_0[2 ] + sum0_1[2 ] - sum0_2[2 ] - sum0_3[2 ]; sum1_1[2 ] <= sum0_4[2 ] - sum0_5[2 ] - sum0_6[2 ] - sum0_7[2 ];
+        sum1_0[3 ] <= sum0_0[3 ] - sum0_1[3 ] - sum0_2[3 ] - sum0_3[3 ]; sum1_1[3 ] <= sum0_4[3 ] + sum0_5[3 ] - sum0_6[3 ] - sum0_7[3 ];
+        sum1_0[4 ] <= sum0_0[4 ] - sum0_1[4 ] - sum0_2[4 ] + sum0_3[4 ]; sum1_1[4 ] <= sum0_4[4 ] - sum0_5[4 ] + sum0_6[4 ] + sum0_7[4 ];
+        sum1_0[5 ] <= sum0_0[5 ] - sum0_1[5 ] + sum0_2[5 ] + sum0_3[5 ]; sum1_1[5 ] <= sum0_4[5 ] - sum0_5[5 ] - sum0_6[5 ] + sum0_7[5 ];
+        sum1_0[6 ] <= sum0_0[6 ] - sum0_1[6 ] + sum0_2[6 ] - sum0_3[6 ]; sum1_1[6 ] <= sum0_4[6 ] - sum0_5[6 ] + sum0_6[6 ] - sum0_7[6 ];
+        sum1_0[7 ] <= sum0_0[7 ] - sum0_1[7 ] + sum0_2[7 ] - sum0_3[7 ]; sum1_1[7 ] <= sum0_4[7 ] - sum0_5[7 ] + sum0_6[7 ] - sum0_7[7 ];
+        sum1_0[8 ] <= sum0_0[8 ] - sum0_1[8 ] + sum0_2[8 ] - sum0_3[8 ]; sum1_1[8 ] <= sum0_4[8 ] - sum0_5[8 ] + sum0_6[8 ] - sum0_7[8 ];
+        sum1_0[9 ] <= sum0_0[9 ] - sum0_1[9 ] - sum0_2[9 ] + sum0_3[9 ]; sum1_1[9 ] <= sum0_4[9 ] - sum0_5[9 ] + sum0_6[9 ] + sum0_7[9 ];
+        sum1_0[10] <= sum0_0[10] + sum0_1[10] - sum0_2[10] + sum0_3[10]; sum1_1[10] <= sum0_4[10] - sum0_5[10] + sum0_6[10] + sum0_7[10];
+        sum1_0[11] <= sum0_0[11] + sum0_1[11] - sum0_2[11] - sum0_3[11]; sum1_1[11] <= sum0_4[11] + sum0_5[11] - sum0_6[11] + sum0_7[11];
+        sum1_0[12] <= sum0_0[12] + sum0_1[12] + sum0_2[12] - sum0_3[12]; sum1_1[12] <= sum0_4[12] - sum0_5[12] - sum0_6[12] + sum0_7[12];
+        sum1_0[13] <= sum0_0[13] + sum0_1[13] + sum0_2[13] - sum0_3[13]; sum1_1[13] <= sum0_4[13] + sum0_5[13] + sum0_6[13] - sum0_7[13];
+        sum1_0[14] <= sum0_0[14] + sum0_1[14] + sum0_2[14] + sum0_3[14]; sum1_1[14] <= sum0_4[14] + sum0_5[14] - sum0_6[14] - sum0_7[14];
+        sum1_0[15] <= sum0_0[15] + sum0_1[15] + sum0_2[15] + sum0_3[15]; sum1_1[15] <= sum0_4[15] + sum0_5[15] + sum0_6[15] + sum0_7[15];
     end
 end
 //stage 3
-always @(posedge clk or negedge rst_n) begin
-    if (!rst_n) begin
-        i_valid_d3 <= 0;
-        for (i = 0; i < 16; i = i + 1) begin
-            sum2_0[i] <= 0; sum2_1[i] <= 0;
-        end
-    end
-    else begin
-        i_valid_d3 <= i_valid_d2;
-        sum2_0[0 ] <= sum1_0[0 ] + sum1_1[0 ]; sum2_1[0 ] <= sum1_2[0 ] + sum1_3[0 ];
-        sum2_0[1 ] <= sum1_0[1 ] + sum1_1[1 ]; sum2_1[1 ] <= sum1_2[1 ] + sum1_3[1 ];
-        sum2_0[2 ] <= sum1_0[2 ] - sum1_1[2 ]; sum2_1[2 ] <= sum1_2[2 ] - sum1_3[2 ];
-        sum2_0[3 ] <= sum1_0[3 ] - sum1_1[3 ]; sum2_1[3 ] <= sum1_2[3 ] - sum1_3[3 ];
-        sum2_0[4 ] <= sum1_0[4 ] - sum1_1[4 ]; sum2_1[4 ] <= sum1_2[4 ] + sum1_3[4 ];
-        sum2_0[5 ] <= sum1_0[5 ] + sum1_1[5 ]; sum2_1[5 ] <= sum1_2[5 ] - sum1_3[5 ];
-        sum2_0[6 ] <= sum1_0[6 ] + sum1_1[6 ]; sum2_1[6 ] <= sum1_2[6 ] + sum1_3[6 ];
-        sum2_0[7 ] <= sum1_0[7 ] + sum1_1[7 ]; sum2_1[7 ] <= sum1_2[7 ] + sum1_3[7 ];
-        sum2_0[8 ] <= sum1_0[8 ] + sum1_1[8 ]; sum2_1[8 ] <= sum1_2[8 ] + sum1_3[8 ];
-        sum2_0[9 ] <= sum1_0[9 ] - sum1_1[9 ]; sum2_1[9 ] <= sum1_2[9 ] + sum1_3[9 ];
-        sum2_0[10] <= sum1_0[10] - sum1_1[10]; sum2_1[10] <= sum1_2[10] + sum1_3[10];
-        sum2_0[11] <= sum1_0[11] - sum1_1[11]; sum2_1[11] <= sum1_2[11] - sum1_3[11];
-        sum2_0[12] <= sum1_0[12] + sum1_1[12]; sum2_1[12] <= sum1_2[12] - sum1_3[12];
-        sum2_0[13] <= sum1_0[13] + sum1_1[13]; sum2_1[13] <= sum1_2[13] + sum1_3[13];
-        sum2_0[14] <= sum1_0[14] + sum1_1[14]; sum2_1[14] <= sum1_2[14] - sum1_3[14];
-        sum2_0[15] <= sum1_0[15] + sum1_1[15]; sum2_1[15] <= sum1_2[15] + sum1_3[15];
-    end
-end
-//stage 4
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         o_valid <= 0;
@@ -664,15 +635,15 @@ always @(posedge clk or negedge rst_n) begin
         o_15 <= 0;
     end
     else if (i_size == SIZE64) begin//高频置零
-        o_valid <= i_valid_d3;
-        o_0  <= sum2_0[0 ] + sum2_1[0 ];
-        o_1  <= sum2_0[1 ] - sum2_1[1 ];
-        o_2  <= sum2_0[2 ] - sum2_1[2 ];
-        o_3  <= sum2_0[3 ] + sum2_1[3 ];
-        o_4  <= sum2_0[4 ] + sum2_1[4 ];
-        o_5  <= sum2_0[5 ] - sum2_1[5 ];
-        o_6  <= sum2_0[6 ] - sum2_1[6 ];
-        o_7  <= sum2_0[7 ] + sum2_1[7 ];
+        o_valid <= i_valid_d2;
+        o_0  <= sum1_0[0 ] + sum1_1[0 ];
+        o_1  <= sum1_0[1 ] - sum1_1[1 ];
+        o_2  <= sum1_0[2 ] - sum1_1[2 ];
+        o_3  <= sum1_0[3 ] + sum1_1[3 ];
+        o_4  <= sum1_0[4 ] + sum1_1[4 ];
+        o_5  <= sum1_0[5 ] - sum1_1[5 ];
+        o_6  <= sum1_0[6 ] - sum1_1[6 ];
+        o_7  <= sum1_0[7 ] + sum1_1[7 ];
         o_8  <= 0;
         o_9  <= 0;
         o_10 <= 0;
@@ -683,23 +654,23 @@ always @(posedge clk or negedge rst_n) begin
         o_15 <= 0;
     end
     else begin
-        o_valid <= i_valid_d3;
-        o_0  <= sum2_0[0 ] + sum2_1[0 ];
-        o_1  <= sum2_0[1 ] - sum2_1[1 ];
-        o_2  <= sum2_0[2 ] - sum2_1[2 ];
-        o_3  <= sum2_0[3 ] + sum2_1[3 ];
-        o_4  <= sum2_0[4 ] + sum2_1[4 ];
-        o_5  <= sum2_0[5 ] - sum2_1[5 ];
-        o_6  <= sum2_0[6 ] - sum2_1[6 ];
-        o_7  <= sum2_0[7 ] + sum2_1[7 ];
-        o_8  <= sum2_0[8 ] - sum2_1[8 ];
-        o_9  <= sum2_0[9 ] - sum2_1[9 ];
-        o_10 <= sum2_0[10] + sum2_1[10];
-        o_11 <= sum2_0[11] + sum2_1[11];
-        o_12 <= sum2_0[12] - sum2_1[12];
-        o_13 <= sum2_0[13] - sum2_1[13];
-        o_14 <= sum2_0[14] + sum2_1[14];
-        o_15 <= sum2_0[15] + sum2_1[15];
+        o_valid <= i_valid_d2;
+        o_0  <= sum1_0[0 ] + sum1_1[0 ];
+        o_1  <= sum1_0[1 ] - sum1_1[1 ];
+        o_2  <= sum1_0[2 ] - sum1_1[2 ];
+        o_3  <= sum1_0[3 ] + sum1_1[3 ];
+        o_4  <= sum1_0[4 ] + sum1_1[4 ];
+        o_5  <= sum1_0[5 ] - sum1_1[5 ];
+        o_6  <= sum1_0[6 ] - sum1_1[6 ];
+        o_7  <= sum1_0[7 ] + sum1_1[7 ];
+        o_8  <= sum1_0[8 ] - sum1_1[8 ];
+        o_9  <= sum1_0[9 ] - sum1_1[9 ];
+        o_10 <= sum1_0[10] + sum1_1[10];
+        o_11 <= sum1_0[11] + sum1_1[11];
+        o_12 <= sum1_0[12] - sum1_1[12];
+        o_13 <= sum1_0[13] - sum1_1[13];
+        o_14 <= sum1_0[14] + sum1_1[14];
+        o_15 <= sum1_0[15] + sum1_1[15];
     end
 end
 

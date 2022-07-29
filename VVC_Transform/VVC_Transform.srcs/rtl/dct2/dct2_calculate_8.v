@@ -1,7 +1,7 @@
 //describe  : MCM(RAG-n算法)生成乘法单元，求和得到结果
 //input     : 4个蝶形单元
 //output    : 4个系数结果(后需右移)
-//delay     : 2 clk
+//delay     : 1 clk
 module dct2_calculate_8#(
     parameter IN_WIDTH = 20
 )
@@ -74,26 +74,7 @@ localparam SIZE64 = 3'd5;
     wire signed [IN_WIDTH + 7 : 0] i_3_50 = i_3_25 <<< 1;
     wire signed [IN_WIDTH + 7 : 0] i_3_18 = i_3_9 <<< 1;
 
-//sum
-reg i_valid_d1;
-reg signed  [IN_WIDTH + 7 : 0] sum0_0[0 : 3], sum0_1[0 : 3];
 //stage 1
-always @(posedge clk or negedge rst_n) begin
-    if (!rst_n) begin
-        i_valid_d1 <= 0;
-        for (i = 0; i < 4; i = i + 1) begin
-            sum0_0[i] <= 0; sum0_1[i] <= 0;
-        end
-    end
-    else begin
-        i_valid_d1 <= i_valid;
-        sum0_0[0] <= i_0_89 + i_1_75; sum0_1[0] <= i_2_50 + i_3_18;
-        sum0_0[1] <= i_0_75 - i_1_18; sum0_1[1] <= i_2_89 + i_3_50;
-        sum0_0[2] <= i_0_50 - i_1_89; sum0_1[2] <= i_2_18 + i_3_75;
-        sum0_0[3] <= i_0_18 - i_1_50; sum0_1[3] <= i_2_75 - i_3_89;
-    end
-end
-//stage 2
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         o_valid <= 0;
@@ -103,18 +84,18 @@ always @(posedge clk or negedge rst_n) begin
         o_3 <= 0;
     end
     else if (i_size == SIZE64) begin//高频置零
-        o_valid <= i_valid_d1;
-        o_0 <= sum0_0[0] + sum0_1[0];
-        o_1 <= sum0_0[1] - sum0_1[1];
+        o_valid <= i_valid;
+        o_0 <= i_0_89 + i_1_75 + i_2_50 + i_3_18;
+        o_1 <= i_0_75 - i_1_18 - i_2_89 - i_3_50;
         o_2 <= 0;
         o_3 <= 0;
     end
     else begin
-        o_valid <= i_valid_d1;
-        o_0 <= sum0_0[0] + sum0_1[0];
-        o_1 <= sum0_0[1] - sum0_1[1];
-        o_2 <= sum0_0[2] + sum0_1[2];
-        o_3 <= sum0_0[3] + sum0_1[3];
+        o_valid <= i_valid;
+        o_0 <= i_0_89 + i_1_75 + i_2_50 + i_3_18;
+        o_1 <= i_0_75 - i_1_18 - i_2_89 - i_3_50;
+        o_2 <= i_0_50 - i_1_89 + i_2_18 + i_3_75;
+        o_3 <= i_0_18 - i_1_50 + i_2_75 - i_3_89;
     end
 end
 
