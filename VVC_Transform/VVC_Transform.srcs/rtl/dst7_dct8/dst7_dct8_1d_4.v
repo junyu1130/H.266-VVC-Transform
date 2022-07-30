@@ -17,26 +17,26 @@ module dst7_dct8_1d_4#(
     input       signed  [IN_WIDTH - 1 : 0]  i_3     ,
 //output data
     output reg                              o_valid ,
-    output reg  signed  [IN_WIDTH + 10 : 0] o_0     ,
-    output reg  signed  [IN_WIDTH + 10 : 0] o_1     ,
-    output reg  signed  [IN_WIDTH + 10 : 0] o_2     ,
-    output reg  signed  [IN_WIDTH + 10 : 0] o_3     
+    output reg  signed  [IN_WIDTH + 7 : 0]  o_0     ,
+    output reg  signed  [IN_WIDTH + 7 : 0]  o_1     ,
+    output reg  signed  [IN_WIDTH + 7 : 0]  o_2     ,
+    output reg  signed  [IN_WIDTH + 7 : 0]  o_3     
 );
 
 //input
     reg i_valid_d1;
 
 //stage 1 butterfly
-    wire signed [IN_WIDTH + 10 : 0] i_2_4 = i_2 <<< 2;
-    wire signed [IN_WIDTH + 10 : 0] i_2_5 = i_2 + i_2_4;
-    wire signed [IN_WIDTH + 10 : 0] i_2_32 = i_2 <<< 5;
-    wire signed [IN_WIDTH + 10 : 0] i_2_37 = i_2_5 + i_2_32;
-    wire signed [IN_WIDTH + 10 : 0] i_2_74 = i_2_37 <<< 1;
-    reg signed [IN_WIDTH + 10 : 0] c_0;
-    reg signed [IN_WIDTH + 10 : 0] c_1;
-    reg signed [IN_WIDTH + 10 : 0] c_2;
-    reg signed [IN_WIDTH + 10 : 0] c_3;
-    reg signed [IN_WIDTH + 10 : 0] c_4;
+    wire signed [IN_WIDTH + 6 : 0] i_2_4 = i_2 <<< 2;
+    wire signed [IN_WIDTH + 6 : 0] i_2_5 = i_2 + i_2_4;
+    wire signed [IN_WIDTH + 6 : 0] i_2_32 = i_2 <<< 5;
+    wire signed [IN_WIDTH + 6 : 0] i_2_37 = i_2_5 + i_2_32;
+    wire signed [IN_WIDTH + 6 : 0] i_2_74 = i_2_37 <<< 1;
+    reg  signed [IN_WIDTH     : 0] c_0;
+    reg  signed [IN_WIDTH     : 0] c_1;
+    reg  signed [IN_WIDTH     : 0] c_2;
+    reg  signed [IN_WIDTH + 6 : 0] c_3;
+    reg  signed [IN_WIDTH + 1 : 0] c_4;
 
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
@@ -59,32 +59,32 @@ end
 
 //mcm
 //4 3 32 29 58 55
-    wire signed [IN_WIDTH + 10 : 0] c_0_4 = c_0 <<< 2;
-    wire signed [IN_WIDTH + 10 : 0] c_0_3 = c_0_4 - c_0;
-    wire signed [IN_WIDTH + 10 : 0] c_0_32 = c_0 <<< 5;
-    wire signed [IN_WIDTH + 10 : 0] c_0_29 = c_0_32 - c_0_3;
-    wire signed [IN_WIDTH + 10 : 0] c_0_58 = c_0_29 <<< 1;
-    wire signed [IN_WIDTH + 10 : 0] c_0_55 = c_0_58 - c_0_3;
+    wire signed [IN_WIDTH + 7 : 0] c_0_4 = c_0 <<< 2;
+    wire signed [IN_WIDTH + 7 : 0] c_0_3 = c_0_4 - c_0;
+    wire signed [IN_WIDTH + 7 : 0] c_0_32 = c_0 <<< 5;
+    wire signed [IN_WIDTH + 7 : 0] c_0_29 = c_0_32 - c_0_3;
+    wire signed [IN_WIDTH + 7 : 0] c_0_58 = c_0_29 <<< 1;
+    wire signed [IN_WIDTH + 7 : 0] c_0_55 = c_0_58 - c_0_3;
 
-    wire signed [IN_WIDTH + 10 : 0] c_1_4 = c_1 <<< 2;
-    wire signed [IN_WIDTH + 10 : 0] c_1_3 = c_1_4 - c_1;
-    wire signed [IN_WIDTH + 10 : 0] c_1_32 = c_1 <<< 5;
-    wire signed [IN_WIDTH + 10 : 0] c_1_29 = c_1_32 - c_1_3;
-    wire signed [IN_WIDTH + 10 : 0] c_1_58 = c_1_29 <<< 1;
-    wire signed [IN_WIDTH + 10 : 0] c_1_55 = c_1_58 - c_1_3;
+    wire signed [IN_WIDTH + 7 : 0] c_1_4 = c_1 <<< 2;
+    wire signed [IN_WIDTH + 7 : 0] c_1_3 = c_1_4 - c_1;
+    wire signed [IN_WIDTH + 7 : 0] c_1_32 = c_1 <<< 5;
+    wire signed [IN_WIDTH + 7 : 0] c_1_29 = c_1_32 - c_1_3;
+    wire signed [IN_WIDTH + 7 : 0] c_1_58 = c_1_29 <<< 1;
+    wire signed [IN_WIDTH + 7 : 0] c_1_55 = c_1_58 - c_1_3;
 
-    wire signed [IN_WIDTH + 10 : 0] c_2_4 = c_2 <<< 2;
-    wire signed [IN_WIDTH + 10 : 0] c_2_3 = c_2_4 - c_2;
-    wire signed [IN_WIDTH + 10 : 0] c_2_32 = c_2 <<< 5;
-    wire signed [IN_WIDTH + 10 : 0] c_2_29 = c_2_32 - c_2_3;
-    wire signed [IN_WIDTH + 10 : 0] c_2_58 = c_2_29 <<< 1;
-    wire signed [IN_WIDTH + 10 : 0] c_2_55 = c_2_58 - c_2_3;
+    wire signed [IN_WIDTH + 7 : 0] c_2_4 = c_2 <<< 2;
+    wire signed [IN_WIDTH + 7 : 0] c_2_3 = c_2_4 - c_2;
+    wire signed [IN_WIDTH + 7 : 0] c_2_32 = c_2 <<< 5;
+    wire signed [IN_WIDTH + 7 : 0] c_2_29 = c_2_32 - c_2_3;
+    wire signed [IN_WIDTH + 7 : 0] c_2_58 = c_2_29 <<< 1;
+    wire signed [IN_WIDTH + 7 : 0] c_2_55 = c_2_58 - c_2_3;
 
-    wire signed [IN_WIDTH + 10 : 0] c_4_4 = c_4 <<< 2;
-    wire signed [IN_WIDTH + 10 : 0] c_4_5 = c_4 + c_4_4;
-    wire signed [IN_WIDTH + 10 : 0] c_4_32 = c_4 <<< 5;
-    wire signed [IN_WIDTH + 10 : 0] c_4_37 = c_4_5 + c_4_32;
-    wire signed [IN_WIDTH + 10 : 0] c_4_74 = c_4_37 <<< 1;
+    wire signed [IN_WIDTH + 7 : 0] c_4_4 = c_4 <<< 2;
+    wire signed [IN_WIDTH + 7 : 0] c_4_5 = c_4 + c_4_4;
+    wire signed [IN_WIDTH + 7 : 0] c_4_32 = c_4 <<< 5;
+    wire signed [IN_WIDTH + 7 : 0] c_4_37 = c_4_5 + c_4_32;
+    wire signed [IN_WIDTH + 7 : 0] c_4_74 = c_4_37 <<< 1;
 
 //stage 2
 always @(posedge clk or negedge rst_n) begin

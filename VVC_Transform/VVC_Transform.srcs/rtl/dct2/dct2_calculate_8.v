@@ -28,7 +28,7 @@ module dct2_calculate_8#(
 integer i;
 localparam SIZE64 = 3'd5;
 
-//mcm
+//mcm (depth = 3)
 //89 75 / 50 18
     wire signed [IN_WIDTH + 7 : 0] i_0_8 = i_0 <<< 3;
     wire signed [IN_WIDTH + 7 : 0] i_0_9 = i_0 + i_0_8;

@@ -90,9 +90,9 @@ integer i;
 //calculate
     wire pre_coeff_32_valid, pre_coeff_16_valid, pre_coeff_8_valid, pre_coeff_4_valid;
     wire signed [IN_WIDTH + 10 : 0] pre_coeff_32_u0[0 : 15];
-    wire signed [IN_WIDTH + 10 : 0] pre_coeff_16_u0[0 : 15];
-    wire signed [IN_WIDTH + 10 : 0] pre_coeff_8_u0[0 : 7], pre_coeff_8_u1[0 : 7];
-    wire signed [IN_WIDTH + 10 : 0] pre_coeff_4_u0[0 : 3], pre_coeff_4_u1[0 : 3], pre_coeff_4_u2[0 : 3], pre_coeff_4_u3[0 : 3];
+    wire signed [IN_WIDTH +  9 : 0] pre_coeff_16_u0[0 : 15];
+    wire signed [IN_WIDTH +  8 : 0] pre_coeff_8_u0[0 : 7], pre_coeff_8_u1[0 : 7];
+    wire signed [IN_WIDTH +  7 : 0] pre_coeff_4_u0[0 : 3], pre_coeff_4_u1[0 : 3], pre_coeff_4_u2[0 : 3], pre_coeff_4_u3[0 : 3];
 //size mux out
     reg pre_coeff_valid;
     reg signed [IN_WIDTH + 10 : 0] pre_coeff[0 : 15];
@@ -191,31 +191,31 @@ always @(*) begin
     for (i = 0; i < 4; i = i + 1) begin
         tr_in_4_u0[i] <= 0; tr_in_4_u1[i] <= 0; tr_in_4_u2[i] <= 0; tr_in_4_u3[i] <= 0;
     end
-    //delay 0 clk
-    case (i_width) 
-        SIZE32 : begin
-            tr_in_32_valid <= i_valid;
-            for (i = 0; i < 32; i = i + 1) begin
-                tr_in_32_u0[i] <= i_data[i];
-            end
-        end
-    endcase
     //delay 1 clk
     case (i_width_d[0]) 
-        SIZE16 : begin
-            tr_in_16_valid <= i_valid_d1;
-            for (i = 0; i < 16; i = i + 1) begin
-                tr_in_16_u0[i] <= i_data_d1[i];
+        SIZE32 : begin
+            tr_in_32_valid <= i_valid_d1;
+            for (i = 0; i < 32; i = i + 1) begin
+                tr_in_32_u0[i] <= i_data_d1[i];
             end
         end
     endcase
     //delay 2 clk
     case (i_width_d[1]) 
+        SIZE16 : begin
+            tr_in_16_valid <= i_valid_d2;
+            for (i = 0; i < 16; i = i + 1) begin
+                tr_in_16_u0[i] <= i_data_d2[i];
+            end
+        end
+    endcase
+    //delay 3 clk
+    case (i_width_d[2]) 
         SIZE8 : begin
-            tr_in_8_valid <= i_valid_d2;
+            tr_in_8_valid <= i_valid_d3;
             for (i = 0; i < 8; i = i + 1) begin
-                tr_in_8_u0[i] <= i_data_d2[i];
-                tr_in_8_u1[i] <= i_data_d2[i + 8];
+                tr_in_8_u0[i] <= i_data_d3[i];
+                tr_in_8_u1[i] <= i_data_d3[i + 8];
             end
         end
     endcase
