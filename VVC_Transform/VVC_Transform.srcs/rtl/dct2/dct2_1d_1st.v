@@ -127,7 +127,7 @@ integer i;
 //input
     reg i_valid_d1, i_valid_d2, i_valid_d3, i_valid_d4;
     wire signed [IN_WIDTH - 1 : 0] i_data[0 : 63];
-    reg signed [IN_WIDTH - 1 : 0] i_data_d1[0 : 63], i_data_d2[0 : 63], i_data_d3[0 : 63], i_data_d4[0 : 63];
+    reg signed [IN_WIDTH - 1 : 0] i_data_d1[0 : 31], i_data_d2[0 : 15], i_data_d3[0 : 15], i_data_d4[0 : 15];
     reg [2 : 0] i_width_d[0 : 4];
     reg [2 : 0] i_height_d[0 : 4];
 //size mux in
@@ -243,8 +243,10 @@ always @(posedge clk or negedge rst_n) begin
         i_valid_d2 <= 0; 
         i_valid_d3 <= 0; 
         i_valid_d4 <= 0;
-        for (i = 0; i < 64; i = i + 1) begin
+        for (i = 0; i < 32; i = i + 1) begin
             i_data_d1[i] <= 0; 
+        end
+        for (i = 0; i < 16; i = i + 1) begin
             i_data_d2[i] <= 0; 
             i_data_d3[i] <= 0; 
             i_data_d4[i] <= 0; 
@@ -255,8 +257,10 @@ always @(posedge clk or negedge rst_n) begin
         i_valid_d2 <= i_valid_d1; 
         i_valid_d3 <= i_valid_d2; 
         i_valid_d4 <= i_valid_d3;
-        for (i = 0; i < 64; i = i + 1) begin
+        for (i = 0; i < 32; i = i + 1) begin
             i_data_d1[i] <= i_data[i]; 
+        end
+        for (i = 0; i < 16; i = i + 1) begin
             i_data_d2[i] <= i_data_d1[i]; 
             i_data_d3[i] <= i_data_d2[i]; 
             i_data_d4[i] <= i_data_d3[i]; 
