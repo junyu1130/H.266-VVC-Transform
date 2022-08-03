@@ -11,7 +11,8 @@ module parallel_to_serial_2nd#(
     input                               clk     ,
     input                               rst_n   ,
 //input parameter
-    input           [1 : 0]             i_type  ,//0:DCT2 1:DCT8 2:DST7  
+    input           [1 : 0]             i_type_h,//0:DCT2 1:DCT8 2:DST7  
+    input           [1 : 0]             i_type_v,
     input           [2 : 0]             i_width ,//1:4x4, 2:8x8, 3:16x16, 4:32x32, 5:64x64
     input           [2 : 0]             i_height,
 //input data
@@ -49,7 +50,8 @@ module parallel_to_serial_2nd#(
     input   signed  [IN_WIDTH - 1 : 0]  i_30    ,
     input   signed  [IN_WIDTH - 1 : 0]  i_31    ,
 //output parameter
-    output          [1 : 0]             o_type  , 
+    output          [1 : 0]             o_type_h, 
+    output          [1 : 0]             o_type_v, 
     output          [2 : 0]             o_width ,
     output          [2 : 0]             o_height,
 //output data
@@ -81,7 +83,8 @@ integer i;
 
 //input delay
     wire signed [IN_WIDTH - 1 : 0] i_data0[0 : 15], i_data1[0 : 15];
-    reg [1 : 0] i_type_d1;
+    reg [1 : 0] i_type_h_d1;
+    reg [1 : 0] i_type_v_d1;
     reg [2 : 0] i_width_d1;
     reg [2 : 0] i_height_d1;
     reg i_valid_d1;
@@ -128,7 +131,8 @@ integer i;
 //delay
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin 
-        i_type_d1 <= 0;
+        i_type_h_d1 <= 0;
+        i_type_v_d1 <= 0;
         i_width_d1 <= 0;
         i_height_d1 <= 0;
         i_valid_d1 <= 0; 
@@ -137,7 +141,8 @@ always @(posedge clk or negedge rst_n) begin
         end
     end
     else begin
-        i_type_d1 <= i_type;
+        i_type_h_d1 <= i_type_h;
+        i_type_v_d1 <= i_type_v;
         i_width_d1 <= i_width;
         i_height_d1 <= i_height;
         i_valid_d1 <= i_valid;
@@ -217,7 +222,8 @@ always @(posedge clk or negedge rst_n) begin
 end
 
 //output
-    assign o_type   = i_type_d1;
+    assign o_type_h = i_type_h_d1;
+    assign o_type_v = i_type_v_d1;
     assign o_width  = i_width_d1;
     assign o_height = i_height_d1;
     assign o_valid  = i_valid_d1;

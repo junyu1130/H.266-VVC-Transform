@@ -11,7 +11,8 @@ module right_shift#(
     input                                   clk     ,
     input                                   rst_n   ,
 //input parameter
-    input               [1 : 0]             i_type  , 
+    input               [1 : 0]             i_type_h, 
+    input               [1 : 0]             i_type_v,
     input               [2 : 0]             i_width ,
     input               [2 : 0]             i_height,
     input               [3 : 0]             i_shift ,
@@ -50,7 +51,8 @@ module right_shift#(
     input       signed  [IN_WIDTH - 1 : 0]  i_30    ,
     input       signed  [IN_WIDTH - 1 : 0]  i_31    ,
 //output parameter
-    output reg          [1 : 0]             o_type  ,
+    output reg          [1 : 0]             o_type_h,
+    output reg          [1 : 0]             o_type_v,
     output reg          [2 : 0]             o_width ,
     output reg          [2 : 0]             o_height,
 //output coeff
@@ -127,7 +129,8 @@ module right_shift#(
 //四舍五入后右移1位
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-        o_type   <= 0;
+        o_type_h <= 0;
+        o_type_v <= 0;
         o_width  <= 0;
         o_height <= 0;
         o_valid <= 0;
@@ -165,7 +168,8 @@ always @(posedge clk or negedge rst_n) begin
         o_31    <= 0;
     end
     else begin
-        o_type   <= i_type;
+        o_type_h <= i_type_h;
+        o_type_v <= i_type_v;
         o_width  <= i_width;
         o_height <= i_height;
         o_valid <= i_valid;

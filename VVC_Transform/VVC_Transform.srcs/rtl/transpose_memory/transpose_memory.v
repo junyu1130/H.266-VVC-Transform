@@ -10,7 +10,8 @@ module transpose_memory#(
     input                               clk     ,
     input                               rst_n   ,
 //input parameter
-    input           [1 : 0]             i_type  ,//0:DCT2 1:DCT8 2:DST7                    
+    input           [1 : 0]             i_type_h,//0:DCT2 1:DCT8 2:DST7  
+    input           [1 : 0]             i_type_v,                  
     input           [2 : 0]             i_width ,//1st 1:4x4, 2:8x8, 3:16x16, 4:32x32, 5:64x64
     input           [2 : 0]             i_height,//2nd
 //input coeff
@@ -32,7 +33,8 @@ module transpose_memory#(
     input   signed  [WIDTH - 1 : 0]     i_14    ,
     input   signed  [WIDTH - 1 : 0]     i_15    ,
 //output parameter
-    output          [1 : 0]             o_type  ,
+    output          [1 : 0]             o_type_h,
+    output          [1 : 0]             o_type_v,
     output          [2 : 0]             o_width ,
     output          [2 : 0]             o_height,
 //output coeff
@@ -65,7 +67,8 @@ integer i, j, k;
 //input
     wire signed [WIDTH - 1 : 0] i_data[0 : 15];
     reg  signed [WIDTH - 1 : 0] i_data_d1[0 : 15];
-    reg         [1 : 0]         i_type_d[0 : 255];
+    reg         [1 : 0]         i_type_h_d[0 : 255];
+    reg         [1 : 0]         i_type_v_d[0 : 255];
     reg         [2 : 0]         i_width_d[0 : 255];
     reg         [2 : 0]         i_height_d[0 : 255];
     reg         [255 : 0]       i_valid_d;
@@ -88,13 +91,15 @@ integer i, j, k;
     reg         [6 : 0]         rd_count;
     reg         [6 : 0]         rd_count_max;
     reg         [7 : 0]         rd_point;
-    wire        [1 : 0]         rd_type = i_type_d[transpose_delay];
+    wire        [1 : 0]         rd_type_h = i_type_h_d[transpose_delay];
+    wire        [1 : 0]         rd_type_v = i_type_v_d[transpose_delay];
     wire        [2 : 0]         rd_width = i_width_d[transpose_delay];
     wire        [2 : 0]         rd_height = i_height_d[transpose_delay];
     wire                        rd_valid = i_valid_d[transpose_delay];
     reg         [3 : 0]         rd_shift;
 //output
-    reg         [1 : 0]         rd_type_d1, rd_type_d2;   
+    reg         [1 : 0]         rd_type_h_d1, rd_type_h_d2;
+    reg         [1 : 0]         rd_type_v_d1, rd_type_v_d2;   
     reg         [2 : 0]         rd_width_d1, rd_width_d2;
     reg         [2 : 0]         rd_height_d1, rd_height_d2;
     reg                         rd_valid_d1, rd_valid_d2; 
@@ -135,18 +140,21 @@ end
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin 
         for (i = 0; i < 256; i = i + 1) begin
-            i_type_d[i] <= 0;
+            i_type_h_d[i] <= 0;
+            i_type_v_d[i] <= 0;
             i_width_d[i] <= 0;
             i_height_d[i] <= 0;
         end
         i_valid_d <= 0;
     end
     else begin
-        i_type_d[0] <= i_type;
+        i_type_h_d[0] <= i_type_h;
+        i_type_v_d[0] <= i_type_v;
         i_width_d[0] <= i_width;
         i_height_d[0] <= i_height;
         for (i = 0; i < 127; i = i + 1) begin
-            i_type_d[i + 1] <= i_type_d[i];
+            i_type_h_d[i + 1] <= i_type_h_d[i];
+            i_type_v_d[i + 1] <= i_type_v_d[i];
             i_width_d[i + 1] <= i_width_d[i];
             i_height_d[i + 1] <= i_height_d[i];
         end
@@ -154,7 +162,8 @@ always @(posedge clk or negedge rst_n) begin
 
         if (transpose_delay == 255) begin //64x64才允许沿256个clk，避免前边小块的影响
             for (i = 127; i < 255; i = i + 1) begin
-                i_type_d[i + 1] <= i_type_d[i];
+                i_type_h_d[i + 1] <= i_type_h_d[i];
+                i_type_v_d[i + 1] <= i_type_v_d[i];
                 i_width_d[i + 1] <= i_width_d[i];
                 i_height_d[i + 1] <= i_height_d[i];
             end
@@ -162,7 +171,8 @@ always @(posedge clk or negedge rst_n) begin
         end
         else begin
             for (i = 127; i < 255; i = i + 1) begin
-                i_type_d[i + 1] <= 0;
+                i_type_h_d[i + 1] <= 0;
+                i_type_v_d[i + 1] <= 0;
                 i_width_d[i + 1] <= 0;
                 i_height_d[i + 1] <= 0;
             end
@@ -894,25 +904,25 @@ always @(posedge clk or negedge rst_n) begin
         end
         else if (i_width_d[wr_count_d1] == SIZE32) begin //2个地址的移位保持一样
             for (i = 0; i < 16; i = i + 1) begin
-                if (i >= wr_count / 2 * wr_shift) begin
-                    wr_data_shift[i] <= wr_data[i - wr_count / 2 * wr_shift];
-                    wr_addr_shift[i] <= wr_addr[i - wr_count / 2 * wr_shift];
+                if (i >= wr_count / 2) begin
+                    wr_data_shift[i] <= wr_data[i - wr_count / 2];
+                    wr_addr_shift[i] <= wr_addr[i - wr_count / 2];
                 end
                 else begin
-                    wr_data_shift[i] <= wr_data[i - wr_count / 2 * wr_shift + 16];
-                    wr_addr_shift[i] <= wr_addr[i - wr_count / 2 * wr_shift + 16];
+                    wr_data_shift[i] <= wr_data[i - wr_count / 2 + 16];
+                    wr_addr_shift[i] <= wr_addr[i - wr_count / 2 + 16];
                 end
             end
         end
         else if (i_width_d[wr_count_d1] == SIZE64) begin //4个地址的移位保持一样
             for (i = 0; i < 16; i = i + 1) begin
-                if (i >= wr_count / 4 * wr_shift) begin
-                    wr_data_shift[i] <= wr_data[i - wr_count / 4 * wr_shift];
-                    wr_addr_shift[i] <= wr_addr[i - wr_count / 4 * wr_shift];
+                if (i >= wr_count / 4) begin
+                    wr_data_shift[i] <= wr_data[i - wr_count / 4];
+                    wr_addr_shift[i] <= wr_addr[i - wr_count / 4];
                 end
                 else begin
-                    wr_data_shift[i] <= wr_data[i - wr_count / 4 * wr_shift + 16];
-                    wr_addr_shift[i] <= wr_addr[i - wr_count / 4 * wr_shift + 16];
+                    wr_data_shift[i] <= wr_data[i - wr_count / 4 + 16];
+                    wr_addr_shift[i] <= wr_addr[i - wr_count / 4 + 16];
                 end
             end
         end
@@ -1083,23 +1093,27 @@ end
 //rd delay
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin 
-        rd_type_d1 <= 0;
+        rd_type_h_d1 <= 0;
+        rd_type_v_d1 <= 0;
         rd_width_d1 <= 0;
         rd_height_d1 <= 0;
         rd_valid_d1 <= 0;
 
-        rd_type_d2 <= 0;
+        rd_type_h_d2 <= 0;
+        rd_type_v_d2 <= 0;
         rd_width_d2 <= 0;
         rd_height_d2 <= 0;
         rd_valid_d2 <= 0;
     end
     else begin
-        rd_type_d1 <= rd_type;
+        rd_type_h_d1 <= rd_type_h;
+        rd_type_v_d1 <= rd_type_v;
         rd_width_d1 <= rd_width;
         rd_height_d1 <= rd_height;
         rd_valid_d1 <= rd_valid;
 
-        rd_type_d2 <= rd_type_d1;
+        rd_type_h_d2 <= rd_type_h_d1;
+        rd_type_v_d2 <= rd_type_v_d1;
         rd_width_d2 <= rd_width_d1;
         rd_height_d2 <= rd_height_d1;
         rd_valid_d2 <= rd_valid_d1;
@@ -1220,21 +1234,21 @@ always @(posedge clk or negedge rst_n) begin
         else if (rd_width_d1 == SIZE32) begin //后一半地址的数据移位跟前一半一样
             if (rd_count < (rd_count_max + 1) / 2) begin
                 for (i = 0; i < 16; i = i + 1) begin
-                    if (i + rd_count * rd_shift < 16) begin
-                        rd_data_shift[i] <= rd_data[i + rd_count * rd_shift];
+                    if (i + rd_count < 16) begin
+                        rd_data_shift[i] <= rd_data[i + rd_count];
                     end
                     else begin
-                        rd_data_shift[i] <= rd_data[i + rd_count * rd_shift - 16];
+                        rd_data_shift[i] <= rd_data[i + rd_count - 16];
                     end
                 end
             end
             else begin
                 for (i = 0; i < 16; i = i + 1) begin
-                    if (i + (rd_count - (rd_count_max + 1) / 2) * rd_shift < 16) begin
-                        rd_data_shift[i] <= rd_data[i + (rd_count - (rd_count_max + 1) / 2) * rd_shift];
+                    if (i + (rd_count - (rd_count_max + 1) / 2) < 16) begin
+                        rd_data_shift[i] <= rd_data[i + (rd_count - (rd_count_max + 1) / 2)];
                     end
                     else begin
-                        rd_data_shift[i] <= rd_data[i + (rd_count - (rd_count_max + 1) / 2) * rd_shift - 16];
+                        rd_data_shift[i] <= rd_data[i + (rd_count - (rd_count_max + 1) / 2) - 16];
                     end
                 end
             end
@@ -1242,21 +1256,21 @@ always @(posedge clk or negedge rst_n) begin
         else if (rd_width_d1 == SIZE64) begin
             if (rd_count < (rd_count_max + 1) / 4) begin
                 for (i = 0; i < 16; i = i + 1) begin
-                    if (i + rd_count * rd_shift < 16) begin
-                        rd_data_shift[i] <= rd_data[i + rd_count * rd_shift];
+                    if (i + rd_count < 16) begin
+                        rd_data_shift[i] <= rd_data[i + rd_count];
                     end
                     else begin
-                        rd_data_shift[i] <= rd_data[i + rd_count * rd_shift - 16];
+                        rd_data_shift[i] <= rd_data[i + rd_count - 16];
                     end
                 end
             end
             else if (rd_count < (rd_count_max + 1) / 2) begin
                 for (i = 0; i < 16; i = i + 1) begin
-                    if (i + (rd_count - (rd_count_max + 1) / 4) * rd_shift < 16) begin
-                        rd_data_shift[i] <= rd_data[i + (rd_count - (rd_count_max + 1) / 4) * rd_shift];
+                    if (i + (rd_count - (rd_count_max + 1) / 4) < 16) begin
+                        rd_data_shift[i] <= rd_data[i + (rd_count - (rd_count_max + 1) / 4)];
                     end
                     else begin
-                        rd_data_shift[i] <= rd_data[i + (rd_count - (rd_count_max + 1) / 4) * rd_shift - 16];
+                        rd_data_shift[i] <= rd_data[i + (rd_count - (rd_count_max + 1) / 4) - 16];
                     end
                 end
             end
@@ -1318,7 +1332,8 @@ end
     dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(8)) dual_port_ram_15(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[15]), .rd_data(rd_data[15]), .wr_addr(wr_addr_shift[15]), .rd_addr(rd_point));
 
 //output
-    assign o_type = rd_type_d2;
+    assign o_type_h = rd_type_h_d2;
+    assign o_type_v = rd_type_v_d2;
     assign o_width = rd_width_d2;
     assign o_height = rd_height_d2;
     assign o_valid = rd_valid_d2;

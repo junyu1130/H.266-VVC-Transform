@@ -11,7 +11,8 @@ module transform1d_1st#(
     input                               clk         ,
     input                               rst_n       ,
 //input parameter
-    input           [1 : 0]             i_type      ,//0:DCT2 1:DCT8 2:DST7                    
+    input           [1 : 0]             i_type_h    ,//0:DCT2 1:DCT8 2:DST7   
+    input           [1 : 0]             i_type_v    ,                 
     input           [2 : 0]             i_width     ,//1:4x4, 2:8x8, 3:16x16, 4:32x32, 5:64x64
     input           [2 : 0]             i_height    ,
 //input data
@@ -33,7 +34,8 @@ module transform1d_1st#(
     input   signed  [IN_WIDTH - 1 : 0]  i_14        ,
     input   signed  [IN_WIDTH - 1 : 0]  i_15        ,
 //output parameter
-    output          [1 : 0]             o_type      ,
+    output          [1 : 0]             o_type_h    ,
+    output          [1 : 0]             o_type_v    ,
     output          [2 : 0]             o_width     ,
     output          [2 : 0]             o_height    ,
 //output coeff
@@ -69,7 +71,8 @@ integer i;
 //input
     wire signed [IN_WIDTH - 1 : 0] i_data[0 : 15];
 //serial to parallel
-    wire [1 : 0] tr_in_type;
+    wire [1 : 0] tr_in_type_h;
+    wire [1 : 0] tr_in_type_v;
     wire [2 : 0] tr_in_width, tr_in_height;
     wire tr_in_valid;
     wire signed [IN_WIDTH - 1 : 0] tr_in_data[0 : 63];
@@ -87,18 +90,21 @@ integer i;
     wire [2 : 0] dst7_dct8_out_width, dst7_dct8_out_height;
     wire dst7_dct8_out_valid;
     wire signed [IN_WIDTH + 10 : 0] dst7_dct8_out_data[0 : 15];
-    reg [1 : 0] tr_in_type_d[0 : 4];
+    reg [1 : 0] tr_in_type_h_d[0 : 4];
+    reg [1 : 0] tr_in_type_v_d[0 : 4];
     reg [2 : 0] tr_out_width, tr_out_height;
     reg tr_out_valid;
     reg signed [IN_WIDTH + 11 : 0] tr_out_data[0 : 31];
 //shift
     reg [3 : 0] tr_shift;
-    wire [1 : 0] coeff_out_type;
+    wire [1 : 0] coeff_out_type_h;
+    wire [1 : 0] coeff_out_type_v;
     wire [2 : 0] coeff_out_width, coeff_out_height;
     wire coeff_out_valid;
     wire signed [OUT_WIDTH - 1 : 0] coeff_out_data[0 : 31];
 //parallel to serial
-    wire [1 : 0] serial_out_type;
+    wire [1 : 0] serial_out_type_h;
+    wire [1 : 0] serial_out_type_v;
     wire [2 : 0] serial_out_width, serial_out_height;
     wire serial_out_valid;
     wire signed [OUT_WIDTH - 1 : 0] serial_out_data[0 : 15];
@@ -131,7 +137,8 @@ u_serial_to_parallel_1st(
     .clk        (clk            ),
     .rst_n      (rst_n          ),
 //input parameter
-    .i_type     (i_type         ),
+    .i_type_h   (i_type_h       ),
+    .i_type_v   (i_type_v       ),
     .i_width    (i_width        ),
     .i_height   (i_height       ),
 //input data
@@ -153,7 +160,8 @@ u_serial_to_parallel_1st(
     .i_14       (i_data[14]     ),
     .i_15       (i_data[15]     ),
 //output parameter
-    .o_type     (tr_in_type     ),
+    .o_type_h   (tr_in_type_h   ),
+    .o_type_v   (tr_in_type_v   ),
     .o_width    (tr_in_width    ),
     .o_height   (tr_in_height   ),
 //output data
@@ -238,7 +246,7 @@ always @(*) begin
     for (i = 0; i < 32; i = i + 1) begin
         dst7_dct8_in_data[i] <= 0;
     end
-    case (tr_in_type) 
+    case (tr_in_type_h) 
         DCT2    : begin
             dct2_in_width <= tr_in_width;
             dct2_in_height <= tr_in_height;
@@ -293,13 +301,16 @@ end
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin 
         for (i = 0; i < 5; i = i + 1) begin
-            tr_in_type_d[i] <= 0;
+            tr_in_type_h_d[i] <= 0;
+            tr_in_type_v_d[i] <= 0;
         end
     end
     else begin
-        tr_in_type_d[0] <= tr_in_type;
+        tr_in_type_h_d[0] <= tr_in_type_h;
+        tr_in_type_v_d[0] <= tr_in_type_v;
         for (i = 0; i < 4; i = i + 1) begin
-            tr_in_type_d[i + 1] <= tr_in_type_d[i];
+            tr_in_type_h_d[i + 1] <= tr_in_type_h_d[i];
+            tr_in_type_v_d[i + 1] <= tr_in_type_v_d[i];
         end
     end
 end
@@ -496,7 +507,7 @@ always @(*) begin
     for (i = 0; i < 32; i = i + 1) begin
         tr_out_data[i] <= 0;
     end
-    case (tr_in_type_d[4]) 
+    case (tr_in_type_h_d[4]) 
         DCT2    : begin
             tr_out_width <= dct2_out_width;
             tr_out_height <= dct2_out_height;
@@ -548,7 +559,8 @@ u_right_shift(
     .clk        (clk                ),
     .rst_n      (rst_n              ),
 //input parameter
-    .i_type     (tr_in_type_d[4]    ),
+    .i_type_h   (tr_in_type_h_d[4]  ),
+    .i_type_v   (tr_in_type_v_d[4]  ),
     .i_width    (tr_out_width       ),
     .i_height   (tr_out_height      ),
     .i_shift    (tr_shift           ),
@@ -587,7 +599,8 @@ u_right_shift(
     .i_30       (tr_out_data[30]),
     .i_31       (tr_out_data[31]),
 //output parameter
-    .o_type     (coeff_out_type     ),
+    .o_type_h   (coeff_out_type_h   ),
+    .o_type_v   (coeff_out_type_v   ),
     .o_width    (coeff_out_width    ),
     .o_height   (coeff_out_height   ),
 //output coeff
@@ -636,7 +649,8 @@ u_parallel_to_serial_1st(
     .clk        (clk                ),
     .rst_n      (rst_n              ),
 //input parameter
-    .i_type     (coeff_out_type     ),
+    .i_type_h   (coeff_out_type_h   ),
+    .i_type_v   (coeff_out_type_v   ),
     .i_width    (coeff_out_width    ),
     .i_height   (coeff_out_height   ),
 //input data
@@ -674,7 +688,8 @@ u_parallel_to_serial_1st(
     .i_30       (coeff_out_data[30] ),
     .i_31       (coeff_out_data[31] ),
 //output parameter
-    .o_type     (serial_out_type    ),
+    .o_type_h   (serial_out_type_h  ),
+    .o_type_v   (serial_out_type_v  ),
     .o_width    (serial_out_width   ),
     .o_height   (serial_out_height  ),
 //output data
@@ -698,7 +713,8 @@ u_parallel_to_serial_1st(
 );   
 
 //output
-    assign o_type   = serial_out_type;
+    assign o_type_h   = serial_out_type_h;
+    assign o_type_v   = serial_out_type_v;
     assign o_width  = serial_out_width;
     assign o_height = serial_out_height;
     assign o_valid  = serial_out_valid;

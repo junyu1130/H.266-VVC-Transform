@@ -19,14 +19,16 @@ integer fp_r, fp_w, rd_i, rd_j, rd_k, wr_i, wr_j, wr_k;
     reg clk;
     reg reset;
 //input parameter 
-    reg [1 : 0] i_type;//0:DCT2 1:DCT8 2:DST7   
+    reg [1 : 0] i_type_h;//0:DCT2 1:DCT8 2:DST7   
+    reg [1 : 0] i_type_v;
     reg [2 : 0] i_width;//1:4x4, 2:8x8, 3:16x16, 4:32x32, 5:64x64
     reg [2 : 0] i_height;
 //input data
     reg i_valid;
     reg signed [BIT_DEPTH : 0] i_data[0 : 15];
 //output parameter 
-    wire [1 : 0] o_type;
+    wire [1 : 0] o_type_h;
+    wire [1 : 0] o_type_v;
     wire [2 : 0] o_width;
     wire [2 : 0] o_height;
 //output coeff
@@ -46,7 +48,8 @@ u_transform2d_top(
     .clk         (clk         ),
     .reset       (reset       ),
 //input parameter
-    .i_type      (i_type      ),
+    .i_type_h    (i_type_h    ),
+    .i_type_v    (i_type_v    ),
     .i_width     (i_width     ),
     .i_height    (i_height    ),
 //input data
@@ -68,7 +71,8 @@ u_transform2d_top(
     .i_14        (i_data[14]  ),
     .i_15        (i_data[15]  ),
 //output parameter
-    .o_type      (o_type      ),
+    .o_type_h    (o_type_h    ),
+    .o_type_v    (o_type_v    ),
     .o_width     (o_width     ),
     .o_height    (o_height    ),
 //output coeff
@@ -99,7 +103,8 @@ end
 initial begin
     clk = 0;
     reset = 0;
-    i_type = 0;
+    i_type_h = 0;
+    i_type_v = 0;
     i_width = 0; i_height = 0;
     i_valid = 0;
     for (rd_i = 0; rd_i < 16; rd_i = rd_i + 1) begin
@@ -110,7 +115,8 @@ initial begin
 //DCT2
     //64x64
     i_valid = 1;
-    i_type = DCT2;
+    i_type_h = DCT2;
+    i_type_v = DCT2;
     i_width = SIZE64; i_height = SIZE64;
     fp_r = $fopen("../../../../../result/origin_data/origin_data_64x64.txt", "r");
     for (rd_i = 0; rd_i < 64; rd_i = rd_i + 1) begin
@@ -130,7 +136,8 @@ initial begin
     $fclose(fp_r);
     //32x32
     i_valid = 1;
-    i_type = DCT2;
+    i_type_h = DCT2;
+    i_type_v = DCT2;
     i_width = SIZE32; i_height = SIZE32;
     fp_r = $fopen("../../../../../result/origin_data/origin_data_32x32.txt", "r");
     for (rd_i = 0; rd_i < 32; rd_i = rd_i + 1) begin
@@ -148,7 +155,8 @@ initial begin
     $fclose(fp_r);
     //16x16
     i_valid = 1;
-    i_type = DCT2;
+    i_type_h = DCT2;
+    i_type_v = DCT2;
     i_width = SIZE16; i_height = SIZE16;
     fp_r = $fopen("../../../../../result/origin_data/origin_data_16x16.txt", "r");
     for (rd_i = 0; rd_i < 16; rd_i = rd_i + 1) begin
@@ -165,7 +173,8 @@ initial begin
     $fclose(fp_r);
     //8x8
     i_valid = 1;
-    i_type = DCT2;
+    i_type_h = DCT2;
+    i_type_v = DCT2;
     i_width = SIZE8; i_height = SIZE8;
     fp_r = $fopen("../../../../../result/origin_data/origin_data_8x8.txt", "r");
     for (rd_i = 0; rd_i < 4; rd_i = rd_i + 1) begin
@@ -184,7 +193,8 @@ initial begin
     $fclose(fp_r);
     //4x4
     i_valid = 1;
-    i_type = DCT2;
+    i_type_h = DCT2;
+    i_type_v = DCT2;
     i_width = SIZE4; i_height = SIZE4;
     fp_r = $fopen("../../../../../result/origin_data/origin_data_4x4.txt", "r");
     for (rd_i = 0; rd_i < 1; rd_i = rd_i + 1) begin
@@ -203,7 +213,8 @@ initial begin
     $fclose(fp_r);
     //32x64
     i_valid = 1;
-    i_type = DCT2;
+    i_type_h = DCT2;
+    i_type_v = DCT2;
     i_width = SIZE64; i_height = SIZE32;
     fp_r = $fopen("../../../../../result/origin_data/origin_data_32x64.txt", "r");
     for (rd_i = 0; rd_i < 32; rd_i = rd_i + 1) begin
@@ -223,7 +234,8 @@ initial begin
     $fclose(fp_r);
     //64x32
     i_valid = 1;
-    i_type = DCT2;
+    i_type_h = DCT2;
+    i_type_v = DCT2;
     i_width = SIZE32; i_height = SIZE64;
     fp_r = $fopen("../../../../../result/origin_data/origin_data_64x32.txt", "r");
     for (rd_i = 0; rd_i < 64; rd_i = rd_i + 1) begin
@@ -241,7 +253,8 @@ initial begin
     $fclose(fp_r);
     //4x16
     i_valid = 1;
-    i_type = DCT2;
+    i_type_h = DCT2;
+    i_type_v = DCT2;
     i_width = SIZE16; i_height = SIZE4;
     fp_r = $fopen("../../../../../result/origin_data/origin_data_4x16.txt", "r");
     for (rd_i = 0; rd_i < 4; rd_i = rd_i + 1) begin
@@ -258,7 +271,8 @@ initial begin
     $fclose(fp_r);
     //64x8
     i_valid = 1;
-    i_type = DCT2;
+    i_type_h = DCT2;
+    i_type_v = DCT2;
     i_width = SIZE8; i_height = SIZE64;
     fp_r = $fopen("../../../../../result/origin_data/origin_data_64x8.txt", "r");
     for (rd_i = 0; rd_i < 32; rd_i = rd_i + 1) begin
@@ -277,7 +291,8 @@ initial begin
     $fclose(fp_r);
     //8x4
     i_valid = 1;
-    i_type = DCT2;
+    i_type_h = DCT2;
+    i_type_v = DCT2;
     i_width = SIZE4; i_height = SIZE8;
     fp_r = $fopen("../../../../../result/origin_data/origin_data_8x4.txt", "r");
     for (rd_i = 0; rd_i < 2; rd_i = rd_i + 1) begin
@@ -296,7 +311,8 @@ initial begin
     $fclose(fp_r);
     //32x8
     i_valid = 1;
-    i_type = DCT2;
+    i_type_h = DCT2;
+    i_type_v = DCT2;
     i_width = SIZE8; i_height = SIZE32;
     fp_r = $fopen("../../../../../result/origin_data/origin_data_32x8.txt", "r");
     for (rd_i = 0; rd_i < 16; rd_i = rd_i + 1) begin
@@ -315,7 +331,8 @@ initial begin
     $fclose(fp_r);
     //8x32
     i_valid = 1;
-    i_type = DCT2;
+    i_type_h = DCT2;
+    i_type_v = DCT2;
     i_width = SIZE32; i_height = SIZE8;
     fp_r = $fopen("../../../../../result/origin_data/origin_data_8x32.txt", "r");
     for (rd_i = 0; rd_i < 8; rd_i = rd_i + 1) begin
@@ -333,7 +350,8 @@ initial begin
     $fclose(fp_r);
     //32x4
     i_valid = 1;
-    i_type = DCT2;
+    i_type_h = DCT2;
+    i_type_v = DCT2;
     i_width = SIZE4; i_height = SIZE32;
     fp_r = $fopen("../../../../../result/origin_data/origin_data_32x4.txt", "r");
     for (rd_i = 0; rd_i < 8; rd_i = rd_i + 1) begin
@@ -352,7 +370,8 @@ initial begin
     $fclose(fp_r);
     //16x32
     i_valid = 1;
-    i_type = DCT2;
+    i_type_h = DCT2;
+    i_type_v = DCT2;
     i_width = SIZE32; i_height = SIZE16;
     fp_r = $fopen("../../../../../result/origin_data/origin_data_16x32.txt", "r");
     for (rd_i = 0; rd_i < 16; rd_i = rd_i + 1) begin
@@ -370,7 +389,8 @@ initial begin
     $fclose(fp_r);
     //16x64
     i_valid = 1;
-    i_type = DCT2;
+    i_type_h = DCT2;
+    i_type_v = DCT2;
     i_width = SIZE64; i_height = SIZE16;
     fp_r = $fopen("../../../../../result/origin_data/origin_data_16x64.txt", "r");
     for (rd_i = 0; rd_i < 16; rd_i = rd_i + 1) begin
@@ -390,7 +410,8 @@ initial begin
     $fclose(fp_r);
     //64x64
     i_valid = 1;
-    i_type = DCT2;
+    i_type_h = DCT2;
+    i_type_v = DCT2;
     i_width = SIZE64; i_height = SIZE64;
     fp_r = $fopen("../../../../../result/origin_data/origin_data_64x64.txt", "r");
     for (rd_i = 0; rd_i < 64; rd_i = rd_i + 1) begin
@@ -411,7 +432,8 @@ initial begin
 //DST7
     //32x32
     i_valid = 1;
-    i_type = DST7;
+    i_type_h = DST7;
+    i_type_v = DST7;
     i_width = SIZE32; i_height = SIZE32;
     fp_r = $fopen("../../../../../result/origin_data/origin_data_32x32.txt", "r");
     for (rd_i = 0; rd_i < 32; rd_i = rd_i + 1) begin
@@ -429,7 +451,8 @@ initial begin
     $fclose(fp_r);
     //16x16
     i_valid = 1;
-    i_type = DST7;
+    i_type_h = DST7;
+    i_type_v = DST7;
     i_width = SIZE16; i_height = SIZE16;
     fp_r = $fopen("../../../../../result/origin_data/origin_data_16x16.txt", "r");
     for (rd_i = 0; rd_i < 16; rd_i = rd_i + 1) begin
@@ -446,7 +469,8 @@ initial begin
     $fclose(fp_r);
     //8x8
     i_valid = 1;
-    i_type = DST7;
+    i_type_h = DST7;
+    i_type_v = DST7;
     i_width = SIZE8; i_height = SIZE8;
     fp_r = $fopen("../../../../../result/origin_data/origin_data_8x8.txt", "r");
     for (rd_i = 0; rd_i < 4; rd_i = rd_i + 1) begin
@@ -465,7 +489,8 @@ initial begin
     $fclose(fp_r);
     //4x4
     i_valid = 1;
-    i_type = DST7;
+    i_type_h = DST7;
+    i_type_v = DST7;
     i_width = SIZE4; i_height = SIZE4;
     fp_r = $fopen("../../../../../result/origin_data/origin_data_4x4.txt", "r");
     for (rd_i = 0; rd_i < 1; rd_i = rd_i + 1) begin
@@ -484,7 +509,8 @@ initial begin
     $fclose(fp_r);
     //4x16
     i_valid = 1;
-    i_type = DST7;
+    i_type_h = DST7;
+    i_type_v = DST7;
     i_width = SIZE16; i_height = SIZE4;
     fp_r = $fopen("../../../../../result/origin_data/origin_data_4x16.txt", "r");
     for (rd_i = 0; rd_i < 4; rd_i = rd_i + 1) begin
@@ -501,7 +527,8 @@ initial begin
     $fclose(fp_r);
     //32x8
     i_valid = 1;
-    i_type = DST7;
+    i_type_h = DST7;
+    i_type_v = DST7;
     i_width = SIZE8; i_height = SIZE32;
     fp_r = $fopen("../../../../../result/origin_data/origin_data_32x8.txt", "r");
     for (rd_i = 0; rd_i < 16; rd_i = rd_i + 1) begin
@@ -520,7 +547,8 @@ initial begin
     $fclose(fp_r);
     //8x32
     i_valid = 1;
-    i_type = DST7;
+    i_type_h = DST7;
+    i_type_v = DST7;
     i_width = SIZE32; i_height = SIZE8;
     fp_r = $fopen("../../../../../result/origin_data/origin_data_8x32.txt", "r");
     for (rd_i = 0; rd_i < 8; rd_i = rd_i + 1) begin
@@ -538,7 +566,8 @@ initial begin
     $fclose(fp_r);
     //32x4
     i_valid = 1;
-    i_type = DST7;
+    i_type_h = DST7;
+    i_type_v = DST7;
     i_width = SIZE4; i_height = SIZE32;
     fp_r = $fopen("../../../../../result/origin_data/origin_data_32x4.txt", "r");
     for (rd_i = 0; rd_i < 8; rd_i = rd_i + 1) begin
@@ -557,7 +586,8 @@ initial begin
     $fclose(fp_r);
     //16x32
     i_valid = 1;
-    i_type = DST7;
+    i_type_h = DST7;
+    i_type_v = DST7;
     i_width = SIZE32; i_height = SIZE16;
     fp_r = $fopen("../../../../../result/origin_data/origin_data_16x32.txt", "r");
     for (rd_i = 0; rd_i < 16; rd_i = rd_i + 1) begin
@@ -575,7 +605,8 @@ initial begin
     $fclose(fp_r);
     //8x4
     i_valid = 1;
-    i_type = DST7;
+    i_type_h = DST7;
+    i_type_v = DST7;
     i_width = SIZE4; i_height = SIZE8;
     fp_r = $fopen("../../../../../result/origin_data/origin_data_8x4.txt", "r");
     for (rd_i = 0; rd_i < 2; rd_i = rd_i + 1) begin
@@ -600,7 +631,8 @@ initial begin
 //DCT8
     //32x32
     i_valid = 1;
-    i_type = DCT8;
+    i_type_h = DCT8;
+    i_type_v = DCT8;
     i_width = SIZE32; i_height = SIZE32;
     fp_r = $fopen("../../../../../result/origin_data/origin_data_32x32.txt", "r");
     for (rd_i = 0; rd_i < 32; rd_i = rd_i + 1) begin
@@ -618,7 +650,8 @@ initial begin
     $fclose(fp_r);
     //16x16
     i_valid = 1;
-    i_type = DCT8;
+    i_type_h = DCT8;
+    i_type_v = DCT8;
     i_width = SIZE16; i_height = SIZE16;
     fp_r = $fopen("../../../../../result/origin_data/origin_data_16x16.txt", "r");
     for (rd_i = 0; rd_i < 16; rd_i = rd_i + 1) begin
@@ -635,7 +668,8 @@ initial begin
     $fclose(fp_r);
     //8x8
     i_valid = 1;
-    i_type = DCT8;
+    i_type_h = DCT8;
+    i_type_v = DCT8;
     i_width = SIZE8; i_height = SIZE8;
     fp_r = $fopen("../../../../../result/origin_data/origin_data_8x8.txt", "r");
     for (rd_i = 0; rd_i < 4; rd_i = rd_i + 1) begin
@@ -654,7 +688,8 @@ initial begin
     $fclose(fp_r);
     //4x4
     i_valid = 1;
-    i_type = DCT8;
+    i_type_h = DCT8;
+    i_type_v = DCT8;
     i_width = SIZE4; i_height = SIZE4;
     fp_r = $fopen("../../../../../result/origin_data/origin_data_4x4.txt", "r");
     for (rd_i = 0; rd_i < 1; rd_i = rd_i + 1) begin
@@ -673,7 +708,8 @@ initial begin
     $fclose(fp_r);
     //4x16
     i_valid = 1;
-    i_type = DCT8;
+    i_type_h = DCT8;
+    i_type_v = DCT8;
     i_width = SIZE16; i_height = SIZE4;
     fp_r = $fopen("../../../../../result/origin_data/origin_data_4x16.txt", "r");
     for (rd_i = 0; rd_i < 4; rd_i = rd_i + 1) begin
@@ -690,7 +726,8 @@ initial begin
     $fclose(fp_r);
     //32x8
     i_valid = 1;
-    i_type = DCT8;
+    i_type_h = DCT8;
+    i_type_v = DCT8;
     i_width = SIZE8; i_height = SIZE32;
     fp_r = $fopen("../../../../../result/origin_data/origin_data_32x8.txt", "r");
     for (rd_i = 0; rd_i < 16; rd_i = rd_i + 1) begin
@@ -709,7 +746,8 @@ initial begin
     $fclose(fp_r);
     //8x32
     i_valid = 1;
-    i_type = DCT8;
+    i_type_h = DCT8;
+    i_type_v = DCT8;
     i_width = SIZE32; i_height = SIZE8;
     fp_r = $fopen("../../../../../result/origin_data/origin_data_8x32.txt", "r");
     for (rd_i = 0; rd_i < 8; rd_i = rd_i + 1) begin
@@ -727,7 +765,8 @@ initial begin
     $fclose(fp_r);
     //32x4
     i_valid = 1;
-    i_type = DCT8;
+    i_type_h = DCT8;
+    i_type_v = DCT8;
     i_width = SIZE4; i_height = SIZE32;
     fp_r = $fopen("../../../../../result/origin_data/origin_data_32x4.txt", "r");
     for (rd_i = 0; rd_i < 8; rd_i = rd_i + 1) begin
@@ -746,7 +785,8 @@ initial begin
     $fclose(fp_r);
     //16x32
     i_valid = 1;
-    i_type = DCT8;
+    i_type_h = DCT8;
+    i_type_v = DCT8;
     i_width = SIZE32; i_height = SIZE16;
     fp_r = $fopen("../../../../../result/origin_data/origin_data_16x32.txt", "r");
     for (rd_i = 0; rd_i < 16; rd_i = rd_i + 1) begin
@@ -764,7 +804,8 @@ initial begin
     $fclose(fp_r);
     //8x4
     i_valid = 1;
-    i_type = DCT8;
+    i_type_h = DCT8;
+    i_type_v = DCT8;
     i_width = SIZE4; i_height = SIZE8;
     fp_r = $fopen("../../../../../result/origin_data/origin_data_8x4.txt", "r");
     for (rd_i = 0; rd_i < 2; rd_i = rd_i + 1) begin
@@ -782,7 +823,8 @@ initial begin
     end
     $fclose(fp_r);
 
-    i_type = 0;
+    i_type_h = 0;
+    i_type_v = 0;
     i_width = 0; i_height = 0;
     i_valid = 0;
     for (rd_i = 0; rd_i < 16; rd_i = rd_i + 1) begin

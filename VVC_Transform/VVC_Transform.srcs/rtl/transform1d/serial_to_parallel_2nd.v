@@ -11,7 +11,8 @@ module serial_to_parallel_2nd#(
     input                               clk     ,
     input                               rst_n   ,
 //input parameter
-    input           [1 : 0]             i_type  ,//0:DCT2 1:DCT8 2:DST7  
+    input           [1 : 0]             i_type_h,//0:DCT2 1:DCT8 2:DST7 
+    input           [1 : 0]             i_type_v,
     input           [2 : 0]             i_width ,//1:4x4, 2:8x8, 3:16x16, 4:32x32, 5:64x64
     input           [2 : 0]             i_height,
 //input data
@@ -33,7 +34,8 @@ module serial_to_parallel_2nd#(
     input   signed  [IN_WIDTH - 1 : 0]  i_14    ,
     input   signed  [IN_WIDTH - 1 : 0]  i_15    ,
 //output parameter
-    output          [1 : 0]             o_type  ,
+    output          [1 : 0]             o_type_h,
+    output          [1 : 0]             o_type_v,
     output          [2 : 0]             o_width ,
     output          [2 : 0]             o_height,
 //output data
@@ -113,7 +115,8 @@ integer i;
 
 //input delay
     wire signed [IN_WIDTH - 1 : 0] i_data[0 : 15];
-    reg [1 : 0] i_type_d[0 : 3];
+    reg [1 : 0] i_type_h_d[0 : 3];
+    reg [1 : 0] i_type_v_d[0 : 3];
     reg [2 : 0] i_width_d[0 : 3];
     reg [2 : 0] i_height_d[0 : 3];
     reg i_valid_d1, i_valid_d2, i_valid_d3, i_valid_d4;
@@ -145,7 +148,8 @@ integer i;
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin 
         for (i = 0; i < 4; i = i + 1) begin
-            i_type_d[i] <= 0;
+            i_type_h_d[i] <= 0;
+            i_type_v_d[i] <= 0;
             i_width_d[i] <= 0;
             i_height_d[i] <= 0;
         end
@@ -160,11 +164,13 @@ always @(posedge clk or negedge rst_n) begin
         end
     end
     else begin
-        i_type_d[0] <= i_type;
+        i_type_h_d[0] <= i_type_h;
+        i_type_v_d[0] <= i_type_v;
         i_width_d[0] <= i_width;
         i_height_d[0] <= i_height;
         for (i = 0; i < 3; i = i + 1) begin
-            i_type_d[i + 1] <= i_type_d[i];
+            i_type_h_d[i + 1] <= i_type_h_d[i];
+            i_type_v_d[i + 1] <= i_type_v_d[i];
             i_width_d[i + 1] <= i_width_d[i];
             i_height_d[i + 1] <= i_height_d[i];
         end
@@ -241,7 +247,8 @@ always @(posedge clk or negedge rst_n) begin
 end
 
 //output
-    assign o_type   = i_type_d[3];
+    assign o_type_h = i_type_h_d[3];
+    assign o_type_v = i_type_v_d[3];
     assign o_width  = i_width_d[3];
     assign o_height = i_height_d[3];
     assign o_valid  = i_valid_d4;
