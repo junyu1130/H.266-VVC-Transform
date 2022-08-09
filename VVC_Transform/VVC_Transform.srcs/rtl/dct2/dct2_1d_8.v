@@ -1,4 +1,4 @@
-//describe  : 8x8点DCT计算
+//describe  : 8点DCT计算
 //input     : 8个像素残差/一维变换系数
 //output    : 4个预变换系数(后需右移)+4个8_E
 //delay     : 8_E : 1 clk , 8_precoeff : 2 clk

@@ -1,8 +1,8 @@
 //describe  : ´®×ª²¢
-//input     : 16 data
+//input     : 32 data
 //output    : 64 data
-//delay     : 4 clk
-module serial_to_parallel_2nd#(
+//delay     : 2 clk
+module serial_to_parallel#(
     parameter  IN_WIDTH  = 16,
     parameter  OUT_WIDTH = 16
 )
@@ -11,10 +11,7 @@ module serial_to_parallel_2nd#(
     input                               clk     ,
     input                               rst_n   ,
 //input parameter
-    input           [1 : 0]             i_type_h,//0:DCT2 1:DCT8 2:DST7 
-    input           [1 : 0]             i_type_v,
-    input           [2 : 0]             i_width ,//1:4x4, 2:8x8, 3:16x16, 4:32x32, 5:64x64
-    input           [2 : 0]             i_height,
+    input           [2 : 0]             i_size  ,//1:4x4, 2:8x8, 3:16x16, 4:32x32, 5:64x64
 //input data
     input                               i_valid ,
     input   signed  [IN_WIDTH - 1 : 0]  i_0     ,
@@ -33,11 +30,24 @@ module serial_to_parallel_2nd#(
     input   signed  [IN_WIDTH - 1 : 0]  i_13    ,
     input   signed  [IN_WIDTH - 1 : 0]  i_14    ,
     input   signed  [IN_WIDTH - 1 : 0]  i_15    ,
+    input   signed  [IN_WIDTH - 1 : 0]  i_16    ,
+    input   signed  [IN_WIDTH - 1 : 0]  i_17    ,
+    input   signed  [IN_WIDTH - 1 : 0]  i_18    ,
+    input   signed  [IN_WIDTH - 1 : 0]  i_19    ,
+    input   signed  [IN_WIDTH - 1 : 0]  i_20    ,
+    input   signed  [IN_WIDTH - 1 : 0]  i_21    ,
+    input   signed  [IN_WIDTH - 1 : 0]  i_22    ,
+    input   signed  [IN_WIDTH - 1 : 0]  i_23    ,
+    input   signed  [IN_WIDTH - 1 : 0]  i_24    ,
+    input   signed  [IN_WIDTH - 1 : 0]  i_25    ,
+    input   signed  [IN_WIDTH - 1 : 0]  i_26    ,
+    input   signed  [IN_WIDTH - 1 : 0]  i_27    ,
+    input   signed  [IN_WIDTH - 1 : 0]  i_28    ,
+    input   signed  [IN_WIDTH - 1 : 0]  i_29    ,
+    input   signed  [IN_WIDTH - 1 : 0]  i_30    ,
+    input   signed  [IN_WIDTH - 1 : 0]  i_31    ,
 //output parameter
-    output          [1 : 0]             o_type_h,
-    output          [1 : 0]             o_type_v,
-    output          [2 : 0]             o_width ,
-    output          [2 : 0]             o_height,
+    output          [2 : 0]             o_size  ,
 //output data
     output                              o_valid ,
     output  signed  [OUT_WIDTH - 1 : 0] o_0     ,
@@ -114,16 +124,13 @@ localparam  SIZE4  = 3'd1,
 integer i;
 
 //input delay
-    wire signed [IN_WIDTH - 1 : 0] i_data[0 : 15];
-    reg [1 : 0] i_type_h_d[0 : 3];
-    reg [1 : 0] i_type_v_d[0 : 3];
-    reg [2 : 0] i_width_d[0 : 3];
-    reg [2 : 0] i_height_d[0 : 3];
-    reg i_valid_d1, i_valid_d2, i_valid_d3, i_valid_d4;
-    reg signed [IN_WIDTH - 1 : 0] i_data_d1[0 : 15], i_data_d2[0 : 15], i_data_d3[0 : 15];
+    wire signed [IN_WIDTH - 1 : 0] i_data[0 : 31];
+    reg [2 : 0] i_size_d1, i_size_d2;
+    reg i_valid_d1, i_valid_d2;
+    reg signed [IN_WIDTH - 1 : 0] i_data_d1[0 : 31];
 //serial to parallel
-    reg [1 : 0] count;
-    reg [1 : 0] count_max;
+    reg count;
+    reg count_max;
     reg signed [OUT_WIDTH - 1 : 0] o_data[0 : 63];
 
 //input
@@ -143,60 +150,46 @@ integer i;
     assign i_data[13] = i_13;
     assign i_data[14] = i_14;
     assign i_data[15] = i_15;
+    assign i_data[16] = i_16;
+    assign i_data[17] = i_17;
+    assign i_data[18] = i_18;
+    assign i_data[19] = i_19;
+    assign i_data[20] = i_20;
+    assign i_data[21] = i_21;
+    assign i_data[22] = i_22;
+    assign i_data[23] = i_23;
+    assign i_data[24] = i_24;
+    assign i_data[25] = i_25;
+    assign i_data[26] = i_26;
+    assign i_data[27] = i_27;
+    assign i_data[28] = i_28;
+    assign i_data[29] = i_29;
+    assign i_data[30] = i_30;
+    assign i_data[31] = i_31;
 
 //delay
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin 
-        for (i = 0; i < 4; i = i + 1) begin
-            i_type_h_d[i] <= 0;
-            i_type_v_d[i] <= 0;
-            i_width_d[i] <= 0;
-            i_height_d[i] <= 0;
-        end
-        i_valid_d1 <= 0; 
-        i_valid_d2 <= 0; 
-        i_valid_d3 <= 0; 
-        i_valid_d4 <= 0;
-        for (i = 0; i < 16; i = i + 1) begin
+        i_size_d1 <= 0; i_valid_d1 <= 0;
+        i_size_d2 <= 0; i_valid_d2 <= 0;
+        for (i = 0; i < 32; i = i + 1) begin
             i_data_d1[i] <= 0; 
-            i_data_d2[i] <= 0; 
-            i_data_d3[i] <= 0; 
         end
     end
     else begin
-        i_type_h_d[0] <= i_type_h;
-        i_type_v_d[0] <= i_type_v;
-        i_width_d[0] <= i_width;
-        i_height_d[0] <= i_height;
-        for (i = 0; i < 3; i = i + 1) begin
-            i_type_h_d[i + 1] <= i_type_h_d[i];
-            i_type_v_d[i + 1] <= i_type_v_d[i];
-            i_width_d[i + 1] <= i_width_d[i];
-            i_height_d[i + 1] <= i_height_d[i];
-        end
-        i_valid_d1 <= i_valid; 
-        i_valid_d2 <= i_valid_d1; 
-        i_valid_d3 <= i_valid_d2; 
-        i_valid_d4 <= i_valid_d3;
-        for (i = 0; i < 16; i = i + 1) begin
+        i_size_d1 <= i_size; i_valid_d1 <= i_valid;
+        i_size_d2 <= i_size_d1; i_valid_d2 <= i_valid_d1;
+        for (i = 0; i < 32; i = i + 1) begin
             i_data_d1[i] <= i_data[i]; 
-            i_data_d2[i] <= i_data_d1[i]; 
-            i_data_d3[i] <= i_data_d2[i]; 
         end
     end
 end
 
-always @(posedge clk or negedge rst_n) begin
-    if (!rst_n) begin
-        count_max <= 0;
-    end
-    else begin
-        case (i_height_d[2]) 
-            SIZE64  : count_max <= 3;
-            SIZE32  : count_max <= 1;
-            default : count_max <= 0;
-        endcase
-    end
+always @(*) begin
+    case (i_size) 
+        SIZE64  : count_max <= 1;
+        default : count_max <= 0;
+    endcase
 end
 
 always @(posedge clk or negedge rst_n) begin
@@ -209,49 +202,32 @@ always @(posedge clk or negedge rst_n) begin
     else begin
         if (count == count_max) begin
             count <= 0;
-            case (i_height_d[2])
-                SIZE64  : begin // 4 beat -> 1 beat
-                    if (i_height_d[1] == SIZE64 && i_height_d[0] == SIZE64 && i_height == SIZE64) begin
-                        for (i = 0; i < 16; i = i + 1) begin
-                            o_data[i]      <= i_data_d3[i];
-                            o_data[i + 16] <= i_data_d2[i];
-                            o_data[i + 32] <= i_data_d1[i];
-                            o_data[i + 48] <= i_data[i];
-                        end
-                    end
-                end
-                SIZE32  : begin // 2 beat -> 1 beat
-                    if (i_height_d[1] == SIZE32) begin
-                        for (i = 0; i < 16; i = i + 1) begin
-                            o_data[i]      <= i_data_d3[i];
-                            o_data[i + 16] <= i_data_d2[i];
-                            o_data[i + 32] <= 0;
-                            o_data[i + 48] <= 0;
-                        end
-                    end
-                end
-                default : begin //delay 4 clk
-                    for (i = 0; i < 16; i = i + 1) begin
-                        o_data[i]      <= i_data_d3[i];
-                        o_data[i + 16] <= 0;
-                        o_data[i + 32] <= 0;
-                        o_data[i + 48] <= 0;
-                    end
-                end
-            endcase
         end
         else begin
             count <= count + 1;
         end
+        case (i_size_d1)
+            SIZE64  : begin // 2 beat -> 1 beat
+                if (count == 1) begin
+                    for (i = 0; i < 32; i = i + 1) begin
+                        o_data[i]      <= i_data_d1[i];
+                        o_data[i + 32] <= i_data[i];
+                    end
+                end
+            end
+            default : begin //delay 2 clk
+                for (i = 0; i < 32; i = i + 1) begin
+                    o_data[i]      <= i_data_d1[i];
+                    o_data[i + 32] <= 0;
+                end
+            end
+        endcase
     end
 end
 
 //output
-    assign o_type_h = i_type_h_d[3];
-    assign o_type_v = i_type_v_d[3];
-    assign o_width  = i_width_d[3];
-    assign o_height = i_height_d[3];
-    assign o_valid  = i_valid_d4;
+    assign o_size   = i_size_d2;
+    assign o_valid  = i_valid_d2;
     assign o_0      = o_data[0 ];
     assign o_1      = o_data[1 ];
     assign o_2      = o_data[2 ];

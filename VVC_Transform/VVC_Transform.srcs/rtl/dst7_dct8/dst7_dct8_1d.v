@@ -1,17 +1,17 @@
-//describe  : 第二次一维DST7/SCT8，正序输入DST7，倒序输入DCT8(奇数行输出反号)
-//input     : 16-32个一维变换系数
-//output    : 16个二维变换系数
+//describe  : 一维DST7/SCT8，正序输入DST7，倒序输入DCT8(奇数行输出反号)
+//input     : 32个像素残差/一维变换系数
+//output    : 32个一维变换系数/二维变换系数
 //delay     : 5 clk
-module dst7_dct8_1d_2nd#(
-    parameter  IN_WIDTH  = 16
+module dst7_dct8_1d#(
+    parameter  IN_WIDTH  = 16,
+    parameter  OUT_WIDTH = 27
 )
 (
 //system input
     input                               clk     ,
     input                               rst_n   ,
 //input parameter
-    input           [2 : 0]             i_width ,//1:4x4, 2:8x8, 3:16x16, 4:32x32
-    input           [2 : 0]             i_height,
+    input           [2 : 0]             i_size ,//1:4x4, 2:8x8, 3:16x16, 4:32x32
 //input data
     input                               i_valid ,
     input   signed  [IN_WIDTH - 1 : 0]  i_0     ,
@@ -47,26 +47,41 @@ module dst7_dct8_1d_2nd#(
     input   signed  [IN_WIDTH - 1 : 0]  i_30    ,
     input   signed  [IN_WIDTH - 1 : 0]  i_31    ,
 //output parameter
-    output          [2 : 0]             o_width ,
-    output          [2 : 0]             o_height,
+    output          [2 : 0]             o_size  ,
 //output coeff
     output                              o_valid ,
-    output  signed  [IN_WIDTH + 10 : 0] o_0     ,
-    output  signed  [IN_WIDTH + 10 : 0] o_1     ,
-    output  signed  [IN_WIDTH + 10 : 0] o_2     ,
-    output  signed  [IN_WIDTH + 10 : 0] o_3     ,
-    output  signed  [IN_WIDTH + 10 : 0] o_4     ,
-    output  signed  [IN_WIDTH + 10 : 0] o_5     ,
-    output  signed  [IN_WIDTH + 10 : 0] o_6     ,
-    output  signed  [IN_WIDTH + 10 : 0] o_7     ,
-    output  signed  [IN_WIDTH + 10 : 0] o_8     ,
-    output  signed  [IN_WIDTH + 10 : 0] o_9     ,
-    output  signed  [IN_WIDTH + 10 : 0] o_10    ,
-    output  signed  [IN_WIDTH + 10 : 0] o_11    ,
-    output  signed  [IN_WIDTH + 10 : 0] o_12    ,
-    output  signed  [IN_WIDTH + 10 : 0] o_13    ,
-    output  signed  [IN_WIDTH + 10 : 0] o_14    ,
-    output  signed  [IN_WIDTH + 10 : 0] o_15     
+    output  signed  [OUT_WIDTH - 1 : 0] o_0     ,
+    output  signed  [OUT_WIDTH - 1 : 0] o_1     ,
+    output  signed  [OUT_WIDTH - 1 : 0] o_2     ,
+    output  signed  [OUT_WIDTH - 1 : 0] o_3     ,
+    output  signed  [OUT_WIDTH - 1 : 0] o_4     ,
+    output  signed  [OUT_WIDTH - 1 : 0] o_5     ,
+    output  signed  [OUT_WIDTH - 1 : 0] o_6     ,
+    output  signed  [OUT_WIDTH - 1 : 0] o_7     ,
+    output  signed  [OUT_WIDTH - 1 : 0] o_8     ,
+    output  signed  [OUT_WIDTH - 1 : 0] o_9     ,
+    output  signed  [OUT_WIDTH - 1 : 0] o_10    ,
+    output  signed  [OUT_WIDTH - 1 : 0] o_11    ,
+    output  signed  [OUT_WIDTH - 1 : 0] o_12    ,
+    output  signed  [OUT_WIDTH - 1 : 0] o_13    ,
+    output  signed  [OUT_WIDTH - 1 : 0] o_14    ,
+    output  signed  [OUT_WIDTH - 1 : 0] o_15    ,
+    output  signed  [OUT_WIDTH - 1 : 0] o_16    ,
+    output  signed  [OUT_WIDTH - 1 : 0] o_17    ,
+    output  signed  [OUT_WIDTH - 1 : 0] o_18    ,
+    output  signed  [OUT_WIDTH - 1 : 0] o_19    ,
+    output  signed  [OUT_WIDTH - 1 : 0] o_20    ,
+    output  signed  [OUT_WIDTH - 1 : 0] o_21    ,
+    output  signed  [OUT_WIDTH - 1 : 0] o_22    ,
+    output  signed  [OUT_WIDTH - 1 : 0] o_23    ,
+    output  signed  [OUT_WIDTH - 1 : 0] o_24    ,
+    output  signed  [OUT_WIDTH - 1 : 0] o_25    ,
+    output  signed  [OUT_WIDTH - 1 : 0] o_26    ,
+    output  signed  [OUT_WIDTH - 1 : 0] o_27    ,
+    output  signed  [OUT_WIDTH - 1 : 0] o_28    ,
+    output  signed  [OUT_WIDTH - 1 : 0] o_29    ,
+    output  signed  [OUT_WIDTH - 1 : 0] o_30    ,
+    output  signed  [OUT_WIDTH - 1 : 0] o_31    
 );
 
 localparam  SIZE4  = 3'd1,
@@ -78,24 +93,25 @@ integer i;
 //input
     reg i_valid_d1, i_valid_d2, i_valid_d3;
     wire signed [IN_WIDTH - 1 : 0] i_data[0 : 31];
-    reg signed [IN_WIDTH - 1 : 0] i_data_d1[0 : 31], i_data_d2[0 : 15], i_data_d3[0 : 15];
-    reg [2 : 0] i_width_d[0 : 4];
-    reg [2 : 0] i_height_d[0 : 4];
+    reg signed [IN_WIDTH - 1 : 0] i_data_d1[0 : 31], i_data_d2[0 : 31], i_data_d3[0 : 31];
+    reg [2 : 0] i_size_d[0 : 4];
 //size mux in
     reg tr_in_32_valid, tr_in_16_valid, tr_in_8_valid, tr_in_4_valid;  
     reg  signed [IN_WIDTH - 1 : 0] tr_in_32_u0[0 : 31];
-    reg  signed [IN_WIDTH - 1 : 0] tr_in_16_u0[0 : 15];
-    reg  signed [IN_WIDTH - 1 : 0] tr_in_8_u0[0 : 7], tr_in_8_u1[0 : 7];
-    reg  signed [IN_WIDTH - 1 : 0] tr_in_4_u0[0 : 3], tr_in_4_u1[0 : 3], tr_in_4_u2[0 : 3], tr_in_4_u3[0 : 3];
+    reg  signed [IN_WIDTH - 1 : 0] tr_in_16_u0[0 : 15], tr_in_16_u1[0 : 15];
+    reg  signed [IN_WIDTH - 1 : 0] tr_in_8_u0[0 : 7], tr_in_8_u1[0 : 7], tr_in_8_u2[0 : 7], tr_in_8_u3[0 : 7];
+    reg  signed [IN_WIDTH - 1 : 0] tr_in_4_u0[0 : 3], tr_in_4_u1[0 : 3], tr_in_4_u2[0 : 3], tr_in_4_u3[0 : 3],
+                                   tr_in_4_u4[0 : 3], tr_in_4_u5[0 : 3], tr_in_4_u6[0 : 3], tr_in_4_u7[0 : 3];
 //calculate
     wire pre_coeff_32_valid, pre_coeff_16_valid, pre_coeff_8_valid, pre_coeff_4_valid;
     wire signed [IN_WIDTH + 10 : 0] pre_coeff_32_u0[0 : 15];
-    wire signed [IN_WIDTH +  9 : 0] pre_coeff_16_u0[0 : 15];
-    wire signed [IN_WIDTH +  8 : 0] pre_coeff_8_u0[0 : 7], pre_coeff_8_u1[0 : 7];
-    wire signed [IN_WIDTH +  7 : 0] pre_coeff_4_u0[0 : 3], pre_coeff_4_u1[0 : 3], pre_coeff_4_u2[0 : 3], pre_coeff_4_u3[0 : 3];
+    wire signed [IN_WIDTH +  9 : 0] pre_coeff_16_u0[0 : 15], pre_coeff_16_u1[0 : 15];
+    wire signed [IN_WIDTH +  8 : 0] pre_coeff_8_u0[0 : 7], pre_coeff_8_u1[0 : 7], pre_coeff_8_u2[0 : 7], pre_coeff_8_u3[0 : 7];
+    wire signed [IN_WIDTH +  7 : 0] pre_coeff_4_u0[0 : 3], pre_coeff_4_u1[0 : 3], pre_coeff_4_u2[0 : 3], pre_coeff_4_u3[0 : 3],
+                                    pre_coeff_4_u4[0 : 3], pre_coeff_4_u5[0 : 3], pre_coeff_4_u6[0 : 3], pre_coeff_4_u7[0 : 3];
 //size mux out
     reg pre_coeff_valid;
-    reg signed [IN_WIDTH + 10 : 0] pre_coeff[0 : 15];
+    reg signed [OUT_WIDTH - 1 : 0] pre_coeff[0 : 31];
 
 //input
     assign i_data[0 ] = i_0 ;
@@ -135,16 +151,13 @@ integer i;
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin 
         for (i = 0; i < 5; i = i + 1) begin
-            i_width_d[i] <= 0;
-            i_height_d[i] <= 0;
+            i_size_d[i] <= 0;
         end
     end
     else begin
-        i_width_d[0] <= i_width;
-        i_height_d[0] <= i_height;
+        i_size_d[0] <= i_size;
         for (i = 0; i < 4; i = i + 1) begin
-            i_width_d[i + 1] <= i_width_d[i];
-            i_height_d[i + 1] <= i_height_d[i];
+            i_size_d[i + 1] <= i_size_d[i];
         end
     end
 end
@@ -157,8 +170,6 @@ always @(posedge clk or negedge rst_n) begin
         i_valid_d3 <= 0; 
         for (i = 0; i < 32; i = i + 1) begin
             i_data_d1[i] <= 0; 
-        end
-        for (i = 0; i < 16; i = i + 1) begin
             i_data_d2[i] <= 0; 
             i_data_d3[i] <= 0; 
         end
@@ -169,8 +180,6 @@ always @(posedge clk or negedge rst_n) begin
         i_valid_d3 <= i_valid_d2; 
         for (i = 0; i < 32; i = i + 1) begin
             i_data_d1[i] <= i_data[i]; 
-        end
-        for (i = 0; i < 16; i = i + 1) begin
             i_data_d2[i] <= i_data_d1[i];
             i_data_d3[i] <= i_data_d2[i];
         end
@@ -187,16 +196,17 @@ always @(*) begin
         tr_in_32_u0[i] <= 0;
     end
     for (i = 0; i < 16; i = i + 1) begin
-        tr_in_16_u0[i] <= 0;
+        tr_in_16_u0[i] <= 0; tr_in_16_u1[i] <= 0;
     end
     for (i = 0; i < 8; i = i + 1) begin
-        tr_in_8_u0[i] <= 0; tr_in_8_u1[i] <= 0;
+        tr_in_8_u0[i] <= 0; tr_in_8_u1[i] <= 0; tr_in_8_u2[i] <= 0; tr_in_8_u3[i] <= 0;
     end
     for (i = 0; i < 4; i = i + 1) begin
         tr_in_4_u0[i] <= 0; tr_in_4_u1[i] <= 0; tr_in_4_u2[i] <= 0; tr_in_4_u3[i] <= 0;
+        tr_in_4_u4[i] <= 0; tr_in_4_u5[i] <= 0; tr_in_4_u6[i] <= 0; tr_in_4_u7[i] <= 0;
     end
     //delay 1 clk
-    case (i_height_d[0]) 
+    case (i_size_d[0]) 
         SIZE32 : begin
             tr_in_32_valid <= i_valid_d1;
             for (i = 0; i < 32; i = i + 1) begin
@@ -205,26 +215,29 @@ always @(*) begin
         end
     endcase
     //delay 2 clk
-    case (i_height_d[1]) 
+    case (i_size_d[1]) 
         SIZE16 : begin
             tr_in_16_valid <= i_valid_d2;
             for (i = 0; i < 16; i = i + 1) begin
                 tr_in_16_u0[i] <= i_data_d2[i];
+                tr_in_16_u1[i] <= i_data_d2[i + 16];
             end
         end
     endcase
     //delay 3 clk
-    case (i_height_d[2]) 
+    case (i_size_d[2]) 
         SIZE8 : begin
             tr_in_8_valid <= i_valid_d3;
             for (i = 0; i < 8; i = i + 1) begin
                 tr_in_8_u0[i] <= i_data_d3[i];
                 tr_in_8_u1[i] <= i_data_d3[i + 8];
+                tr_in_8_u2[i] <= i_data_d3[i + 16];
+                tr_in_8_u3[i] <= i_data_d3[i + 24];
             end
         end
     endcase
     //delay 3 clk
-    case (i_height_d[2]) 
+    case (i_size_d[2]) 
         SIZE4 : begin
             tr_in_4_valid <= i_valid_d3;
             for (i = 0; i < 4; i = i + 1) begin
@@ -232,50 +245,15 @@ always @(*) begin
                 tr_in_4_u1[i] <= i_data_d3[i + 4];
                 tr_in_4_u2[i] <= i_data_d3[i + 8];
                 tr_in_4_u3[i] <= i_data_d3[i + 12];
+                tr_in_4_u4[i] <= i_data_d3[i + 16];
+                tr_in_4_u5[i] <= i_data_d3[i + 20];
+                tr_in_4_u6[i] <= i_data_d3[i + 24];
+                tr_in_4_u7[i] <= i_data_d3[i + 28];
             end
         end
     endcase
 end
 
-//size mux out
-always @(*) begin
-    pre_coeff_valid <= 0;
-    for (i = 0; i < 16; i = i + 1) begin
-        pre_coeff[i] <= 0;
-    end
-    case (i_height_d[4])
-        SIZE32  : begin //high frequency coefficients are set to zero
-            pre_coeff_valid <= pre_coeff_32_valid;
-            for (i = 0; i < 16; i = i + 1) begin
-                pre_coeff[i] <= pre_coeff_32_u0[i];
-            end
-        end
-        SIZE16  : begin
-            pre_coeff_valid <= pre_coeff_16_valid;
-            for (i = 0; i < 16; i = i + 1) begin
-                pre_coeff[i] <= pre_coeff_16_u0[i];
-            end
-        end
-        SIZE8   : begin
-            pre_coeff_valid <= pre_coeff_8_valid;
-            for (i = 0; i < 8; i = i + 1) begin
-                pre_coeff[i] <= pre_coeff_8_u0[i];
-                pre_coeff[8 + i] <= pre_coeff_8_u1[i];
-            end
-        end
-        SIZE4   : begin
-            pre_coeff_valid <= pre_coeff_4_valid;
-            for (i = 0; i < 4; i = i + 1) begin
-                pre_coeff[0 + i] <= pre_coeff_4_u0[i];
-                pre_coeff[4 + i] <= pre_coeff_4_u1[i];
-                pre_coeff[8 + i] <= pre_coeff_4_u2[i];
-                pre_coeff[12 + i] <= pre_coeff_4_u3[i];
-            end
-        end
-    endcase
-end
-
-//sub module
 //32x32
 dst7_dct8_1d_32#(
     .IN_WIDTH   (IN_WIDTH)
@@ -383,6 +361,50 @@ u0_dst7_dct8_1d_16(
     .o_14   (pre_coeff_16_u0[14]),
     .o_15   (pre_coeff_16_u0[15])
 );
+dst7_dct8_1d_16#(
+    .IN_WIDTH   (IN_WIDTH)
+)
+u1_dst7_dct8_1d_16(
+//system input
+    .clk    (clk                ),
+    .rst_n  (rst_n              ),
+//input data
+    .i_valid(tr_in_16_valid     ),
+    .i_0    (tr_in_16_u1[0 ]    ),
+    .i_1    (tr_in_16_u1[1 ]    ),
+    .i_2    (tr_in_16_u1[2 ]    ),
+    .i_3    (tr_in_16_u1[3 ]    ),
+    .i_4    (tr_in_16_u1[4 ]    ),
+    .i_5    (tr_in_16_u1[5 ]    ),
+    .i_6    (tr_in_16_u1[6 ]    ),
+    .i_7    (tr_in_16_u1[7 ]    ),
+    .i_8    (tr_in_16_u1[8 ]    ),
+    .i_9    (tr_in_16_u1[9 ]    ),
+    .i_10   (tr_in_16_u1[10]    ),
+    .i_11   (tr_in_16_u1[11]    ),
+    .i_12   (tr_in_16_u1[12]    ),
+    .i_13   (tr_in_16_u1[13]    ),
+    .i_14   (tr_in_16_u1[14]    ),
+    .i_15   (tr_in_16_u1[15]    ),
+//output data
+    .o_valid(),
+    .o_0    (pre_coeff_16_u1[0 ]),
+    .o_1    (pre_coeff_16_u1[1 ]),
+    .o_2    (pre_coeff_16_u1[2 ]),
+    .o_3    (pre_coeff_16_u1[3 ]),
+    .o_4    (pre_coeff_16_u1[4 ]),
+    .o_5    (pre_coeff_16_u1[5 ]),
+    .o_6    (pre_coeff_16_u1[6 ]),
+    .o_7    (pre_coeff_16_u1[7 ]),
+    .o_8    (pre_coeff_16_u1[8 ]),
+    .o_9    (pre_coeff_16_u1[9 ]),
+    .o_10   (pre_coeff_16_u1[10]),
+    .o_11   (pre_coeff_16_u1[11]),
+    .o_12   (pre_coeff_16_u1[12]),
+    .o_13   (pre_coeff_16_u1[13]),
+    .o_14   (pre_coeff_16_u1[14]),
+    .o_15   (pre_coeff_16_u1[15])
+);
 
 //8x8
 dst7_dct8_1d_8#(
@@ -440,6 +462,62 @@ u1_dst7_dct8_1d_8(
     .o_5    (pre_coeff_8_u1[5 ] ),
     .o_6    (pre_coeff_8_u1[6 ] ),
     .o_7    (pre_coeff_8_u1[7 ] )
+);
+dst7_dct8_1d_8#(
+    .IN_WIDTH   (IN_WIDTH)
+)
+u2_dst7_dct8_1d_8(
+//system input
+    .clk    (clk                ),
+    .rst_n  (rst_n              ),
+//input data
+    .i_valid(tr_in_8_valid      ),
+    .i_0    (tr_in_8_u2[0 ]     ),
+    .i_1    (tr_in_8_u2[1 ]     ),
+    .i_2    (tr_in_8_u2[2 ]     ),
+    .i_3    (tr_in_8_u2[3 ]     ),
+    .i_4    (tr_in_8_u2[4 ]     ),
+    .i_5    (tr_in_8_u2[5 ]     ),
+    .i_6    (tr_in_8_u2[6 ]     ),
+    .i_7    (tr_in_8_u2[7 ]     ),
+//output data
+    .o_valid(),
+    .o_0    (pre_coeff_8_u2[0 ] ),
+    .o_1    (pre_coeff_8_u2[1 ] ),
+    .o_2    (pre_coeff_8_u2[2 ] ),
+    .o_3    (pre_coeff_8_u2[3 ] ),
+    .o_4    (pre_coeff_8_u2[4 ] ),
+    .o_5    (pre_coeff_8_u2[5 ] ),
+    .o_6    (pre_coeff_8_u2[6 ] ),
+    .o_7    (pre_coeff_8_u2[7 ] )
+);
+dst7_dct8_1d_8#(
+    .IN_WIDTH   (IN_WIDTH)
+)
+u3_dst7_dct8_1d_8(
+//system input
+    .clk    (clk                ),
+    .rst_n  (rst_n              ),
+//input data
+    .i_valid(tr_in_8_valid      ),
+    .i_0    (tr_in_8_u3[0 ]     ),
+    .i_1    (tr_in_8_u3[1 ]     ),
+    .i_2    (tr_in_8_u3[2 ]     ),
+    .i_3    (tr_in_8_u3[3 ]     ),
+    .i_4    (tr_in_8_u3[4 ]     ),
+    .i_5    (tr_in_8_u3[5 ]     ),
+    .i_6    (tr_in_8_u3[6 ]     ),
+    .i_7    (tr_in_8_u3[7 ]     ),
+//output data
+    .o_valid(),
+    .o_0    (pre_coeff_8_u3[0 ] ),
+    .o_1    (pre_coeff_8_u3[1 ] ),
+    .o_2    (pre_coeff_8_u3[2 ] ),
+    .o_3    (pre_coeff_8_u3[3 ] ),
+    .o_4    (pre_coeff_8_u3[4 ] ),
+    .o_5    (pre_coeff_8_u3[5 ] ),
+    .o_6    (pre_coeff_8_u3[6 ] ),
+    .o_7    (pre_coeff_8_u3[7 ] )
 );
 
 //4x4
@@ -523,10 +601,135 @@ u3_dst7_dct8_1d_4(
     .o_2    (pre_coeff_4_u3[2 ] ),
     .o_3    (pre_coeff_4_u3[3 ] )
 );
+dst7_dct8_1d_4#(
+    .IN_WIDTH   (IN_WIDTH)
+)
+u4_dst7_dct8_1d_4(
+//system input
+    .clk    (clk                ),
+    .rst_n  (rst_n              ),
+//input data
+    .i_valid(tr_in_4_valid      ),
+    .i_0    (tr_in_4_u4[0 ]     ),
+    .i_1    (tr_in_4_u4[1 ]     ),
+    .i_2    (tr_in_4_u4[2 ]     ),
+    .i_3    (tr_in_4_u4[3 ]     ),
+//output data
+    .o_valid(),
+    .o_0    (pre_coeff_4_u4[0 ] ),
+    .o_1    (pre_coeff_4_u4[1 ] ),
+    .o_2    (pre_coeff_4_u4[2 ] ),
+    .o_3    (pre_coeff_4_u4[3 ] )
+);
+dst7_dct8_1d_4#(
+    .IN_WIDTH   (IN_WIDTH)
+)
+u5_dst7_dct8_1d_4(
+//system input
+    .clk    (clk                ),
+    .rst_n  (rst_n              ),
+//input data
+    .i_valid(tr_in_4_valid      ),
+    .i_0    (tr_in_4_u5[0 ]     ),
+    .i_1    (tr_in_4_u5[1 ]     ),
+    .i_2    (tr_in_4_u5[2 ]     ),
+    .i_3    (tr_in_4_u5[3 ]     ),
+//output data
+    .o_valid(),
+    .o_0    (pre_coeff_4_u5[0 ] ),
+    .o_1    (pre_coeff_4_u5[1 ] ),
+    .o_2    (pre_coeff_4_u5[2 ] ),
+    .o_3    (pre_coeff_4_u5[3 ] )
+);
+dst7_dct8_1d_4#(
+    .IN_WIDTH   (IN_WIDTH)
+)
+u6_dst7_dct8_1d_4(
+//system input
+    .clk    (clk                ),
+    .rst_n  (rst_n              ),
+//input data
+    .i_valid(tr_in_4_valid      ),
+    .i_0    (tr_in_4_u6[0 ]     ),
+    .i_1    (tr_in_4_u6[1 ]     ),
+    .i_2    (tr_in_4_u6[2 ]     ),
+    .i_3    (tr_in_4_u6[3 ]     ),
+//output data
+    .o_valid(),
+    .o_0    (pre_coeff_4_u6[0 ] ),
+    .o_1    (pre_coeff_4_u6[1 ] ),
+    .o_2    (pre_coeff_4_u6[2 ] ),
+    .o_3    (pre_coeff_4_u6[3 ] )
+);
+dst7_dct8_1d_4#(
+    .IN_WIDTH   (IN_WIDTH)
+)
+u7_dst7_dct8_1d_4(
+//system input
+    .clk    (clk                ),
+    .rst_n  (rst_n              ),
+//input data
+    .i_valid(tr_in_4_valid      ),
+    .i_0    (tr_in_4_u7[0 ]     ),
+    .i_1    (tr_in_4_u7[1 ]     ),
+    .i_2    (tr_in_4_u7[2 ]     ),
+    .i_3    (tr_in_4_u7[3 ]     ),
+//output data
+    .o_valid(),
+    .o_0    (pre_coeff_4_u7[0 ] ),
+    .o_1    (pre_coeff_4_u7[1 ] ),
+    .o_2    (pre_coeff_4_u7[2 ] ),
+    .o_3    (pre_coeff_4_u7[3 ] )
+);
+
+//size mux out
+always @(*) begin
+    pre_coeff_valid <= 0;
+    for (i = 0; i < 32; i = i + 1) begin
+        pre_coeff[i] <= 0;
+    end
+    case (i_size_d[4])
+        SIZE32  : begin //high frequency coefficients are set to zero
+            pre_coeff_valid <= pre_coeff_32_valid;
+            for (i = 0; i < 16; i = i + 1) begin
+                pre_coeff[i] <= pre_coeff_32_u0[i];
+                pre_coeff[i + 16] <= 0;
+            end
+        end
+        SIZE16  : begin
+            pre_coeff_valid <= pre_coeff_16_valid;
+            for (i = 0; i < 16; i = i + 1) begin
+                pre_coeff[i] <= pre_coeff_16_u0[i];
+                pre_coeff[i + 16] <= pre_coeff_16_u1[i];
+            end
+        end
+        SIZE8   : begin
+            pre_coeff_valid <= pre_coeff_8_valid;
+            for (i = 0; i < 8; i = i + 1) begin
+                pre_coeff[i] <= pre_coeff_8_u0[i];
+                pre_coeff[8 + i] <= pre_coeff_8_u1[i];
+                pre_coeff[16 + i] <= pre_coeff_8_u2[i];
+                pre_coeff[24 + i] <= pre_coeff_8_u3[i];
+            end
+        end
+        SIZE4   : begin
+            pre_coeff_valid <= pre_coeff_4_valid;
+            for (i = 0; i < 4; i = i + 1) begin
+                pre_coeff[0 + i] <= pre_coeff_4_u0[i];
+                pre_coeff[4 + i] <= pre_coeff_4_u1[i];
+                pre_coeff[8 + i] <= pre_coeff_4_u2[i];
+                pre_coeff[12 + i] <= pre_coeff_4_u3[i];
+                pre_coeff[16 + i] <= pre_coeff_4_u4[i];
+                pre_coeff[20 + i] <= pre_coeff_4_u5[i];
+                pre_coeff[24 + i] <= pre_coeff_4_u6[i];
+                pre_coeff[28 + i] <= pre_coeff_4_u7[i];
+            end
+        end
+    endcase
+end
 
 //output
-    assign o_width  = i_width_d[4]  ;
-    assign o_height = i_height_d[4] ;
+    assign o_size   = i_size_d[4]    ;
     assign o_valid  = pre_coeff_valid;
     assign o_0      = pre_coeff[0 ]  ;
     assign o_1      = pre_coeff[1 ]  ;
@@ -544,5 +747,21 @@ u3_dst7_dct8_1d_4(
     assign o_13     = pre_coeff[13]  ;
     assign o_14     = pre_coeff[14]  ;
     assign o_15     = pre_coeff[15]  ;
+    assign o_16     = pre_coeff[16]  ;
+    assign o_17     = pre_coeff[17]  ;
+    assign o_18     = pre_coeff[18]  ;
+    assign o_19     = pre_coeff[19]  ;
+    assign o_20     = pre_coeff[20]  ;
+    assign o_21     = pre_coeff[21]  ;
+    assign o_22     = pre_coeff[22]  ;
+    assign o_23     = pre_coeff[23]  ;
+    assign o_24     = pre_coeff[24]  ;
+    assign o_25     = pre_coeff[25]  ;
+    assign o_26     = pre_coeff[26]  ;
+    assign o_27     = pre_coeff[27]  ;
+    assign o_28     = pre_coeff[28]  ;
+    assign o_29     = pre_coeff[29]  ;
+    assign o_30     = pre_coeff[30]  ;
+    assign o_31     = pre_coeff[31]  ;
 
 endmodule
