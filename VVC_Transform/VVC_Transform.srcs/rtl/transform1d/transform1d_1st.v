@@ -306,12 +306,15 @@ always @(*) begin
                 SIZE16 : begin
                     for (i = 0; i < 16; i = i + 1) begin
                         dst7_dct8_in_data[i] <= tr_in_data[15 - i];
+                        dst7_dct8_in_data[16 + i] <= tr_in_data[31 - i];
                     end
                 end
                 SIZE8 : begin
                     for (i = 0; i < 8; i = i + 1) begin
                         dst7_dct8_in_data[i] <= tr_in_data[7 - i];
                         dst7_dct8_in_data[8 + i] <= tr_in_data[15 - i];
+                        dst7_dct8_in_data[16 + i] <= tr_in_data[23 - i];
+                        dst7_dct8_in_data[24 + i] <= tr_in_data[31 - i];
                     end
                 end
                 SIZE4 : begin
@@ -320,6 +323,10 @@ always @(*) begin
                         dst7_dct8_in_data[4 + i] <= tr_in_data[7 - i];
                         dst7_dct8_in_data[8 + i] <= tr_in_data[11 - i];
                         dst7_dct8_in_data[12 + i] <= tr_in_data[15 - i];
+                        dst7_dct8_in_data[16 + i] <= tr_in_data[19 - i];
+                        dst7_dct8_in_data[20 + i] <= tr_in_data[23 - i];
+                        dst7_dct8_in_data[24 + i] <= tr_in_data[27 - i];
+                        dst7_dct8_in_data[28 + i] <= tr_in_data[31 - i];
                     end
                 end
             endcase

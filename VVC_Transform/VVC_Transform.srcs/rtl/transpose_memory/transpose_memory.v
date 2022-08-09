@@ -107,11 +107,11 @@ integer i, j, k;
     reg                         wr_en, wr_en_d1;
     reg  signed [WIDTH - 1 : 0] wr_data[0 : 31];
     reg  signed [WIDTH - 1 : 0] wr_data_shift[0 : 31];
-    reg         [7 : 0]         wr_addr[0 : 31]; 
-    reg         [7 : 0]         wr_addr_shift[0 : 31];  
-    reg         [7 : 0]         wr_count, wr_count_d1;
-    reg         [7 : 0]         wr_count_max;
-    reg         [7 : 0]         wr_point;
+    reg         [6 : 0]         wr_addr[0 : 31]; 
+    reg         [6 : 0]         wr_addr_shift[0 : 31];  
+    reg         [6 : 0]         wr_count, wr_count_d1;
+    reg         [6 : 0]         wr_count_max;
+    reg         [6 : 0]         wr_point;
     reg         [3 : 0]         wr_shift;
     reg                         is_maxblock_zero_data;
 //ram rd
@@ -120,7 +120,7 @@ integer i, j, k;
     reg  signed [WIDTH - 1 : 0] rd_data_shift[0 : 31];
     reg         [6 : 0]         rd_count,rd_count_d1;
     reg         [6 : 0]         rd_count_max,rd_count_max_d1;
-    reg         [7 : 0]         rd_point;
+    reg         [6 : 0]         rd_point;
     wire        [1 : 0]         rd_type_h;
     wire        [1 : 0]         rd_type_v;
     wire        [2 : 0]         rd_width;
@@ -189,9 +189,9 @@ end
 always@(posedge clk or negedge rst_n)
     if(!rst_n)
         delay_127_flag  <=  0;
-    else if(i_width == SIZE64 & i_height == SIZE64 & wr_count == 126)
+    else if(i_width == SIZE64 & i_height == SIZE64 & wr_count == 62)
         delay_127_flag  <=  1;
-    else if( (i_width != SIZE64 | i_height != SIZE64) & i_valid_d[126])
+    else if( (i_width != SIZE64 | i_height != SIZE64) & i_valid_d[62])
         delay_127_flag  <=  0;
 
 //input delay
@@ -551,16 +551,18 @@ always @(*) begin
         {SIZE64, SIZE64} : begin
             for (i = 0; i < 32; i = i + 1) begin
                 wr_data[i] <= i_data_d1[i];
-                if(wr_count < 64)
+                if(wr_count < 64) begin
                     if(wr_count % 2 == 0)
                         wr_addr[i] <= wr_point + i * 2;
                     else
                         wr_addr[i] <= 0;
-                else
+                end
+                else begin
                     if(wr_count % 2 == 0)
                         wr_addr[i] <= wr_point + i * 2 + 1;
                     else
                         wr_addr[i] <= 0;
+                end
             end
         end
     endcase
@@ -629,7 +631,6 @@ always @(posedge clk or negedge rst_n) begin
                 end
             end
         end
-
         else if (i_width_d1 == SIZE32 && i_height_d1 == SIZE64) begin//64x32
             for (i = 0; i < 32; i = i + 1) begin
                 if(wr_count < 32) begin
@@ -654,63 +655,39 @@ always @(posedge clk or negedge rst_n) begin
             end
         end
         else if (i_width_d1 == SIZE64) begin //4个地址的移位保持一样
-            for (i = 0; i < 16; i = i + 1) begin
-                if (i >= wr_count / 4) begin
-                    wr_data_shift[i] <= wr_data[i - wr_count / 4];
-                    wr_addr_shift[i] <= wr_addr[i - wr_count / 4];
+            for (i = 0; i < 32; i = i + 1) begin
+                if (i >= wr_count / 2) begin
+                    wr_data_shift[i] <= wr_data[i - wr_count / 2];
+                    wr_addr_shift[i] <= wr_addr[i - wr_count / 2];
                 end
                 else begin
-                    wr_data_shift[i] <= wr_data[i - wr_count / 4 + 16];
-                    wr_addr_shift[i] <= wr_addr[i - wr_count / 4 + 16];
+                    wr_data_shift[i] <= wr_data[i - wr_count / 2 + 32];
+                    wr_addr_shift[i] <= wr_addr[i - wr_count / 2 + 32];
                 end
             end
         end
         else if (i_height_d1 == SIZE64) begin
-            if (wr_count < (wr_count_max + 1) / 4) begin
-                for (i = 0; i < 16; i = i + 1) begin
+            if (wr_count < (wr_count_max + 1) / 2) begin
+                for (i = 0; i < 32; i = i + 1) begin
                     if (i >= wr_count * wr_shift) begin
                         wr_data_shift[i] <= wr_data[i - wr_count * wr_shift];
                         wr_addr_shift[i] <= wr_addr[i - wr_count * wr_shift];
                     end
                     else begin
-                        wr_data_shift[i] <= wr_data[i - wr_count * wr_shift + 16];
-                        wr_addr_shift[i] <= wr_addr[i - wr_count * wr_shift + 16];
+                        wr_data_shift[i] <= wr_data[i - wr_count * wr_shift + 32];
+                        wr_addr_shift[i] <= wr_addr[i - wr_count * wr_shift + 32];
                     end
                 end
             end
-            else if (wr_count < (wr_count_max + 1) / 2) begin
-                for (i = 0; i < 16; i = i + 1) begin
-                    if (i >= (wr_count - (wr_count_max + 1) / 4) * wr_shift) begin
-                        wr_data_shift[i] <= wr_data[i - (wr_count - (wr_count_max + 1) / 4) * wr_shift];
-                        wr_addr_shift[i] <= wr_addr[i - (wr_count - (wr_count_max + 1) / 4) * wr_shift];
-                    end
-                    else begin
-                        wr_data_shift[i] <= wr_data[i - (wr_count - (wr_count_max + 1) / 4) * wr_shift + 16];
-                        wr_addr_shift[i] <= wr_addr[i - (wr_count - (wr_count_max + 1) / 4) * wr_shift + 16];
-                    end
-                end
-            end
-            else if (wr_count < (wr_count_max + 1) * 3 / 4) begin
-                for (i = 0; i < 16; i = i + 1) begin
+            else begin
+                for (i = 0; i < 32; i = i + 1) begin
                     if (i >= (wr_count - (wr_count_max + 1) / 2) * wr_shift) begin
                         wr_data_shift[i] <= wr_data[i - (wr_count - (wr_count_max + 1) / 2) * wr_shift];
                         wr_addr_shift[i] <= wr_addr[i - (wr_count - (wr_count_max + 1) / 2) * wr_shift];
                     end
                     else begin
-                        wr_data_shift[i] <= wr_data[i - (wr_count - (wr_count_max + 1) / 2) * wr_shift + 16];
-                        wr_addr_shift[i] <= wr_addr[i - (wr_count - (wr_count_max + 1) / 2) * wr_shift + 16];
-                    end
-                end
-            end
-            else begin
-                for (i = 0; i < 16; i = i + 1) begin
-                    if (i >= (wr_count - (wr_count_max + 1) * 3 / 4) * wr_shift) begin
-                        wr_data_shift[i] <= wr_data[i - (wr_count - (wr_count_max + 1) * 3 / 4) * wr_shift];
-                        wr_addr_shift[i] <= wr_addr[i - (wr_count - (wr_count_max + 1) * 3 / 4) * wr_shift];
-                    end
-                    else begin
-                        wr_data_shift[i] <= wr_data[i - (wr_count - (wr_count_max + 1) * 3 / 4) * wr_shift + 16];
-                        wr_addr_shift[i] <= wr_addr[i - (wr_count - (wr_count_max + 1) * 3 / 4) * wr_shift + 16];
+                        wr_data_shift[i] <= wr_data[i - (wr_count - (wr_count_max + 1) / 2) * wr_shift + 32];
+                        wr_addr_shift[i] <= wr_addr[i - (wr_count - (wr_count_max + 1) / 2) * wr_shift + 32];
                     end
                 end
             end
@@ -896,7 +873,6 @@ always @(posedge clk or negedge rst_n) begin
                 end
             end
         end
-
         else if (rd_width_d1 == SIZE32 && rd_height_d1 == SIZE64) begin //64x32
             for (i = 0; i < 32; i = i + 1) begin
                 if (i + rd_count_d1 / 2 < 32) begin
@@ -906,42 +882,31 @@ always @(posedge clk or negedge rst_n) begin
                     rd_data_shift[i] <= rd_data[i + rd_count_d1 / 2 - 32];
                 end
             end
-
         end
         else if (rd_width_d1 == SIZE64) begin
-            if (rd_count_d1 < (rd_count_max_d1 + 1) / 4) begin
-                for (i = 0; i < 16; i = i + 1) begin
-                    if (i + rd_count_d1 < 16) begin
+            if (rd_count_d1 < (rd_count_max_d1 + 1) / 2) begin
+                for (i = 0; i < 32; i = i + 1) begin
+                    if (i + rd_count_d1 < 32) begin
                         rd_data_shift[i] <= rd_data[i + rd_count_d1];
                     end
                     else begin
-                        rd_data_shift[i] <= rd_data[i + rd_count_d1 - 16];
-                    end
-                end
-            end
-            else if (rd_count_d1 < (rd_count_max_d1 + 1) / 2) begin
-                for (i = 0; i < 16; i = i + 1) begin
-                    if (i + (rd_count_d1 - (rd_count_max_d1 + 1) / 4) < 16) begin
-                        rd_data_shift[i] <= rd_data[i + (rd_count_d1 - (rd_count_max_d1 + 1) / 4)];
-                    end
-                    else begin
-                        rd_data_shift[i] <= rd_data[i + (rd_count_d1 - (rd_count_max_d1 + 1) / 4) - 16];
+                        rd_data_shift[i] <= rd_data[i + rd_count_d1 - 32];
                     end
                 end
             end
             else begin //zero
-                for (i = 0; i < 16; i = i + 1) begin 
+                for (i = 0; i < 32; i = i + 1) begin 
                     rd_data_shift[i] <= 0;
                 end
             end
         end
         else if (rd_height_d1 == SIZE64) begin
-            for (i = 0; i < 16; i = i + 1) begin
-                if (i + rd_count_d1 / 4 * rd_shift < 16) begin
-                    rd_data_shift[i] <= rd_data[i + rd_count_d1 / 4 * rd_shift];
+            for (i = 0; i < 32; i = i + 1) begin
+                if (i + rd_count_d1 / 2 * rd_shift < 32) begin
+                    rd_data_shift[i] <= rd_data[i + rd_count_d1 / 2 * rd_shift];
                 end
                 else begin
-                    rd_data_shift[i] <= rd_data[i + rd_count_d1 / 4 * rd_shift - 16];
+                    rd_data_shift[i] <= rd_data[i + rd_count_d1 / 2 * rd_shift - 32];
                 end
             end
         end
@@ -959,41 +924,41 @@ always @(posedge clk or negedge rst_n) begin
 end 
 
 //ram 16 * 256
-    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(8)) dual_port_ram_0 (.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[0 ]), .rd_data(rd_data[0 ]), .wr_addr(wr_addr_shift[0 ]), .rd_addr(rd_point));
-    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(8)) dual_port_ram_1 (.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[1 ]), .rd_data(rd_data[1 ]), .wr_addr(wr_addr_shift[1 ]), .rd_addr(rd_point));
-    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(8)) dual_port_ram_2 (.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[2 ]), .rd_data(rd_data[2 ]), .wr_addr(wr_addr_shift[2 ]), .rd_addr(rd_point));
-    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(8)) dual_port_ram_3 (.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[3 ]), .rd_data(rd_data[3 ]), .wr_addr(wr_addr_shift[3 ]), .rd_addr(rd_point));
-    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(8)) dual_port_ram_4 (.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[4 ]), .rd_data(rd_data[4 ]), .wr_addr(wr_addr_shift[4 ]), .rd_addr(rd_point));
-    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(8)) dual_port_ram_5 (.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[5 ]), .rd_data(rd_data[5 ]), .wr_addr(wr_addr_shift[5 ]), .rd_addr(rd_point));
-    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(8)) dual_port_ram_6 (.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[6 ]), .rd_data(rd_data[6 ]), .wr_addr(wr_addr_shift[6 ]), .rd_addr(rd_point));
-    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(8)) dual_port_ram_7 (.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[7 ]), .rd_data(rd_data[7 ]), .wr_addr(wr_addr_shift[7 ]), .rd_addr(rd_point));
-    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(8)) dual_port_ram_8 (.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[8 ]), .rd_data(rd_data[8 ]), .wr_addr(wr_addr_shift[8 ]), .rd_addr(rd_point));
-    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(8)) dual_port_ram_9 (.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[9 ]), .rd_data(rd_data[9 ]), .wr_addr(wr_addr_shift[9 ]), .rd_addr(rd_point));
-    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(8)) dual_port_ram_10(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[10]), .rd_data(rd_data[10]), .wr_addr(wr_addr_shift[10]), .rd_addr(rd_point));
-    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(8)) dual_port_ram_11(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[11]), .rd_data(rd_data[11]), .wr_addr(wr_addr_shift[11]), .rd_addr(rd_point));
-    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(8)) dual_port_ram_12(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[12]), .rd_data(rd_data[12]), .wr_addr(wr_addr_shift[12]), .rd_addr(rd_point));
-    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(8)) dual_port_ram_13(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[13]), .rd_data(rd_data[13]), .wr_addr(wr_addr_shift[13]), .rd_addr(rd_point));
-    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(8)) dual_port_ram_14(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[14]), .rd_data(rd_data[14]), .wr_addr(wr_addr_shift[14]), .rd_addr(rd_point));
-    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(8)) dual_port_ram_15(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[15]), .rd_data(rd_data[15]), .wr_addr(wr_addr_shift[15]), .rd_addr(rd_point));
-    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(8)) dual_port_ram_16(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[16]), .rd_data(rd_data[16]), .wr_addr(wr_addr_shift[16]), .rd_addr(rd_point));
-    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(8)) dual_port_ram_17(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[17]), .rd_data(rd_data[17]), .wr_addr(wr_addr_shift[17]), .rd_addr(rd_point));
-    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(8)) dual_port_ram_18(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[18]), .rd_data(rd_data[18]), .wr_addr(wr_addr_shift[18]), .rd_addr(rd_point));
-    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(8)) dual_port_ram_19(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[19]), .rd_data(rd_data[19]), .wr_addr(wr_addr_shift[19]), .rd_addr(rd_point));
-    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(8)) dual_port_ram_20(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[20]), .rd_data(rd_data[20]), .wr_addr(wr_addr_shift[20]), .rd_addr(rd_point));
-    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(8)) dual_port_ram_21(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[21]), .rd_data(rd_data[21]), .wr_addr(wr_addr_shift[21]), .rd_addr(rd_point));
-    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(8)) dual_port_ram_22(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[22]), .rd_data(rd_data[22]), .wr_addr(wr_addr_shift[22]), .rd_addr(rd_point));
-    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(8)) dual_port_ram_23(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[23]), .rd_data(rd_data[23]), .wr_addr(wr_addr_shift[23]), .rd_addr(rd_point));
-    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(8)) dual_port_ram_24(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[24]), .rd_data(rd_data[24]), .wr_addr(wr_addr_shift[24]), .rd_addr(rd_point));
-    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(8)) dual_port_ram_25(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[25]), .rd_data(rd_data[25]), .wr_addr(wr_addr_shift[25]), .rd_addr(rd_point));
-    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(8)) dual_port_ram_26(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[26]), .rd_data(rd_data[26]), .wr_addr(wr_addr_shift[26]), .rd_addr(rd_point));
-    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(8)) dual_port_ram_27(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[27]), .rd_data(rd_data[27]), .wr_addr(wr_addr_shift[27]), .rd_addr(rd_point));
-    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(8)) dual_port_ram_28(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[28]), .rd_data(rd_data[28]), .wr_addr(wr_addr_shift[28]), .rd_addr(rd_point));
-    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(8)) dual_port_ram_29(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[29]), .rd_data(rd_data[29]), .wr_addr(wr_addr_shift[29]), .rd_addr(rd_point));
-    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(8)) dual_port_ram_30(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[30]), .rd_data(rd_data[30]), .wr_addr(wr_addr_shift[30]), .rd_addr(rd_point));
-    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(8)) dual_port_ram_31(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[31]), .rd_data(rd_data[31]), .wr_addr(wr_addr_shift[31]), .rd_addr(rd_point));
+    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(7)) dual_port_ram_0 (.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[0 ]), .rd_data(rd_data[0 ]), .wr_addr(wr_addr_shift[0 ]), .rd_addr(rd_point));
+    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(7)) dual_port_ram_1 (.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[1 ]), .rd_data(rd_data[1 ]), .wr_addr(wr_addr_shift[1 ]), .rd_addr(rd_point));
+    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(7)) dual_port_ram_2 (.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[2 ]), .rd_data(rd_data[2 ]), .wr_addr(wr_addr_shift[2 ]), .rd_addr(rd_point));
+    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(7)) dual_port_ram_3 (.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[3 ]), .rd_data(rd_data[3 ]), .wr_addr(wr_addr_shift[3 ]), .rd_addr(rd_point));
+    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(7)) dual_port_ram_4 (.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[4 ]), .rd_data(rd_data[4 ]), .wr_addr(wr_addr_shift[4 ]), .rd_addr(rd_point));
+    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(7)) dual_port_ram_5 (.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[5 ]), .rd_data(rd_data[5 ]), .wr_addr(wr_addr_shift[5 ]), .rd_addr(rd_point));
+    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(7)) dual_port_ram_6 (.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[6 ]), .rd_data(rd_data[6 ]), .wr_addr(wr_addr_shift[6 ]), .rd_addr(rd_point));
+    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(7)) dual_port_ram_7 (.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[7 ]), .rd_data(rd_data[7 ]), .wr_addr(wr_addr_shift[7 ]), .rd_addr(rd_point));
+    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(7)) dual_port_ram_8 (.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[8 ]), .rd_data(rd_data[8 ]), .wr_addr(wr_addr_shift[8 ]), .rd_addr(rd_point));
+    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(7)) dual_port_ram_9 (.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[9 ]), .rd_data(rd_data[9 ]), .wr_addr(wr_addr_shift[9 ]), .rd_addr(rd_point));
+    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(7)) dual_port_ram_10(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[10]), .rd_data(rd_data[10]), .wr_addr(wr_addr_shift[10]), .rd_addr(rd_point));
+    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(7)) dual_port_ram_11(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[11]), .rd_data(rd_data[11]), .wr_addr(wr_addr_shift[11]), .rd_addr(rd_point));
+    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(7)) dual_port_ram_12(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[12]), .rd_data(rd_data[12]), .wr_addr(wr_addr_shift[12]), .rd_addr(rd_point));
+    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(7)) dual_port_ram_13(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[13]), .rd_data(rd_data[13]), .wr_addr(wr_addr_shift[13]), .rd_addr(rd_point));
+    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(7)) dual_port_ram_14(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[14]), .rd_data(rd_data[14]), .wr_addr(wr_addr_shift[14]), .rd_addr(rd_point));
+    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(7)) dual_port_ram_15(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[15]), .rd_data(rd_data[15]), .wr_addr(wr_addr_shift[15]), .rd_addr(rd_point));
+    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(7)) dual_port_ram_16(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[16]), .rd_data(rd_data[16]), .wr_addr(wr_addr_shift[16]), .rd_addr(rd_point));
+    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(7)) dual_port_ram_17(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[17]), .rd_data(rd_data[17]), .wr_addr(wr_addr_shift[17]), .rd_addr(rd_point));
+    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(7)) dual_port_ram_18(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[18]), .rd_data(rd_data[18]), .wr_addr(wr_addr_shift[18]), .rd_addr(rd_point));
+    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(7)) dual_port_ram_19(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[19]), .rd_data(rd_data[19]), .wr_addr(wr_addr_shift[19]), .rd_addr(rd_point));
+    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(7)) dual_port_ram_20(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[20]), .rd_data(rd_data[20]), .wr_addr(wr_addr_shift[20]), .rd_addr(rd_point));
+    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(7)) dual_port_ram_21(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[21]), .rd_data(rd_data[21]), .wr_addr(wr_addr_shift[21]), .rd_addr(rd_point));
+    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(7)) dual_port_ram_22(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[22]), .rd_data(rd_data[22]), .wr_addr(wr_addr_shift[22]), .rd_addr(rd_point));
+    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(7)) dual_port_ram_23(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[23]), .rd_data(rd_data[23]), .wr_addr(wr_addr_shift[23]), .rd_addr(rd_point));
+    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(7)) dual_port_ram_24(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[24]), .rd_data(rd_data[24]), .wr_addr(wr_addr_shift[24]), .rd_addr(rd_point));
+    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(7)) dual_port_ram_25(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[25]), .rd_data(rd_data[25]), .wr_addr(wr_addr_shift[25]), .rd_addr(rd_point));
+    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(7)) dual_port_ram_26(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[26]), .rd_data(rd_data[26]), .wr_addr(wr_addr_shift[26]), .rd_addr(rd_point));
+    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(7)) dual_port_ram_27(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[27]), .rd_data(rd_data[27]), .wr_addr(wr_addr_shift[27]), .rd_addr(rd_point));
+    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(7)) dual_port_ram_28(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[28]), .rd_data(rd_data[28]), .wr_addr(wr_addr_shift[28]), .rd_addr(rd_point));
+    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(7)) dual_port_ram_29(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[29]), .rd_data(rd_data[29]), .wr_addr(wr_addr_shift[29]), .rd_addr(rd_point));
+    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(7)) dual_port_ram_30(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[30]), .rd_data(rd_data[30]), .wr_addr(wr_addr_shift[30]), .rd_addr(rd_point));
+    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(7)) dual_port_ram_31(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[31]), .rd_data(rd_data[31]), .wr_addr(wr_addr_shift[31]), .rd_addr(rd_point));
 
 
-syn_fifo#(.DATA_WIDTH(10), .DATA_DEPTH(256))
+syn_fifo#(.DATA_WIDTH(10), .DATA_DEPTH(64))
     syn_fifo(
     .clk        (clk),   
     
