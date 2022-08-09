@@ -279,7 +279,7 @@ always @(*) begin
     for (i = 0; i < 32; i = i + 1) begin
         dst7_dct8_in_data[i] <= 0;
     end
-    case (i_type_h_d[1]) 
+    case (i_type_v_d[1]) 
         DCT2    : begin
             dct2_in_height <= tr_in_height;
             dct2_in_valid <= tr_in_valid;
@@ -532,7 +532,7 @@ always @(*) begin
     for (i = 0; i < 32; i = i + 1) begin
         tr_out_data[i] <= 0;
     end
-    case (i_type_h_d[6]) 
+    case (i_type_v_d[6]) 
         DCT2    : begin
             tr_out_height <= dct2_out_height;
             tr_out_valid <= dct2_out_valid;

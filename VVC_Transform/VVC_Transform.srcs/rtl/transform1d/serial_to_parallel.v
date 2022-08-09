@@ -125,7 +125,7 @@ integer i;
 
 //input delay
     wire signed [IN_WIDTH - 1 : 0] i_data[0 : 31];
-    reg [2 : 0] i_size_d1, i_size_d2;
+    reg [2 : 0] i_size_d[0 : 1];
     reg i_valid_d1, i_valid_d2;
     reg signed [IN_WIDTH - 1 : 0] i_data_d1[0 : 31];
 //serial to parallel
@@ -170,26 +170,35 @@ integer i;
 //delay
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin 
-        i_size_d1 <= 0; i_valid_d1 <= 0;
-        i_size_d2 <= 0; i_valid_d2 <= 0;
+        i_size_d[0] <= 0;
+        i_size_d[1] <= 0;
+        i_valid_d1 <= 0;
+        i_valid_d2 <= 0;
         for (i = 0; i < 32; i = i + 1) begin
             i_data_d1[i] <= 0; 
         end
     end
     else begin
-        i_size_d1 <= i_size; i_valid_d1 <= i_valid;
-        i_size_d2 <= i_size_d1; i_valid_d2 <= i_valid_d1;
+        i_size_d[0] <= i_size;
+        i_size_d[1] <= i_size_d[0];
+        i_valid_d1 <= i_valid;
+        i_valid_d2 <= i_valid_d1;
         for (i = 0; i < 32; i = i + 1) begin
             i_data_d1[i] <= i_data[i]; 
         end
     end
 end
 
-always @(*) begin
-    case (i_size) 
-        SIZE64  : count_max <= 1;
-        default : count_max <= 0;
-    endcase
+always @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+        count_max <= 0;
+    end
+    else begin
+        case (i_size_d[0]) 
+            SIZE64  : count_max <= 1;
+            default : count_max <= 0;
+        endcase
+    end
 end
 
 always @(posedge clk or negedge rst_n) begin
@@ -202,31 +211,31 @@ always @(posedge clk or negedge rst_n) begin
     else begin
         if (count == count_max) begin
             count <= 0;
+            case (i_size_d[0])
+                SIZE64  : begin // 2 beat -> 1 beat
+                    if (i_size == SIZE64) begin
+                        for (i = 0; i < 32; i = i + 1) begin
+                            o_data[i]      <= i_data_d1[i];
+                            o_data[i + 32] <= i_data[i];
+                        end
+                    end
+                end
+                default : begin //delay 2 clk
+                    for (i = 0; i < 32; i = i + 1) begin
+                        o_data[i]      <= i_data_d1[i];
+                        o_data[i + 32] <= 0;
+                    end
+                end
+            endcase
         end
         else begin
             count <= count + 1;
         end
-        case (i_size_d1)
-            SIZE64  : begin // 2 beat -> 1 beat
-                if (count == 1) begin
-                    for (i = 0; i < 32; i = i + 1) begin
-                        o_data[i]      <= i_data_d1[i];
-                        o_data[i + 32] <= i_data[i];
-                    end
-                end
-            end
-            default : begin //delay 2 clk
-                for (i = 0; i < 32; i = i + 1) begin
-                    o_data[i]      <= i_data_d1[i];
-                    o_data[i + 32] <= 0;
-                end
-            end
-        endcase
     end
 end
 
 //output
-    assign o_size   = i_size_d2;
+    assign o_size   = i_size_d[1];
     assign o_valid  = i_valid_d2;
     assign o_0      = o_data[0 ];
     assign o_1      = o_data[1 ];

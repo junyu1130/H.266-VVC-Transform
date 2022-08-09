@@ -3,8 +3,8 @@
 ### 指标
 
 - Pipeline Structure
-- Throughput Rate : 16 samples/cycle
-- Transpose Memory : Dual-Port Ram 16x256x16 bit 
+- Throughput Rate : 32 samples/cycle
+- Transpose Memory : Dual-Port Ram 32x128x16 bit 
 - Transform Type : DCT2/DCT8/DST7
 
 ### 版本记录
