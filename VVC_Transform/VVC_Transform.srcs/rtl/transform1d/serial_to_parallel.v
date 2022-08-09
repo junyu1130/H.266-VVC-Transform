@@ -113,9 +113,9 @@ integer i;
     reg i_valid_d1, i_valid_d2, i_valid_d3, i_valid_d4;
     reg signed [IN_WIDTH - 1 : 0] i_data_d1[0 : 15], i_data_d2[0 : 15], i_data_d3[0 : 15];
 //serial to parallel
-    reg signed [OUT_WIDTH - 1 : 0] o_data[0 : 63];
     reg [1 : 0] count;
     reg [1 : 0] count_max;
+    reg signed [OUT_WIDTH - 1 : 0] o_data[0 : 63];
 
 //input
     assign i_data[0 ] = i_0 ;
