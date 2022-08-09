@@ -32,6 +32,22 @@ module transpose_memory#(
     input   signed  [WIDTH - 1 : 0]     i_13    ,
     input   signed  [WIDTH - 1 : 0]     i_14    ,
     input   signed  [WIDTH - 1 : 0]     i_15    ,
+    input   signed  [WIDTH - 1 : 0]     i_16    ,
+    input   signed  [WIDTH - 1 : 0]     i_17    ,
+    input   signed  [WIDTH - 1 : 0]     i_18    ,
+    input   signed  [WIDTH - 1 : 0]     i_19    ,
+    input   signed  [WIDTH - 1 : 0]     i_20    ,
+    input   signed  [WIDTH - 1 : 0]     i_21    ,
+    input   signed  [WIDTH - 1 : 0]     i_22    ,
+    input   signed  [WIDTH - 1 : 0]     i_23    ,
+    input   signed  [WIDTH - 1 : 0]     i_24    ,
+    input   signed  [WIDTH - 1 : 0]     i_25    ,
+    input   signed  [WIDTH - 1 : 0]     i_26    ,
+    input   signed  [WIDTH - 1 : 0]     i_27    ,
+    input   signed  [WIDTH - 1 : 0]     i_28    ,
+    input   signed  [WIDTH - 1 : 0]     i_29    ,
+    input   signed  [WIDTH - 1 : 0]     i_30    ,
+    input   signed  [WIDTH - 1 : 0]     i_31    ,
 //output parameter
     output          [1 : 0]             o_type_h,
     output          [1 : 0]             o_type_v,
@@ -54,7 +70,23 @@ module transpose_memory#(
     output  signed  [WIDTH - 1 : 0]     o_12    ,
     output  signed  [WIDTH - 1 : 0]     o_13    ,
     output  signed  [WIDTH - 1 : 0]     o_14    ,
-    output  signed  [WIDTH - 1 : 0]     o_15    
+    output  signed  [WIDTH - 1 : 0]     o_15    ,
+    output  signed  [WIDTH - 1 : 0]     o_16    ,
+    output  signed  [WIDTH - 1 : 0]     o_17    ,
+    output  signed  [WIDTH - 1 : 0]     o_18    ,
+    output  signed  [WIDTH - 1 : 0]     o_19    ,
+    output  signed  [WIDTH - 1 : 0]     o_20    ,
+    output  signed  [WIDTH - 1 : 0]     o_21    ,
+    output  signed  [WIDTH - 1 : 0]     o_22    ,
+    output  signed  [WIDTH - 1 : 0]     o_23    ,
+    output  signed  [WIDTH - 1 : 0]     o_24    ,
+    output  signed  [WIDTH - 1 : 0]     o_25    ,
+    output  signed  [WIDTH - 1 : 0]     o_26    ,
+    output  signed  [WIDTH - 1 : 0]     o_27    ,
+    output  signed  [WIDTH - 1 : 0]     o_28    ,
+    output  signed  [WIDTH - 1 : 0]     o_29    ,
+    output  signed  [WIDTH - 1 : 0]     o_30    ,
+    output  signed  [WIDTH - 1 : 0]     o_31    
 );
 
 localparam  SIZE4  = 3'd1,
@@ -65,18 +97,18 @@ localparam  SIZE4  = 3'd1,
 integer i, j, k;
 
 //input
-    wire signed [WIDTH - 1 : 0] i_data[0 : 15];
-    reg  signed [WIDTH - 1 : 0] i_data_d1[0 : 15];
+    wire signed [WIDTH - 1 : 0] i_data[0 : 31];
+    reg  signed [WIDTH - 1 : 0] i_data_d1[0 : 31];
     reg         [2 : 0]         i_width_d1;
     reg         [2 : 0]         i_height_d1;
-    reg         [255 : 0]       i_valid_d;
-    reg                         delay_255_flag;
+    reg         [127 : 0]       i_valid_d;
+    reg                         delay_127_flag;
 //ram wr
     reg                         wr_en, wr_en_d1;
-    reg  signed [WIDTH - 1 : 0] wr_data[0 : 15];
-    reg  signed [WIDTH - 1 : 0] wr_data_shift[0 : 15];
-    reg         [7 : 0]         wr_addr[0 : 15]; 
-    reg         [7 : 0]         wr_addr_shift[0 : 15];  
+    reg  signed [WIDTH - 1 : 0] wr_data[0 : 31];
+    reg  signed [WIDTH - 1 : 0] wr_data_shift[0 : 31];
+    reg         [7 : 0]         wr_addr[0 : 31]; 
+    reg         [7 : 0]         wr_addr_shift[0 : 31];  
     reg         [7 : 0]         wr_count, wr_count_d1;
     reg         [7 : 0]         wr_count_max;
     reg         [7 : 0]         wr_point;
@@ -84,8 +116,8 @@ integer i, j, k;
     reg                         is_maxblock_zero_data;
 //ram rd
     reg                         rd_en, pop_en;
-    wire signed [WIDTH - 1 : 0] rd_data[0 : 15];
-    reg  signed [WIDTH - 1 : 0] rd_data_shift[0 : 15];
+    wire signed [WIDTH - 1 : 0] rd_data[0 : 31];
+    reg  signed [WIDTH - 1 : 0] rd_data_shift[0 : 31];
     reg         [6 : 0]         rd_count,rd_count_d1;
     reg         [6 : 0]         rd_count_max,rd_count_max_d1;
     reg         [7 : 0]         rd_point;
@@ -93,7 +125,7 @@ integer i, j, k;
     wire        [1 : 0]         rd_type_v;
     wire        [2 : 0]         rd_width;
     wire        [2 : 0]         rd_height;
-    wire                        rd_valid  = delay_255_flag ? i_valid_d[255] : i_valid_d[127];
+    wire                        rd_valid  = delay_127_flag ? i_valid_d[127] : i_valid_d[63];
     reg         [3 : 0]         rd_shift;
 //output
     reg         [1 : 0]         rd_type_h_d1, rd_type_h_d2;
@@ -119,18 +151,34 @@ integer i, j, k;
     assign i_data[13] = i_13;
     assign i_data[14] = i_14;
     assign i_data[15] = i_15;
+    assign i_data[16] = i_16;
+    assign i_data[17] = i_17;
+    assign i_data[18] = i_18;
+    assign i_data[19] = i_19;
+    assign i_data[20] = i_20;
+    assign i_data[21] = i_21;
+    assign i_data[22] = i_22;
+    assign i_data[23] = i_23;
+    assign i_data[24] = i_24;
+    assign i_data[25] = i_25;
+    assign i_data[26] = i_26;
+    assign i_data[27] = i_27;
+    assign i_data[28] = i_28;
+    assign i_data[29] = i_29;
+    assign i_data[30] = i_30;
+    assign i_data[31] = i_31;
 
 //input data delay 1 clk
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-        for (i = 0; i < 16; i = i + 1) begin
+        for (i = 0; i < 32; i = i + 1) begin
             i_data_d1[i] <= 0;
         end
         i_height_d1 <=  0;
         i_width_d1  <=  0;
     end
     else begin
-        for (i = 0;i < 16; i = i + 1) begin
+        for (i = 0;i < 32; i = i + 1) begin
             i_data_d1[i] <= i_data[i];
         end
         i_height_d1 <=  i_height;
@@ -140,11 +188,11 @@ end
 
 always@(posedge clk or negedge rst_n)
     if(!rst_n)
-        delay_255_flag  <=  0;
+        delay_127_flag  <=  0;
     else if(i_width == SIZE64 & i_height == SIZE64 & wr_count == 126)
-        delay_255_flag  <=  1;
+        delay_127_flag  <=  1;
     else if( (i_width != SIZE64 | i_height != SIZE64) & i_valid_d[126])
-        delay_255_flag  <=  0;
+        delay_127_flag  <=  0;
 
 //input delay
 always @(posedge clk or negedge rst_n) begin
@@ -152,12 +200,12 @@ always @(posedge clk or negedge rst_n) begin
         i_valid_d <= 0;
     end
     else begin
-        i_valid_d[127 : 0] <= {i_valid_d[126 : 0], i_valid};
-        if (delay_255_flag) begin //64x64才允许沿256个clk，避免前边小块的影响
-            i_valid_d[255 : 128] <= {i_valid_d[254 : 128], i_valid_d[127]};
+        i_valid_d[63 : 0] <= {i_valid_d[62 : 0], i_valid};
+        if (delay_127_flag) begin //64x64才允许沿256个clk，避免前边小块的影响
+            i_valid_d[127 : 64] <= {i_valid_d[126 : 64], i_valid_d[63]};
         end
         else begin
-            i_valid_d[255 : 128] <= 0;
+            i_valid_d[127 : 64] <= 0;
         end
     end
 end
@@ -187,30 +235,30 @@ always @(posedge clk or negedge rst_n) begin
     else begin
         case ({i_width, i_height})
             {SIZE4 , SIZE4 } : wr_count_max <= 0;
-            {SIZE8 , SIZE4 } : wr_count_max <= 1;
-            {SIZE16, SIZE4 } : wr_count_max <= 3;
-            {SIZE32, SIZE4 } : wr_count_max <= 7;
-            {SIZE64, SIZE4 } : wr_count_max <= 15;
-            {SIZE4 , SIZE8 } : wr_count_max <= 1;
-            {SIZE8 , SIZE8 } : wr_count_max <= 3;
-            {SIZE16, SIZE8 } : wr_count_max <= 7;
-            {SIZE32, SIZE8 } : wr_count_max <= 15;
-            {SIZE64, SIZE8 } : wr_count_max <= 31;
-            {SIZE4 , SIZE16} : wr_count_max <= 3;
-            {SIZE8 , SIZE16} : wr_count_max <= 7;
-            {SIZE16, SIZE16} : wr_count_max <= 15;
-            {SIZE32, SIZE16} : wr_count_max <= 31;
-            {SIZE64, SIZE16} : wr_count_max <= 63;
-            {SIZE4 , SIZE32} : wr_count_max <= 7;
-            {SIZE8 , SIZE32} : wr_count_max <= 15;
-            {SIZE16, SIZE32} : wr_count_max <= 31;
-            {SIZE32, SIZE32} : wr_count_max <= 63;
-            {SIZE64, SIZE32} : wr_count_max <= 127;
-            {SIZE4 , SIZE64} : wr_count_max <= 15;
-            {SIZE8 , SIZE64} : wr_count_max <= 31;
-            {SIZE16, SIZE64} : wr_count_max <= 63;
-            {SIZE32, SIZE64} : wr_count_max <= 127;
-            {SIZE64, SIZE64} : wr_count_max <= 255;
+            {SIZE8 , SIZE4 } : wr_count_max <= 0;
+            {SIZE16, SIZE4 } : wr_count_max <= 1;
+            {SIZE32, SIZE4 } : wr_count_max <= 3;
+            {SIZE64, SIZE4 } : wr_count_max <= 7;
+            {SIZE4 , SIZE8 } : wr_count_max <= 0;
+            {SIZE8 , SIZE8 } : wr_count_max <= 1;
+            {SIZE16, SIZE8 } : wr_count_max <= 3;
+            {SIZE32, SIZE8 } : wr_count_max <= 7;
+            {SIZE64, SIZE8 } : wr_count_max <= 15;
+            {SIZE4 , SIZE16} : wr_count_max <= 1;
+            {SIZE8 , SIZE16} : wr_count_max <= 3;
+            {SIZE16, SIZE16} : wr_count_max <= 7;
+            {SIZE32, SIZE16} : wr_count_max <= 15;
+            {SIZE64, SIZE16} : wr_count_max <= 31;
+            {SIZE4 , SIZE32} : wr_count_max <= 3;
+            {SIZE8 , SIZE32} : wr_count_max <= 7;
+            {SIZE16, SIZE32} : wr_count_max <= 15;
+            {SIZE32, SIZE32} : wr_count_max <= 31;
+            {SIZE64, SIZE32} : wr_count_max <= 63;
+            {SIZE4 , SIZE64} : wr_count_max <= 7;
+            {SIZE8 , SIZE64} : wr_count_max <= 15;
+            {SIZE16, SIZE64} : wr_count_max <= 31;
+            {SIZE32, SIZE64} : wr_count_max <= 63;
+            {SIZE64, SIZE64} : wr_count_max <= 127;
             default          : wr_count_max <= 0;
         endcase
     end
@@ -233,7 +281,7 @@ always@(posedge clk or negedge rst_n)
     if(!rst_n)
         is_maxblock_zero_data   <=  0;
     else begin
-        is_maxblock_zero_data   <=  (wr_count_max == 255) && (wr_count % 4 > 1);
+        is_maxblock_zero_data   <=  (wr_count_max == 127) && (wr_count % 2 == 1);
     end
 
 //wr address point
@@ -241,451 +289,278 @@ always @(posedge clk or negedge rst_n) begin
     if (!rst_n)
         wr_point <= 0;
     else if (wr_en && wr_count == wr_count_max)
-        if (wr_count_max == 255) //64x64
-            wr_point <= wr_point + 128;
+        if (wr_count_max == 127) //64x64
+            wr_point <= wr_point + 64;
         else
             wr_point <= wr_point + wr_count_max + 1;
 end
 
 //ram storage structure
 always @(*) begin
-    for (i = 0; i < 16; i = i + 1) begin
+    for (i = 0; i < 32; i = i + 1) begin
         wr_data[i] <= 0;
         wr_addr[i] <= 0;
     end
     case ({i_width_d1, i_height_d1})
         {SIZE4 , SIZE4 } : begin 
-            for (i = 0; i < 4; i = i + 1) begin
+            for (i = 0; i < 8; i = i + 1) begin
                 for (j = 0; j < 1; j = j + 1) begin
-                    for (k = 0; k < 4; k = k + 1) begin
+                    for (k = 0; k < 8; k = k + 1) begin
                         wr_data[i * 4 + j * 4 + k] <= i_data_d1[i + 4 * j + 4 * k];
                         wr_addr[i * 4 + j * 4 + k] <= wr_point + j;
                     end
                 end
             end
         end
-        {SIZE8 , SIZE4 } : begin 
-            for (i = 0; i < 4; i = i + 1) begin
-                for (j = 0; j < 2; j = j + 1) begin
-                    for (k = 0; k < 2; k = k + 1) begin
-                        wr_data[i * 4 + j * 2 + k] <= i_data_d1[i + 4 * j + 8 * k];
-                        wr_addr[i * 4 + j * 2 + k] <= wr_point + j;
+        {SIZE8 , SIZE4 } : begin  
+            for (i = 0; i < 8; i = i + 1) begin
+                for (j = 0; j < 1; j = j + 1) begin
+                    for (k = 0; k < 4; k = k + 1) begin
+                        wr_data[i * 4 + j * 4 + k] <= i_data_d1[i + 8 * j + 8 * k];
+                        wr_addr[i * 4 + j * 4 + k] <= wr_point + j;
                     end
                 end
             end
         end
         {SIZE16, SIZE4 } : begin
-            for (i = 0; i < 4; i = i + 1) begin
-                for (j = 0; j < 4; j = j + 1) begin
-                    for (k = 0; k < 1; k = k + 1) begin
-                        wr_data[i * 4 + j * 1 + k] <= i_data_d1[i + 4 * j + 16 * k];
-                        wr_addr[i * 4 + j * 1 + k] <= wr_point + j;
+            for (i = 0; i < 8; i = i + 1) begin
+                for (j = 0; j < 2; j = j + 1) begin
+                    for (k = 0; k < 2; k = k + 1) begin
+                        wr_data[i * 4 + j * 2 + k] <= i_data_d1[i + 8 * j + 16 * k];
+                        wr_addr[i * 4 + j * 2 + k] <= wr_point + j;
                     end
                 end
             end
         end
         {SIZE32, SIZE4 } : begin 
-            for (i = 0; i < 4; i = i + 1) begin
+            for (i = 0; i < 8; i = i + 1) begin
                 for (j = 0; j < 4; j = j + 1) begin
                     for (k = 0; k < 1; k = k + 1) begin
-                        wr_data[i * 4 + j * 1 + k] <= i_data_d1[i + 4 * j + 16 * k];
-                        if (wr_count % 2 == 0) begin
-                            wr_addr[i * 4 + j * 1 + k] <= wr_point + j;
-                        end
-                        else begin
-                            wr_addr[i * 4 + j * 1 + k] <= wr_point + j + 4;
-                        end
+                        wr_data[i * 4 + j * 1 + k] <= i_data_d1[i + 8 * j + 32 * k];
+                        wr_addr[i * 4 + j * 1 + k] <= wr_point + j;
                     end
                 end
             end
         end
-        {SIZE64, SIZE4 } : begin 
-            for (i = 0; i < 4; i = i + 1) begin
+        {SIZE64, SIZE4 } : begin     
+            for (i = 0; i < 8; i = i + 1) begin 
                 for (j = 0; j < 4; j = j + 1) begin
-                    for (k = 0; k < 1; k = k + 1) begin
-                        wr_data[i * 4 + j * 1 + k] <= i_data_d1[i + 4 * j + 16 * k];
-                        if (wr_count % 4 == 0) begin
-                            wr_addr[i * 4 + j * 1 + k] <= wr_point + j;
-                        end
-                        else if (wr_count % 4 == 1) begin
-                            wr_addr[i * 4 + j * 1 + k] <= wr_point + j + 4;
-                        end
-                        if (wr_count % 4 == 2) begin
-                            wr_addr[i * 4 + j * 1 + k] <= wr_point + j + 8;
-                        end
-                        else begin
-                            wr_addr[i * 4 + j * 1 + k] <= wr_point + j + 12;
-                        end
-                    end
+                    wr_data[i * 4 + j] <= i_data_d1[j * 8 + i];
+                    if(wr_count % 2 == 0) 
+                        wr_addr[i * 4 + j] <= wr_point + j;
+                    else
+                        wr_addr[i * 4 + j] <= wr_point + j + 4;
                 end
             end
         end
         {SIZE4 , SIZE8 } : begin
-            for (i = 0; i < 2; i = i + 1) begin
-                for (j = 0; j < 2; j = j + 1) begin
-                    for (k = 0; k < 4; k = k + 1) begin
-                        wr_data[i * 8 + j * 4 + k] <= i_data_d1[i + 2 * j + 4 * k];
-                        wr_addr[i * 8 + j * 4 + k] <= wr_point + j;
+            for (i = 0; i < 4; i = i + 1) begin
+                for (j = 0; j < 1; j = j + 1) begin
+                    for (k = 0; k < 8; k = k + 1) begin
+                        wr_data[i * 8 + j * 8 + k] <= i_data_d1[i + 4 * j + 4 * k];
+                        wr_addr[i * 8 + j * 8 + k] <= wr_point + j;
                     end
                 end
             end
         end
         {SIZE8 , SIZE8 } : begin
-            for (i = 0; i < 2; i = i + 1) begin
-                for (j = 0; j < 4; j = j + 1) begin
-                    for (k = 0; k < 2; k = k + 1) begin
-                        wr_data[i * 8 + j * 2 + k] <= i_data_d1[i + 2 * j + 8 * k];
-                        wr_addr[i * 8 + j * 2 + k] <= wr_point + j;
+            for (i = 0; i < 4; i = i + 1) begin
+                for (j = 0; j < 2; j = j + 1) begin
+                    for (k = 0; k < 4; k = k + 1) begin
+                        wr_data[i * 8 + j * 4 + k] <= i_data_d1[i + 4 * j + 8 * k];
+                        wr_addr[i * 8 + j * 4 + k] <= wr_point + j;
                     end
                 end
             end
         end
         {SIZE16, SIZE8 } : begin 
-            for (i = 0; i < 2; i = i + 1) begin
-                for (j = 0; j < 8; j = j + 1) begin
-                    for (k = 0; k < 1; k = k + 1) begin
-                        wr_data[i * 8 + j * 1 + k] <= i_data_d1[i + 2 * j + 16 * k];
-                        wr_addr[i * 8 + j * 1 + k] <= wr_point + j;
+            for (i = 0; i < 4; i = i + 1) begin
+                for (j = 0; j < 4; j = j + 1) begin
+                    for (k = 0; k < 2; k = k + 1) begin
+                        wr_data[i * 8 + j * 2 + k] <= i_data_d1[i + 4 * j + 16 * k];
+                        wr_addr[i * 8 + j * 2 + k] <= wr_point + j;
                     end
                 end
             end
         end
         {SIZE32, SIZE8 } : begin
-            for (i = 0; i < 2; i = i + 1) begin
+            for (i = 0; i < 4; i = i + 1) begin
                 for (j = 0; j < 8; j = j + 1) begin
                     for (k = 0; k < 1; k = k + 1) begin
-                        wr_data[i * 8 + j * 1 + k] <= i_data_d1[i + 2 * j + 16 * k];
-                        if (wr_count % 2 == 0) begin
-                            wr_addr[i * 8 + j * 1 + k] <= wr_point + j;
-                        end
-                        else begin
-                            wr_addr[i * 8 + j * 1 + k] <= wr_point + j + 8;
-                        end
+                        wr_data[i * 8 + j * 1 + k] <= i_data_d1[i + 4 * j + 32 * k];
+                        wr_addr[i * 8 + j * 1 + k] <= wr_point + j;
                     end
                 end
             end
         end
         {SIZE64, SIZE8 } : begin
-            for (i = 0; i < 2; i = i + 1) begin
+            for (i = 0; i < 4; i = i + 1) begin
                 for (j = 0; j < 8; j = j + 1) begin
-                    for (k = 0; k < 1; k = k + 1) begin
-                        wr_data[i * 8 + j * 1 + k] <= i_data_d1[i + 2 * j + 16 * k];
-                        if (wr_count % 4 == 0) begin
-                            wr_addr[i * 8 + j * 1 + k] <= wr_point + j;
-                        end
-                        else if (wr_count % 4 == 1) begin
-                            wr_addr[i * 8 + j * 1 + k] <= wr_point + j + 8;
-                        end
-                        else if (wr_count % 4 == 2) begin
-                            wr_addr[i * 8 + j * 1 + k] <= wr_point + j + 16;
-                        end
-                        else begin
-                            wr_addr[i * 8 + j * 1 + k] <= wr_point + j + 24;
-                        end
-                    end
+                    wr_data[i * 8 + j] <= i_data_d1[j * 4 + i];
+                    if(wr_count % 2 == 0) 
+                        wr_addr[i * 8 + j] <= wr_point + j;
+                    else
+                        wr_addr[i * 8 + j] <= wr_point + j + 8;
                 end
-            end
+            end      
         end
         {SIZE4 , SIZE16} : begin
-            for (i = 0; i < 1; i = i + 1) begin
-                for (j = 0; j < 4; j = j + 1) begin
-                    for (k = 0; k < 4; k = k + 1) begin
-                        wr_data[i * 16 + j * 4 + k] <= i_data_d1[i + j + 4 * k];
-                        wr_addr[i * 16 + j * 4 + k] <= wr_point + j;
+            for (i = 0; i < 2; i = i + 1) begin
+                for (j = 0; j < 2; j = j + 1) begin
+                    for (k = 0; k < 8; k = k + 1) begin
+                        wr_data[i * 16 + j * 8 + k] <= i_data_d1[i + 2 * j + 4 * k];
+                        wr_addr[i * 16 + j * 8 + k] <= wr_point + j;
                     end
                 end
             end
         end
         {SIZE8 , SIZE16} : begin
-            for (i = 0; i < 1; i = i + 1) begin
-                for (j = 0; j < 8; j = j + 1) begin
-                    for (k = 0; k < 2; k = k + 1) begin
-                        wr_data[i * 16 + j * 2 + k] <= i_data_d1[i + j + 8 * k];
-                        wr_addr[i * 16 + j * 2 + k] <= wr_point + j;
+            for (i = 0; i < 2; i = i + 1) begin
+                for (j = 0; j < 4; j = j + 1) begin
+                    for (k = 0; k < 4; k = k + 1) begin
+                        wr_data[i * 16 + j * 4 + k] <= i_data_d1[i + 2 * j + 8 * k];
+                        wr_addr[i * 16 + j * 4 + k] <= wr_point + j;
                     end
                 end
             end
         end
         {SIZE16, SIZE16} : begin
-            for (i = 0; i < 1; i = i + 1) begin
-                for (j = 0; j < 16; j = j + 1) begin
-                    for (k = 0; k < 1; k = k + 1) begin
-                        wr_data[i * 16 + j * 1 + k] <= i_data_d1[i + j + 16 * k];
-                        wr_addr[i * 16 + j * 1 + k] <= wr_point + j;
+            for (i = 0; i < 2; i = i + 1) begin
+                for (j = 0; j < 8; j = j + 1) begin
+                    for (k = 0; k < 2; k = k + 1) begin
+                        wr_data[i * 16 + j * 2 + k] <= i_data_d1[i + 2 * j + 16 * k];
+                        wr_addr[i * 16 + j * 2 + k] <= wr_point + j;
                     end
                 end
             end
         end
         {SIZE32, SIZE16} : begin
-            for (i = 0; i < 1; i = i + 1) begin
+            for (i = 0; i < 2; i = i + 1) begin
                 for (j = 0; j < 16; j = j + 1) begin
                     for (k = 0; k < 1; k = k + 1) begin
-                        wr_data[i * 16 + j * 1 + k] <= i_data_d1[i + j + 16 * k];
-                        if (wr_count % 2 == 0) begin
-                            wr_addr[i * 16 + j * 1 + k] <= wr_point + j;
-                        end
-                        else begin
-                            wr_addr[i * 16 + j * 1 + k] <= wr_point + j + 16;
-                        end
+                        wr_data[i * 16 + j * 1 + k] <= i_data_d1[i + 2 * j + 32 * k];
+                        wr_addr[i * 16 + j * 1 + k] <= wr_point + j;
                     end
                 end
             end
         end
         {SIZE64, SIZE16} : begin
-            for (i = 0; i < 1; i = i + 1) begin
+            for (i = 0; i < 2; i = i + 1) begin
                 for (j = 0; j < 16; j = j + 1) begin
-                    for (k = 0; k < 1; k = k + 1) begin
-                        wr_data[i * 16 + j * 1 + k] <= i_data_d1[i + j + 16 * k];
-                        if (wr_count % 4 == 0) begin
-                            wr_addr[i * 16 + j * 1 + k] <= wr_point + j;
-                        end
-                        else if (wr_count % 4 == 1) begin
-                            wr_addr[i * 16 + j * 1 + k] <= wr_point + j + 16;
-                        end
-                        else if (wr_count % 4 == 2) begin
-                            wr_addr[i * 16 + j * 1 + k] <= wr_point + j + 32;
-                        end
-                        else begin
-                            wr_addr[i * 16 + j * 1 + k] <= wr_point + j + 48;
-                        end
-                    end
+                    wr_data[i * 16 + j] <= i_data_d1[j * 2 + i];
+                    if(wr_count % 2 == 0) 
+                        wr_addr[i * 16 + j] <= wr_point + j;
+                    else
+                        wr_addr[i * 16 + j] <= wr_point + j + 16;
                 end
             end
         end
         {SIZE4 , SIZE32} : begin
-            for (j = 0; j < 4; j = j + 1) begin
-                for (k = 0; k < 4; k = k + 1) begin
-                    wr_data[j * 4 + k] <= i_data_d1[j + 4 * k];
-                    if (wr_count < 4) begin
-                        wr_addr[j * 4 + k] <= wr_point + 2 * j;
-                    end
-                    else begin
-                        wr_addr[j * 4 + k] <= wr_point + 2 * j + 1;
+            for (i = 0; i < 1; i = i + 1) begin
+                for (j = 0; j < 4; j = j + 1) begin
+                    for (k = 0; k < 8; k = k + 1) begin
+                        wr_data[i * 32 + j * 8 + k] <= i_data_d1[i + 1 * j + 4 * k];
+                        wr_addr[i * 32 + j * 8 + k] <= wr_point + j;
                     end
                 end
             end
         end
         {SIZE8 , SIZE32} : begin
-            for (j = 0; j < 8; j = j + 1) begin
-                for (k = 0; k < 2; k = k + 1) begin
-                    wr_data[j * 2 + k] <= i_data_d1[j + 8 * k];
-                    if (wr_count < 8) begin
-                        wr_addr[j * 2 + k] <= wr_point + 2 * j;
-                    end
-                    else begin
-                        wr_addr[j * 2 + k] <= wr_point + 2 * j + 1;
+            for (i = 0; i < 1; i = i + 1) begin
+                for (j = 0; j < 8; j = j + 1) begin
+                    for (k = 0; k < 4; k = k + 1) begin
+                        wr_data[i * 32 + j * 4 + k] <= i_data_d1[i + 1 * j + 8 * k];
+                        wr_addr[i * 32 + j * 4 + k] <= wr_point + j;
                     end
                 end
             end
         end
         {SIZE16, SIZE32} : begin
-            for (j = 0; j < 16; j = j + 1) begin
-                for (k = 0; k < 1; k = k + 1) begin
-                    wr_data[j * 1 + k] <= i_data_d1[j + 16 * k];
-                    if (wr_count < 16) begin
-                        wr_addr[j * 1 + k] <= wr_point + 2 * j;
-                    end
-                    else begin
-                        wr_addr[j * 1 + k] <= wr_point + 2 * j + 1;
+            for (i = 0; i < 1; i = i + 1) begin
+                for (j = 0; j < 16; j = j + 1) begin
+                    for (k = 0; k < 2; k = k + 1) begin
+                        wr_data[i * 32 + j * 2 + k] <= i_data_d1[i + 1 * j + 16 * k];
+                        wr_addr[i * 32 + j * 2 + k] <= wr_point + j;
                     end
                 end
             end
         end
         {SIZE32, SIZE32} : begin
-            for (j = 0; j < 16; j = j + 1) begin
-                wr_data[j] <= i_data_d1[j];
-                if (wr_count < 32) begin
-                    if (wr_count % 2 == 0) begin
-                        wr_addr[j] <= wr_point + 2 * j;
-                    end
-                    else begin
-                        wr_addr[j] <= wr_point + 2 * j + 32;
-                    end
-                end
-                else begin
-                    if (wr_count % 2 == 0) begin
-                        wr_addr[j] <= wr_point + 2 * j + 1;
-                    end
-                    else begin
-                        wr_addr[j] <= wr_point + 2 * j + 33;
+            for (i = 0; i < 1; i = i + 1) begin
+                for (j = 0; j < 32; j = j + 1) begin
+                    for (k = 0; k < 1; k = k + 1) begin
+                        wr_data[i * 32 + j * 1 + k] <= i_data_d1[i + 1 * j + 32 * k];
+                        wr_addr[i * 32 + j * 1 + k] <= wr_point + j;
                     end
                 end
             end
         end
         {SIZE64, SIZE32} : begin
-            for (j = 0; j < 16; j = j + 1) begin
+            for (j = 0; j < 32; j = j + 1) begin
                 wr_data[j] <= i_data_d1[j];
-                if (wr_count < 64) begin
-                    if (wr_count % 4 == 0) begin
-                        wr_addr[j] <= wr_point + 2 * j;
-                    end
-                    else if (wr_count % 4 == 1) begin
-                        wr_addr[j] <= wr_point + 2 * j + 32;
-                    end
-                    else if (wr_count % 4 == 2) begin
-                        wr_addr[j] <= wr_point + 2 * j + 64;
-                    end
-                    else begin
-                        wr_addr[j] <= wr_point + 2 * j + 96;
-                    end
-                end
-                else begin
-                    if (wr_count % 4 == 0) begin
-                        wr_addr[j] <= wr_point + 2 * j + 1;
-                    end
-                    else if (wr_count % 4 == 1) begin
-                        wr_addr[j] <= wr_point + 2 * j + 33;
-                    end
-                    else if (wr_count % 4 == 2) begin
-                        wr_addr[j] <= wr_point + 2 * j + 65;
-                    end
-                    else begin
-                        wr_addr[j] <= wr_point + 2 * j + 97;
-                    end
-                end
+                if(wr_count % 2 == 0) 
+                    wr_addr[j] <= wr_point + j ;
+                else
+                    wr_addr[j] <= wr_point + j + 32;
             end
         end
         {SIZE4 , SIZE64} : begin
-            for (j = 0; j < 4; j = j + 1) begin
-                for (k = 0; k < 4; k = k + 1) begin
-                    wr_data[j * 4 + k] <= i_data_d1[j + 4 * k];
-                    if (wr_count < 4) begin
-                        wr_addr[j * 4 + k] <= wr_point + 4 * j;
-                    end
-                    else if (wr_count < 8) begin
-                        wr_addr[j * 4 + k] <= wr_point + 4 * j + 1;
-                    end
-                    else if (wr_count < 12) begin
-                        wr_addr[j * 4 + k] <= wr_point + 4 * j + 2;
-                    end
-                    else begin
-                        wr_addr[j * 4 + k] <= wr_point + 4 * j + 3;
-                    end
+            for (i = 0; i < 4; i = i + 1) begin
+                for (j = 0; j < 8; j = j + 1) begin
+                    wr_data[i * 8 + j] <= i_data_d1[j * 4 + i];
+                    if(wr_count < 4)
+                        wr_addr[i * 8 + j] <= wr_point + i * 2;
+                    else    
+                        wr_addr[i * 8 + j] <= wr_point + i * 2 + 1;
                 end
             end
         end
         {SIZE8 , SIZE64} : begin
-            for (j = 0; j < 8; j = j + 1) begin
-                for (k = 0; k < 2; k = k + 1) begin
-                    wr_data[j * 2 + k] <= i_data_d1[j + 8 * k];
-                    if (wr_count < 8) begin
-                        wr_addr[j * 2 + k] <= wr_point + 4 * j;
-                    end
-                    else if (wr_count < 16) begin
-                        wr_addr[j * 2 + k] <= wr_point + 4 * j + 1;
-                    end
-                    else if (wr_count < 24) begin
-                        wr_addr[j * 2 + k] <= wr_point + 4 * j + 2;
-                    end
-                    else begin
-                        wr_addr[j * 2 + k] <= wr_point + 4 * j + 3;
-                    end
+            for (i = 0; i < 8; i = i + 1) begin
+                for (j = 0; j < 4; j = j + 1) begin
+                    wr_data[i * 4 + j] <= i_data_d1[j * 8 + i];
+                    if(wr_count < 8)
+                        wr_addr[i * 4 + j] <= wr_point + i * 2;
+                    else
+                        wr_addr[i * 4 + j] <= wr_point + i * 2 + 1;
                 end
             end
         end
         {SIZE16, SIZE64} : begin
-            for (j = 0; j < 16; j = j + 1) begin
-                for (k = 0; k < 1; k = k + 1) begin
-                    wr_data[j * 1 + k] <= i_data_d1[j + 16 * k];
-                    if (wr_count < 16) begin
-                        wr_addr[j * 1 + k] <= wr_point + 4 * j;
-                    end
-                    else if (wr_count < 32) begin
-                        wr_addr[j * 1 + k] <= wr_point + 4 * j + 1;
-                    end
-                    else if (wr_count < 48) begin
-                        wr_addr[j * 1 + k] <= wr_point + 4 * j + 2;
-                    end
-                    else begin
-                        wr_addr[j * 1 + k] <= wr_point + 4 * j + 3;
-                    end
+            for (i = 0; i < 16; i = i + 1) begin
+                for (j = 0; j < 2; j = j + 1) begin
+                    wr_data[i * 2 + j] <= i_data_d1[j * 16 + i];
+                    if(wr_count < 16)
+                        wr_addr[i * 2 + j] <= wr_point + i * 2;
+                    else
+                        wr_addr[i * 2 + j] <= wr_point + i * 2 + 1;
                 end
             end
         end
         {SIZE32, SIZE64} : begin
-            for (j = 0; j < 16; j = j + 1) begin
-                wr_data[j] <= i_data_d1[j];
-                if (wr_count < 32) begin
-                    if (wr_count % 2 == 0) begin
-                        wr_addr[j] <= wr_point + 4 * j;
-                    end
-                    else begin
-                        wr_addr[j] <= wr_point + 4 * j + 64;
-                    end
-                end
-                else if (wr_count < 64) begin
-                    if (wr_count % 2 == 0) begin
-                        wr_addr[j] <= wr_point + 4 * j + 1;
-                    end
-                    else begin
-                        wr_addr[j] <= wr_point + 4 * j + 65;
-                    end
-                end
-                else if (wr_count < 96) begin
-                    if (wr_count % 2 == 0) begin
-                        wr_addr[j] <= wr_point + 4 * j + 2;
-                    end
-                    else begin
-                        wr_addr[j] <= wr_point + 4 * j + 66;
-                    end
+            for (i = 0; i < 32; i = i + 1) begin
+                wr_data[i] <= i_data_d1[i];
+                if(wr_count < 32) begin
+                    wr_addr[i] <= wr_point + i * 2;
                 end
                 else begin
-                    if (wr_count % 2 == 0) begin
-                        wr_addr[j] <= wr_point + 4 * j + 3;
-                    end
-                    else begin
-                        wr_addr[j] <= wr_point + 4 * j + 67;
-                    end
+                    wr_addr[i] <= wr_point + i * 2 + 1;
                 end
             end
         end
         {SIZE64, SIZE64} : begin
-            for (j = 0; j < 16; j = j + 1) begin
-                wr_data[j] <= i_data_d1[j];
-                if (wr_count < 64) begin
-                    if (wr_count % 4 == 0) begin
-                        wr_addr[j] <= wr_point + 4 * j;
-                    end
-                    else if (wr_count % 4 == 1) begin
-                        wr_addr[j] <= wr_point + 4 * j + 64;
-                    end
-                    else begin //zero
-                        wr_addr[j] <= 0;
-                    end
-                end
-                else if (wr_count < 128) begin
-                    if (wr_count % 4 == 0) begin
-                        wr_addr[j] <= wr_point + 4 * j + 1;
-                    end
-                    else if (wr_count % 4 == 1) begin
-                        wr_addr[j] <= wr_point + 4 * j + 65;
-                    end
-                    else begin //zero
-                        wr_addr[j] <= 0;
-                    end
-                end
-                else if (wr_count < 192) begin
-                    if (wr_count % 4 == 0) begin
-                        wr_addr[j] <= wr_point + 4 * j + 2;
-                    end
-                    else if (wr_count % 4 == 1) begin
-                        wr_addr[j] <= wr_point + 4 * j + 66;
-                    end
-                    else begin //zero
-                        wr_addr[j] <= 0;
-                    end
-                end
-                else begin
-                    if (wr_count % 4 == 0) begin
-                        wr_addr[j] <= wr_point + 4 * j + 3;
-                    end
-                    else if (wr_count % 4 == 1) begin
-                        wr_addr[j] <= wr_point + 4 * j + 67;
-                    end
-                    else begin //zero
-                        wr_addr[j] <= 0;
-                    end
-                end
+            for (i = 0; i < 32; i = i + 1) begin
+                wr_data[i] <= i_data_d1[i];
+                if(wr_count < 64)
+                    if(wr_count % 2 == 0)
+                        wr_addr[i] <= wr_point + i * 2;
+                    else
+                        wr_addr[i] <= 0;
+                else
+                    if(wr_count % 2 == 0)
+                        wr_addr[i] <= wr_point + i * 2 + 1;
+                    else
+                        wr_addr[i] <= 0;
             end
         end
     endcase
@@ -698,9 +573,9 @@ always @(posedge clk or negedge rst_n) begin
     end
     else begin
         case (i_width)
-            SIZE4   : wr_shift <= 4;
-            SIZE8   : wr_shift <= 2;
-            SIZE16  : wr_shift <= 1;
+            SIZE4   : wr_shift <= 8;
+            SIZE8   : wr_shift <= 4;
+            SIZE16  : wr_shift <= 2;
             SIZE32  : wr_shift <= 1;
             SIZE64  : wr_shift <= 1;
             default : wr_shift <= 0;
@@ -710,174 +585,72 @@ end
 
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-        for (i = 0; i < 16; i = i + 1) begin
+        for (i = 0; i < 32; i = i + 1) begin
             wr_data_shift[i] <= 0;
             wr_addr_shift[i] <= 0;
         end
     end
     else if (wr_en) begin
         if (i_width_d1 == SIZE64 && i_height_d1 == SIZE64) begin//64x64
-            if (wr_count < 64) begin
-                for (i = 0; i < 16; i = i + 1) begin
-                    if (i >= wr_count / 4) begin
-                        wr_data_shift[i] <= wr_data[i - wr_count / 4];
-                        wr_addr_shift[i] <= wr_addr[i - wr_count / 4];
-                    end
-                    else begin
-                        wr_data_shift[i] <= wr_data[i - wr_count / 4 + 16];
-                        wr_addr_shift[i] <= wr_addr[i - wr_count / 4 + 16];
-                    end
-                end
-            end
-            else if (wr_count < 128) begin
-                for (i = 0; i < 16; i = i + 1) begin
-                    if (i >= (wr_count - 64) / 4) begin
-                        wr_data_shift[i] <= wr_data[i - (wr_count - 64) / 4];
-                        wr_addr_shift[i] <= wr_addr[i - (wr_count - 64) / 4];
-                    end
-                    else begin
-                        wr_data_shift[i] <= wr_data[i - (wr_count - 64) / 4 + 16];
-                        wr_addr_shift[i] <= wr_addr[i - (wr_count - 64) / 4 + 16];
-                    end
-                end
-            end
-            else if (wr_count < 192) begin
-                for (i = 0; i < 16; i = i + 1) begin
-                    if (i >= (wr_count - 128) / 4) begin
-                        wr_data_shift[i] <= wr_data[i - (wr_count - 128) / 4];
-                        wr_addr_shift[i] <= wr_addr[i - (wr_count - 128) / 4];
-                    end
-                    else begin
-                        wr_data_shift[i] <= wr_data[i - (wr_count - 128) / 4 + 16];
-                        wr_addr_shift[i] <= wr_addr[i - (wr_count - 128) / 4 + 16];
-                    end
-                end
-            end
-            else begin
-                for (i = 0; i < 16; i = i + 1) begin
-                    if (i >= (wr_count - 192) / 4) begin
-                        wr_data_shift[i] <= wr_data[i - (wr_count - 192) / 4];
-                        wr_addr_shift[i] <= wr_addr[i - (wr_count - 192) / 4];
-                    end
-                    else begin
-                        wr_data_shift[i] <= wr_data[i - (wr_count - 192) / 4 + 16];
-                        wr_addr_shift[i] <= wr_addr[i - (wr_count - 192) / 4 + 16];
-                    end
-                end
-            end
-        end
-        else if (i_width_d1 == SIZE64 && i_height_d1 == SIZE32) begin//32x64
-            if (wr_count < 64) begin
-                for (i = 0; i < 16; i = i + 1) begin
-                    if (i >= wr_count / 4) begin
-                        wr_data_shift[i] <= wr_data[i - wr_count / 4];
-                        wr_addr_shift[i] <= wr_addr[i - wr_count / 4];
-                    end
-                    else begin
-                        wr_data_shift[i] <= wr_data[i - wr_count / 4 + 16];
-                        wr_addr_shift[i] <= wr_addr[i - wr_count / 4 + 16];
-                    end
-                end
-            end
-            else begin
-                for (i = 0; i < 16; i = i + 1) begin
-                    if (i >= (wr_count - 64) / 4) begin
-                        wr_data_shift[i] <= wr_data[i - (wr_count - 64) / 4];
-                        wr_addr_shift[i] <= wr_addr[i - (wr_count - 64) / 4];
-                    end
-                    else begin
-                        wr_data_shift[i] <= wr_data[i - (wr_count - 64) / 4 + 16];
-                        wr_addr_shift[i] <= wr_addr[i - (wr_count - 64) / 4 + 16];
-                    end
-                end
-            end
-        end
-        else if (i_width_d1 == SIZE32 && i_height_d1 == SIZE64) begin//64x32
-            if (wr_count < 32) begin
-                for (i = 0; i < 16; i = i + 1) begin
+            if(wr_count < 64) begin
+                for (i = 0; i < 32; i = i + 1) begin
                     if (i >= wr_count / 2) begin
                         wr_data_shift[i] <= wr_data[i - wr_count / 2];
                         wr_addr_shift[i] <= wr_addr[i - wr_count / 2];
                     end
                     else begin
-                        wr_data_shift[i] <= wr_data[i - wr_count / 2 + 16];
-                        wr_addr_shift[i] <= wr_addr[i - wr_count / 2 + 16];
+                        wr_data_shift[i] <= wr_data[i - wr_count / 2 + 32];
+                        wr_addr_shift[i] <= wr_addr[i - wr_count / 2 + 32];
                     end
                 end
             end
-            else if (wr_count < 64) begin
-                for (i = 0; i < 16; i = i + 1) begin
-                    if (i >= (wr_count - 32) / 2) begin
-                        wr_data_shift[i] <= wr_data[i - (wr_count - 32) / 2];
-                        wr_addr_shift[i] <= wr_addr[i - (wr_count - 32) / 2];
-                    end
-                    else begin
-                        wr_data_shift[i] <= wr_data[i - (wr_count - 32) / 2 + 16];
-                        wr_addr_shift[i] <= wr_addr[i - (wr_count - 32) / 2 + 16];
-                    end
-                end
-            end
-            else if (wr_count < 96) begin
-                for (i = 0; i < 16; i = i + 1) begin
+            else begin
+                for (i = 0; i < 32; i = i + 1) begin
                     if (i >= (wr_count - 64) / 2) begin
                         wr_data_shift[i] <= wr_data[i - (wr_count - 64) / 2];
                         wr_addr_shift[i] <= wr_addr[i - (wr_count - 64) / 2];
                     end
                     else begin
-                        wr_data_shift[i] <= wr_data[i - (wr_count - 64) / 2 + 16];
-                        wr_addr_shift[i] <= wr_addr[i - (wr_count - 64) / 2 + 16];
-                    end
-                end
-            end
-            else begin
-                for (i = 0; i < 16; i = i + 1) begin
-                    if (i >= (wr_count - 96) / 2) begin
-                        wr_data_shift[i] <= wr_data[i - (wr_count - 96) / 2];
-                        wr_addr_shift[i] <= wr_addr[i - (wr_count - 96) / 2];
-                    end
-                    else begin
-                        wr_data_shift[i] <= wr_data[i - (wr_count - 96) / 2 + 16];
-                        wr_addr_shift[i] <= wr_addr[i - (wr_count - 96) / 2 + 16];
+                        wr_data_shift[i] <= wr_data[i - (wr_count - 64) / 2 + 32];
+                        wr_addr_shift[i] <= wr_addr[i - (wr_count - 64) / 2 + 32];
                     end
                 end
             end
         end
-        else if (i_width_d1 == SIZE32 && i_height_d1 == SIZE32) begin//32x32
-            if (wr_count < 32) begin
-                for (i = 0; i < 16; i = i + 1) begin
-                    if (i >= wr_count / 2) begin
-                        wr_data_shift[i] <= wr_data[i - wr_count / 2];
-                        wr_addr_shift[i] <= wr_addr[i - wr_count / 2];
-                    end
-                    else begin
-                        wr_data_shift[i] <= wr_data[i - wr_count / 2 + 16];
-                        wr_addr_shift[i] <= wr_addr[i - wr_count / 2 + 16];
-                    end
-                end
-            end
-            else begin
-                for (i = 0; i < 16; i = i + 1) begin
-                    if (i >= (wr_count - 32) / 2) begin
-                        wr_data_shift[i] <= wr_data[i - (wr_count - 32) / 2];
-                        wr_addr_shift[i] <= wr_addr[i - (wr_count - 32) / 2];
-                    end
-                    else begin
-                        wr_data_shift[i] <= wr_data[i - (wr_count - 32) / 2 + 16];
-                        wr_addr_shift[i] <= wr_addr[i - (wr_count - 32) / 2 + 16];
-                    end
-                end
-            end
-        end
-        else if (i_width_d1 == SIZE32) begin //2个地址的移位保持一样
-            for (i = 0; i < 16; i = i + 1) begin
+        else if (i_width_d1 == SIZE64 && i_height_d1 == SIZE32) begin//32x64
+            for (i = 0; i < 32; i = i + 1) begin
                 if (i >= wr_count / 2) begin
                     wr_data_shift[i] <= wr_data[i - wr_count / 2];
                     wr_addr_shift[i] <= wr_addr[i - wr_count / 2];
                 end
                 else begin
-                    wr_data_shift[i] <= wr_data[i - wr_count / 2 + 16];
-                    wr_addr_shift[i] <= wr_addr[i - wr_count / 2 + 16];
+                    wr_data_shift[i] <= wr_data[i - wr_count / 2 + 32];
+                    wr_addr_shift[i] <= wr_addr[i - wr_count / 2 + 32];
                 end
+            end
+        end
+
+        else if (i_width_d1 == SIZE32 && i_height_d1 == SIZE64) begin//64x32
+            for (i = 0; i < 32; i = i + 1) begin
+                if(wr_count < 32) begin
+                    if (i >= wr_count ) begin
+                        wr_data_shift[i] <= wr_data[i - wr_count];
+                        wr_addr_shift[i] <= wr_addr[i - wr_count];
+                    end
+                    else begin
+                        wr_data_shift[i] <= wr_data[i - wr_count + 32];
+                        wr_addr_shift[i] <= wr_addr[i - wr_count + 32];
+                    end
+                end
+                else
+                    if (i >= (wr_count - 32) ) begin
+                        wr_data_shift[i] <= wr_data[i - (wr_count - 32)];
+                        wr_addr_shift[i] <= wr_addr[i - (wr_count - 32)];
+                    end
+                    else begin
+                        wr_data_shift[i] <= wr_data[i - (wr_count - 32) + 32];
+                        wr_addr_shift[i] <= wr_addr[i - (wr_count - 32) + 32];
+                    end
             end
         end
         else if (i_width_d1 == SIZE64) begin //4个地址的移位保持一样
@@ -889,32 +662,6 @@ always @(posedge clk or negedge rst_n) begin
                 else begin
                     wr_data_shift[i] <= wr_data[i - wr_count / 4 + 16];
                     wr_addr_shift[i] <= wr_addr[i - wr_count / 4 + 16];
-                end
-            end
-        end
-        else if (i_height_d1 == SIZE32) begin //后一半数据移位跟前一半一样
-            if (wr_count < (wr_count_max + 1) / 2) begin
-                for (i = 0; i < 16; i = i + 1) begin
-                    if (i >= wr_count * wr_shift) begin
-                        wr_data_shift[i] <= wr_data[i - wr_count * wr_shift];
-                        wr_addr_shift[i] <= wr_addr[i - wr_count * wr_shift];
-                    end
-                    else begin
-                        wr_data_shift[i] <= wr_data[i - wr_count * wr_shift + 16];
-                        wr_addr_shift[i] <= wr_addr[i - wr_count * wr_shift + 16];
-                    end
-                end
-            end
-            else begin
-                for (i = 0; i < 16; i = i + 1) begin
-                    if (i >= (wr_count - (wr_count_max + 1) / 2) * wr_shift) begin
-                        wr_data_shift[i] <= wr_data[i - (wr_count - (wr_count_max + 1) / 2) * wr_shift];
-                        wr_addr_shift[i] <= wr_addr[i - (wr_count - (wr_count_max + 1) / 2) * wr_shift];
-                    end
-                    else begin
-                        wr_data_shift[i] <= wr_data[i - (wr_count - (wr_count_max + 1) / 2) * wr_shift + 16];
-                        wr_addr_shift[i] <= wr_addr[i - (wr_count - (wr_count_max + 1) / 2) * wr_shift + 16];
-                    end
                 end
             end
         end
@@ -969,14 +716,14 @@ always @(posedge clk or negedge rst_n) begin
             end
         end
         else begin
-            for (i = 0; i < 16; i = i + 1) begin
+            for (i = 0; i < 32; i = i + 1) begin
                 if (i >= wr_count * wr_shift) begin
                     wr_data_shift[i] <= wr_data[i - wr_count * wr_shift];
                     wr_addr_shift[i] <= wr_addr[i - wr_count * wr_shift];
                 end
                 else begin
-                    wr_data_shift[i] <= wr_data[i - wr_count * wr_shift + 16];
-                    wr_addr_shift[i] <= wr_addr[i - wr_count * wr_shift + 16];
+                    wr_data_shift[i] <= wr_data[i - wr_count * wr_shift + 32];
+                    wr_addr_shift[i] <= wr_addr[i - wr_count * wr_shift + 32];
                 end
             end
         end
@@ -1006,30 +753,30 @@ end
 always @(*) begin
     case ({rd_width, rd_height})
         {SIZE4 , SIZE4 } : rd_count_max <= 0;
-        {SIZE8 , SIZE4 } : rd_count_max <= 1;
-        {SIZE16, SIZE4 } : rd_count_max <= 3;
-        {SIZE32, SIZE4 } : rd_count_max <= 7;
-        {SIZE64, SIZE4 } : rd_count_max <= 15;
-        {SIZE4 , SIZE8 } : rd_count_max <= 1;
-        {SIZE8 , SIZE8 } : rd_count_max <= 3;
-        {SIZE16, SIZE8 } : rd_count_max <= 7;
-        {SIZE32, SIZE8 } : rd_count_max <= 15;
-        {SIZE64, SIZE8 } : rd_count_max <= 31;
-        {SIZE4 , SIZE16} : rd_count_max <= 3;
-        {SIZE8 , SIZE16} : rd_count_max <= 7;
-        {SIZE16, SIZE16} : rd_count_max <= 15;
-        {SIZE32, SIZE16} : rd_count_max <= 31;
-        {SIZE64, SIZE16} : rd_count_max <= 63;
-        {SIZE4 , SIZE32} : rd_count_max <= 7;
-        {SIZE8 , SIZE32} : rd_count_max <= 15;
-        {SIZE16, SIZE32} : rd_count_max <= 31;
-        {SIZE32, SIZE32} : rd_count_max <= 63;
-        {SIZE64, SIZE32} : rd_count_max <= 127;
-        {SIZE4 , SIZE64} : rd_count_max <= 15;
-        {SIZE8 , SIZE64} : rd_count_max <= 31;
-        {SIZE16, SIZE64} : rd_count_max <= 63;
-        {SIZE32, SIZE64} : rd_count_max <= 127;
-        {SIZE64, SIZE64} : rd_count_max <= 127;
+        {SIZE8 , SIZE4 } : rd_count_max <= 0;
+        {SIZE16, SIZE4 } : rd_count_max <= 1;
+        {SIZE32, SIZE4 } : rd_count_max <= 3;
+        {SIZE64, SIZE4 } : rd_count_max <= 7;
+        {SIZE4 , SIZE8 } : rd_count_max <= 0;
+        {SIZE8 , SIZE8 } : rd_count_max <= 1;
+        {SIZE16, SIZE8 } : rd_count_max <= 3;
+        {SIZE32, SIZE8 } : rd_count_max <= 7;
+        {SIZE64, SIZE8 } : rd_count_max <= 15;
+        {SIZE4 , SIZE16} : rd_count_max <= 1;
+        {SIZE8 , SIZE16} : rd_count_max <= 3;
+        {SIZE16, SIZE16} : rd_count_max <= 7;
+        {SIZE32, SIZE16} : rd_count_max <= 15;
+        {SIZE64, SIZE16} : rd_count_max <= 31;
+        {SIZE4 , SIZE32} : rd_count_max <= 3;
+        {SIZE8 , SIZE32} : rd_count_max <= 7;
+        {SIZE16, SIZE32} : rd_count_max <= 15;
+        {SIZE32, SIZE32} : rd_count_max <= 31;
+        {SIZE64, SIZE32} : rd_count_max <= 63;
+        {SIZE4 , SIZE64} : rd_count_max <= 7;
+        {SIZE8 , SIZE64} : rd_count_max <= 15;
+        {SIZE16, SIZE64} : rd_count_max <= 31;
+        {SIZE32, SIZE64} : rd_count_max <= 63;
+        {SIZE64, SIZE64} : rd_count_max <= 63;
         default          : rd_count_max <= 0;
     endcase
 end
@@ -1105,9 +852,9 @@ always @(posedge clk or negedge rst_n) begin
         rd_shift    <=  0;
     else begin
         case (rd_width)
-            SIZE4   : rd_shift <= 4;
-            SIZE8   : rd_shift <= 2;
-            SIZE16  : rd_shift <= 1;
+            SIZE4   : rd_shift <= 8;
+            SIZE8   : rd_shift <= 4;
+            SIZE16  : rd_shift <= 2;
             SIZE32  : rd_shift <= 1;
             SIZE64  : rd_shift <= 1;
             default : rd_shift <= 0;
@@ -1117,125 +864,49 @@ end
 
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-        for (i = 0; i < 16; i = i + 1) begin
+        for (i = 0; i < 32; i = i + 1) begin
             rd_data_shift[i] <= 0;
         end
     end
     else begin
         if (rd_width_d1 == SIZE64 && rd_height_d1 == SIZE64) begin //64x64
-            if (rd_count_d1 < 64) begin
-                for (i = 0; i < 16; i = i + 1) begin
-                    if (i + rd_count_d1 / 4 < 16) begin
-                        rd_data_shift[i] <= rd_data[i + rd_count_d1 / 4];
-                    end
-                    else begin
-                        rd_data_shift[i] <= rd_data[i + rd_count_d1 / 4 - 16];
-                    end
+            for(i = 0;i < 32; i = i + 1)begin
+                if(i + rd_count_d1 / 2 < 32) begin
+                    rd_data_shift[i] <= rd_data[i + rd_count_d1 / 2];
                 end
-            end
-            else begin
-                for (i = 0; i < 16; i = i + 1) begin
-                    if (i + (rd_count_d1 - 64) / 4 < 16) begin
-                        rd_data_shift[i] <= rd_data[i + (rd_count_d1 - 64) / 4];
-                    end
-                    else begin
-                        rd_data_shift[i] <= rd_data[i + (rd_count_d1 - 64) / 4 - 16];
-                    end
+                else begin
+                    rd_data_shift[i] <= rd_data[i + rd_count_d1 / 2 - 32];
                 end
             end
         end
         else if (rd_width_d1 == SIZE64 && rd_height_d1 == SIZE32) begin //32x64
             if (rd_count_d1 < 32) begin
-                for (i = 0; i < 16; i = i + 1) begin
-                    if (i + rd_count_d1 / 2 < 16) begin
-                        rd_data_shift[i] <= rd_data[i + rd_count_d1 / 2];
+                for (i = 0; i < 32; i = i + 1) begin
+                    if (i + rd_count_d1 < 32) begin
+                        rd_data_shift[i] <= rd_data[i + rd_count_d1];
                     end
                     else begin
-                        rd_data_shift[i] <= rd_data[i + rd_count_d1 / 2 - 16];
-                    end
-                end
-            end
-            else if (rd_count_d1 < 64) begin
-                for (i = 0; i < 16; i = i + 1) begin
-                    if (i + (rd_count_d1 - 32) / 2 < 16) begin
-                        rd_data_shift[i] <= rd_data[i + (rd_count_d1 - 32) / 2];
-                    end
-                    else begin
-                        rd_data_shift[i] <= rd_data[i + (rd_count_d1 - 32) / 2 - 16];
+                        rd_data_shift[i] <= rd_data[i + rd_count_d1 - 32];
                     end
                 end
             end
             else begin //zero
-                for (i = 0; i < 16; i = i + 1) begin 
+                for (i = 0; i < 32; i = i + 1) begin 
                     rd_data_shift[i] <= 0;
                 end
             end
         end
+
         else if (rd_width_d1 == SIZE32 && rd_height_d1 == SIZE64) begin //64x32
-            if (rd_count_d1 < 64) begin
-                for (i = 0; i < 16; i = i + 1) begin
-                    if (i + rd_count_d1 / 4 < 16) begin
-                        rd_data_shift[i] <= rd_data[i + rd_count_d1 / 4];
-                    end
-                    else begin
-                        rd_data_shift[i] <= rd_data[i + rd_count_d1 / 4 - 16];
-                    end
+            for (i = 0; i < 32; i = i + 1) begin
+                if (i + rd_count_d1 / 2 < 32) begin
+                    rd_data_shift[i] <= rd_data[i + rd_count_d1 / 2];
+                end
+                else begin
+                    rd_data_shift[i] <= rd_data[i + rd_count_d1 / 2 - 32];
                 end
             end
-            else begin
-                for (i = 0; i < 16; i = i + 1) begin
-                    if (i + (rd_count_d1 - 64) / 4 < 16) begin
-                        rd_data_shift[i] <= rd_data[i + (rd_count_d1 - 64) / 4];
-                    end
-                    else begin
-                        rd_data_shift[i] <= rd_data[i + (rd_count_d1 - 64) / 4 - 16];
-                    end
-                end
-            end
-        end
-        else if (rd_width_d1 == SIZE32 && rd_height_d1 == SIZE32) begin //32x32
-            if (rd_count_d1 < 32) begin
-                for (i = 0; i < 16; i = i + 1) begin
-                    if (i + rd_count_d1 / 2 < 16) begin
-                        rd_data_shift[i] <= rd_data[i + rd_count_d1 / 2];
-                    end
-                    else begin
-                        rd_data_shift[i] <= rd_data[i + rd_count_d1 / 2 - 16];
-                    end
-                end
-            end
-            else begin
-                for (i = 0; i < 16; i = i + 1) begin
-                    if (i + (rd_count_d1 - 32) / 2 < 16) begin
-                        rd_data_shift[i] <= rd_data[i + (rd_count_d1 - 32) / 2];
-                    end
-                    else begin
-                        rd_data_shift[i] <= rd_data[i + (rd_count_d1 - 32) / 2 - 16];
-                    end
-                end
-            end
-        end
-        else if (rd_width_d1 == SIZE32) begin //后一半地址的数据移位跟前一半一样
-            if (rd_count_d1 < (rd_count_max_d1 + 1) / 2) begin
-                for (i = 0; i < 16; i = i + 1) begin
-                    if (i + rd_count_d1 < 16) begin
-                        rd_data_shift[i] <= rd_data[i + rd_count_d1];
-                    end
-                    else begin
-                        rd_data_shift[i] <= rd_data[i + rd_count_d1 - 16];
-                    end
-                end
-            end
-            else begin
-                for (i = 0; i < 16; i = i + 1) begin
-                    if (i + (rd_count_d1 - (rd_count_max_d1 + 1) / 2) < 16) begin
-                        rd_data_shift[i] <= rd_data[i + (rd_count_d1 - (rd_count_max_d1 + 1) / 2)];
-                    end
-                    else begin
-                        rd_data_shift[i] <= rd_data[i + (rd_count_d1 - (rd_count_max_d1 + 1) / 2) - 16];
-                    end
-                end
-            end
+
         end
         else if (rd_width_d1 == SIZE64) begin
             if (rd_count_d1 < (rd_count_max_d1 + 1) / 4) begin
@@ -1264,16 +935,6 @@ always @(posedge clk or negedge rst_n) begin
                 end
             end
         end
-        else if (rd_height_d1 == SIZE32) begin //2个地址的移位保持一样
-            for (i = 0; i < 16; i = i + 1) begin
-                if (i + rd_count_d1 / 2 * rd_shift < 16) begin
-                    rd_data_shift[i] <= rd_data[i + rd_count_d1 / 2 * rd_shift];
-                end
-                else begin
-                    rd_data_shift[i] <= rd_data[i + rd_count_d1 / 2 * rd_shift - 16];
-                end
-            end
-        end
         else if (rd_height_d1 == SIZE64) begin
             for (i = 0; i < 16; i = i + 1) begin
                 if (i + rd_count_d1 / 4 * rd_shift < 16) begin
@@ -1285,12 +946,12 @@ always @(posedge clk or negedge rst_n) begin
             end
         end
         else begin
-            for (i = 0; i < 16; i = i + 1) begin
-                if (i + rd_count_d1 * rd_shift < 16) begin
+            for (i = 0; i < 32; i = i + 1) begin
+                if (i + rd_count_d1 * rd_shift < 32) begin
                     rd_data_shift[i] <= rd_data[i + rd_count_d1 * rd_shift];
                 end
                 else begin
-                    rd_data_shift[i] <= rd_data[i + rd_count_d1 * rd_shift - 16];
+                    rd_data_shift[i] <= rd_data[i + rd_count_d1 * rd_shift - 32];
                 end
             end
         end
@@ -1314,6 +975,22 @@ end
     dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(8)) dual_port_ram_13(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[13]), .rd_data(rd_data[13]), .wr_addr(wr_addr_shift[13]), .rd_addr(rd_point));
     dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(8)) dual_port_ram_14(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[14]), .rd_data(rd_data[14]), .wr_addr(wr_addr_shift[14]), .rd_addr(rd_point));
     dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(8)) dual_port_ram_15(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[15]), .rd_data(rd_data[15]), .wr_addr(wr_addr_shift[15]), .rd_addr(rd_point));
+    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(8)) dual_port_ram_16(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[16]), .rd_data(rd_data[16]), .wr_addr(wr_addr_shift[16]), .rd_addr(rd_point));
+    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(8)) dual_port_ram_17(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[17]), .rd_data(rd_data[17]), .wr_addr(wr_addr_shift[17]), .rd_addr(rd_point));
+    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(8)) dual_port_ram_18(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[18]), .rd_data(rd_data[18]), .wr_addr(wr_addr_shift[18]), .rd_addr(rd_point));
+    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(8)) dual_port_ram_19(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[19]), .rd_data(rd_data[19]), .wr_addr(wr_addr_shift[19]), .rd_addr(rd_point));
+    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(8)) dual_port_ram_20(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[20]), .rd_data(rd_data[20]), .wr_addr(wr_addr_shift[20]), .rd_addr(rd_point));
+    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(8)) dual_port_ram_21(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[21]), .rd_data(rd_data[21]), .wr_addr(wr_addr_shift[21]), .rd_addr(rd_point));
+    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(8)) dual_port_ram_22(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[22]), .rd_data(rd_data[22]), .wr_addr(wr_addr_shift[22]), .rd_addr(rd_point));
+    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(8)) dual_port_ram_23(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[23]), .rd_data(rd_data[23]), .wr_addr(wr_addr_shift[23]), .rd_addr(rd_point));
+    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(8)) dual_port_ram_24(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[24]), .rd_data(rd_data[24]), .wr_addr(wr_addr_shift[24]), .rd_addr(rd_point));
+    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(8)) dual_port_ram_25(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[25]), .rd_data(rd_data[25]), .wr_addr(wr_addr_shift[25]), .rd_addr(rd_point));
+    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(8)) dual_port_ram_26(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[26]), .rd_data(rd_data[26]), .wr_addr(wr_addr_shift[26]), .rd_addr(rd_point));
+    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(8)) dual_port_ram_27(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[27]), .rd_data(rd_data[27]), .wr_addr(wr_addr_shift[27]), .rd_addr(rd_point));
+    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(8)) dual_port_ram_28(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[28]), .rd_data(rd_data[28]), .wr_addr(wr_addr_shift[28]), .rd_addr(rd_point));
+    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(8)) dual_port_ram_29(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[29]), .rd_data(rd_data[29]), .wr_addr(wr_addr_shift[29]), .rd_addr(rd_point));
+    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(8)) dual_port_ram_30(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[30]), .rd_data(rd_data[30]), .wr_addr(wr_addr_shift[30]), .rd_addr(rd_point));
+    dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(8)) dual_port_ram_31(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[31]), .rd_data(rd_data[31]), .wr_addr(wr_addr_shift[31]), .rd_addr(rd_point));
 
 
 syn_fifo#(.DATA_WIDTH(10), .DATA_DEPTH(256))
@@ -1352,5 +1029,21 @@ syn_fifo#(.DATA_WIDTH(10), .DATA_DEPTH(256))
     assign o_13 = rd_data_shift[13];
     assign o_14 = rd_data_shift[14];
     assign o_15 = rd_data_shift[15];
+    assign o_16 = rd_data_shift[16];
+    assign o_17 = rd_data_shift[17];
+    assign o_18 = rd_data_shift[18];
+    assign o_19 = rd_data_shift[19];
+    assign o_20 = rd_data_shift[20];
+    assign o_21 = rd_data_shift[21];
+    assign o_22 = rd_data_shift[22];
+    assign o_23 = rd_data_shift[23];
+    assign o_24 = rd_data_shift[24];
+    assign o_25 = rd_data_shift[25];
+    assign o_26 = rd_data_shift[26];
+    assign o_27 = rd_data_shift[27];
+    assign o_28 = rd_data_shift[28];
+    assign o_29 = rd_data_shift[29];
+    assign o_30 = rd_data_shift[30];
+    assign o_31 = rd_data_shift[31];
 
 endmodule
