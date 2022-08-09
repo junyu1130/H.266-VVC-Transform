@@ -1,4 +1,4 @@
-//describe  : MCM(RAG-n算法)生成乘法单元，求和得到结果
+//describe  : MCM生成乘法单元，求和得到结果
 //input     : 32个蝶形单元
 //output    : 16个系数结果(后需右移), 剩余16个被高频置零
 //delay     : 4 clk

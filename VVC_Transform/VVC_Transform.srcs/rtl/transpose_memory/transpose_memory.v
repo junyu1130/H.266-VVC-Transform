@@ -1,7 +1,7 @@
 //describe  : 转置存储器
 //input     : 16个变换系数(H)
 //output    : 16个变换系数(V)
-//delay     : 259(64x64) / 131(other) clk (1 + 256/128 + 2)
+//delay     : 259(64x64) / 131(other) clk (2 + 256/128 + 1)
 module transpose_memory#(
     parameter  WIDTH  = 16
 )
@@ -1316,8 +1316,8 @@ end
     dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(8)) dual_port_ram_15(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[15]), .rd_data(rd_data[15]), .wr_addr(wr_addr_shift[15]), .rd_addr(rd_point));
 
 
-syn_fifo#(.DATA_WIDTH(10), .DATA_DEPTH(256))
-    syn_fifo(
+fifo_ram#(.DATA_WIDTH(10), .DATA_DEPTH(128))
+    fifo_ram(
     .clk        (clk),   
     
     //write port

@@ -68,102 +68,93 @@ localparam  SIZE4  = 3'd1,
             SIZE64 = 3'd5;
 integer i;
 
-//input
-    wire signed [IN_WIDTH - 1 : 0] i_data[0 : 15];
+//input delay
+    reg [1 : 0] i_type_h_d[0 : 10];
+    reg [1 : 0] i_type_v_d[0 : 10];
+    reg [2 : 0] i_height_d[0 : 10];
 //serial to parallel
-    wire [1 : 0] tr_in_type_h;
-    wire [1 : 0] tr_in_type_v;
-    wire [2 : 0] tr_in_width, tr_in_height;
+    wire [2 : 0] tr_in_width;
     wire tr_in_valid;
     wire signed [IN_WIDTH - 1 : 0] tr_in_data[0 : 63];
 //type mux in
-    reg [2 : 0] dct2_in_width, dct2_in_height;
+    reg [2 : 0] dct2_in_width;
     reg dct2_in_valid;
     reg signed [IN_WIDTH - 1 : 0] dct2_in_data[0 : 63];
-    reg [2 : 0] dst7_dct8_in_width, dst7_dct8_in_height;
+    reg [2 : 0] dst7_dct8_in_width;
     reg dst7_dct8_in_valid;
     reg signed [IN_WIDTH - 1 : 0] dst7_dct8_in_data[0 : 31];
 //type mux out
-    wire [2 : 0] dct2_out_width, dct2_out_height;
+    wire [2 : 0] dct2_out_width;
     wire dct2_out_valid;
     wire signed [IN_WIDTH + 11 : 0] dct2_out_data[0 : 31];
-    wire [2 : 0] dst7_dct8_out_width, dst7_dct8_out_height;
+    wire [2 : 0] dst7_dct8_out_width;
     wire dst7_dct8_out_valid;
     wire signed [IN_WIDTH + 10 : 0] dst7_dct8_out_data[0 : 15];
-    reg [1 : 0] tr_in_type_h_d[0 : 4];
-    reg [1 : 0] tr_in_type_v_d[0 : 4];
-    reg [2 : 0] tr_out_width, tr_out_height;
+    reg [2 : 0] tr_out_width;
     reg tr_out_valid;
     reg signed [IN_WIDTH + 11 : 0] tr_out_data[0 : 31];
 //shift
     reg [3 : 0] tr_shift;
-    wire [1 : 0] coeff_out_type_h;
-    wire [1 : 0] coeff_out_type_v;
-    wire [2 : 0] coeff_out_width, coeff_out_height;
+    wire [2 : 0] coeff_out_width;
     wire coeff_out_valid;
     wire signed [OUT_WIDTH - 1 : 0] coeff_out_data[0 : 31];
 //parallel to serial
-    wire [1 : 0] serial_out_type_h;
-    wire [1 : 0] serial_out_type_v;
-    wire [2 : 0] serial_out_width, serial_out_height;
+    wire [2 : 0] serial_out_width;
     wire serial_out_valid;
     wire signed [OUT_WIDTH - 1 : 0] serial_out_data[0 : 15];
 
-//input
-    assign i_data[0 ] = i_0 ;
-    assign i_data[1 ] = i_1 ;
-    assign i_data[2 ] = i_2 ;
-    assign i_data[3 ] = i_3 ;
-    assign i_data[4 ] = i_4 ;
-    assign i_data[5 ] = i_5 ;
-    assign i_data[6 ] = i_6 ;
-    assign i_data[7 ] = i_7 ;
-    assign i_data[8 ] = i_8 ;
-    assign i_data[9 ] = i_9 ;
-    assign i_data[10] = i_10;
-    assign i_data[11] = i_11;
-    assign i_data[12] = i_12;
-    assign i_data[13] = i_13;
-    assign i_data[14] = i_14;
-    assign i_data[15] = i_15;
+//delay
+always @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin 
+        for (i = 0; i < 11; i = i + 1) begin
+            i_height_d[i] <= 0;
+            i_type_h_d[i] <= 0;
+            i_type_v_d[i] <= 0;
+        end
+    end
+    else begin
+        i_height_d[0] <= i_height;
+        i_type_h_d[0] <= i_type_h;
+        i_type_v_d[0] <= i_type_v;
+        for (i = 0; i < 10; i = i + 1) begin
+            i_height_d[i + 1] <= i_height_d[i];
+            i_type_h_d[i + 1] <= i_type_h_d[i];
+            i_type_v_d[i + 1] <= i_type_v_d[i];
+        end
+    end
+end
 
 //serial to parallel
-serial_to_parallel_1st#(
+serial_to_parallel#(
     .IN_WIDTH   (IN_WIDTH       ),
     .OUT_WIDTH  (IN_WIDTH       )
 )
-u_serial_to_parallel_1st(
+u_serial_to_parallel(
 //system input
     .clk        (clk            ),
     .rst_n      (rst_n          ),
 //input parameter
-    .i_type_h   (i_type_h       ),
-    .i_type_v   (i_type_v       ),
-    .i_width    (i_width        ),
-    .i_height   (i_height       ),
+    .i_size     (i_width        ),
 //input data
     .i_valid    (i_valid        ),
-    .i_0        (i_data[0 ]     ),
-    .i_1        (i_data[1 ]     ),
-    .i_2        (i_data[2 ]     ),
-    .i_3        (i_data[3 ]     ),
-    .i_4        (i_data[4 ]     ),
-    .i_5        (i_data[5 ]     ),
-    .i_6        (i_data[6 ]     ),
-    .i_7        (i_data[7 ]     ),
-    .i_8        (i_data[8 ]     ),
-    .i_9        (i_data[9 ]     ),
-    .i_10       (i_data[10]     ),
-    .i_11       (i_data[11]     ),
-    .i_12       (i_data[12]     ),
-    .i_13       (i_data[13]     ),
-    .i_14       (i_data[14]     ),
-    .i_15       (i_data[15]     ),
+    .i_0        (i_0            ),
+    .i_1        (i_1            ),
+    .i_2        (i_2            ),
+    .i_3        (i_3            ),
+    .i_4        (i_4            ),
+    .i_5        (i_5            ),
+    .i_6        (i_6            ),
+    .i_7        (i_7            ),
+    .i_8        (i_8            ),
+    .i_9        (i_9            ),
+    .i_10       (i_10           ),
+    .i_11       (i_11           ),
+    .i_12       (i_12           ),
+    .i_13       (i_13           ),
+    .i_14       (i_14           ),
+    .i_15       (i_15           ),
 //output parameter
-    .o_type_h   (tr_in_type_h   ),
-    .o_type_v   (tr_in_type_v   ),
-    .o_width    (tr_in_width    ),
-    .o_height   (tr_in_height   ),
+    .o_size     (tr_in_width    ),
 //output data
     .o_valid    (tr_in_valid    ),
     .o_0        (tr_in_data[0 ] ),
@@ -235,21 +226,18 @@ u_serial_to_parallel_1st(
 //type mux in
 always @(*) begin
     dct2_in_width <= 0;
-    dct2_in_height <= 0;
     dct2_in_valid <= 0;
     for (i = 0; i < 64; i = i + 1) begin
         dct2_in_data[i] <= 0;
     end
     dst7_dct8_in_width <= 0;
-    dst7_dct8_in_height <= 0;
     dst7_dct8_in_valid <= 0;
     for (i = 0; i < 32; i = i + 1) begin
         dst7_dct8_in_data[i] <= 0;
     end
-    case (tr_in_type_h) 
+    case (i_type_h_d[3]) 
         DCT2    : begin
             dct2_in_width <= tr_in_width;
-            dct2_in_height <= tr_in_height;
             dct2_in_valid <= tr_in_valid;
             for (i = 0; i < 64; i = i + 1) begin
                 dct2_in_data[i] <= tr_in_data[i];
@@ -257,7 +245,6 @@ always @(*) begin
         end
         DST7    : begin
             dst7_dct8_in_width <= tr_in_width;
-            dst7_dct8_in_height <= tr_in_height;
             dst7_dct8_in_valid <= tr_in_valid;
             for (i = 0; i < 32; i = i + 1) begin
                 dst7_dct8_in_data[i] <= tr_in_data[i];
@@ -265,7 +252,6 @@ always @(*) begin
         end
         DCT8    : begin //reverse input
             dst7_dct8_in_width <= tr_in_width;
-            dst7_dct8_in_height <= tr_in_height;
             dst7_dct8_in_valid <= tr_in_valid;
             case (tr_in_width)
                 SIZE32 : begin
@@ -297,35 +283,17 @@ always @(*) begin
     endcase
 end
 
-//type delay
-always @(posedge clk or negedge rst_n) begin
-    if (!rst_n) begin 
-        for (i = 0; i < 5; i = i + 1) begin
-            tr_in_type_h_d[i] <= 0;
-            tr_in_type_v_d[i] <= 0;
-        end
-    end
-    else begin
-        tr_in_type_h_d[0] <= tr_in_type_h;
-        tr_in_type_v_d[0] <= tr_in_type_v;
-        for (i = 0; i < 4; i = i + 1) begin
-            tr_in_type_h_d[i + 1] <= tr_in_type_h_d[i];
-            tr_in_type_v_d[i + 1] <= tr_in_type_v_d[i];
-        end
-    end
-end
-
 //dct2
-dct2_1d_1st#(
-    .IN_WIDTH   (IN_WIDTH       )
+dct2_1d#(
+    .IN_WIDTH   (IN_WIDTH       ),
+    .OUT_WIDTH  (IN_WIDTH + 12  )
 )
-u_dct2_1d_1st(
+u_dct2_1d(
 //system input
     .clk     (clk               ),
     .rst_n   (rst_n             ),
 //input parameter
-    .i_width (dct2_in_width     ),
-    .i_height(dct2_in_height    ),
+    .i_size  (dct2_in_width     ),
 //input data
     .i_valid (dct2_in_valid     ),
     .i_0     (dct2_in_data[0 ]  ),
@@ -393,8 +361,7 @@ u_dct2_1d_1st(
     .i_62    (dct2_in_data[62]  ),
     .i_63    (dct2_in_data[63]  ),
 //output parameter
-    .o_width (dct2_out_width    ),
-    .o_height(dct2_out_height   ),
+    .o_size  (dct2_out_width    ),
 //output 1st stage's coeff
     .o_valid (dct2_out_valid    ),
     .o_0     (dct2_out_data[0 ] ),
@@ -432,16 +399,16 @@ u_dct2_1d_1st(
 ); 
 
 //dst7/dct8
-dst7_dct8_1d_1st#(
-    .IN_WIDTH   (IN_WIDTH           )
+dst7_dct8_1d#(
+    .IN_WIDTH   (IN_WIDTH           ),
+    .OUT_WIDTH  (IN_WIDTH + 11      )
 )
-u_dst7_dct8_1d_1st(
+u_dst7_dct8_1d(
 //system input
     .clk     (clk                   ),
     .rst_n   (rst_n                 ),
 //input parameter
-    .i_width (dst7_dct8_in_width    ),
-    .i_height(dst7_dct8_in_height   ),
+    .i_size  (dst7_dct8_in_width    ),
 //input data
     .i_valid (dst7_dct8_in_valid    ),
     .i_0     (dst7_dct8_in_data[0 ] ),
@@ -477,8 +444,7 @@ u_dst7_dct8_1d_1st(
     .i_30    (dst7_dct8_in_data[30] ),
     .i_31    (dst7_dct8_in_data[31] ),
 //output parameter
-    .o_width (dst7_dct8_out_width   ),
-    .o_height(dst7_dct8_out_height  ),
+    .o_size  (dst7_dct8_out_width   ),
 //output 1st stage's coeff
     .o_valid (dst7_dct8_out_valid   ),
     .o_0     (dst7_dct8_out_data[0 ]),
@@ -502,15 +468,13 @@ u_dst7_dct8_1d_1st(
 //type mux out
 always @(*) begin
     tr_out_width <= 0;
-    tr_out_height <= 0;
     tr_out_valid <= 0;
     for (i = 0; i < 32; i = i + 1) begin
         tr_out_data[i] <= 0;
     end
-    case (tr_in_type_h_d[4]) 
+    case (i_type_h_d[8]) 
         DCT2    : begin
             tr_out_width <= dct2_out_width;
-            tr_out_height <= dct2_out_height;
             tr_out_valid <= dct2_out_valid;
             for (i = 0; i < 32; i = i + 1) begin
                 tr_out_data[i] <= dct2_out_data[i];
@@ -518,7 +482,6 @@ always @(*) begin
         end
         DST7    : begin
             tr_out_width <= dst7_dct8_out_width;
-            tr_out_height <= dst7_dct8_out_height;
             tr_out_valid <= dst7_dct8_out_valid;
             for (i = 0; i < 16; i = i + 1) begin
                 tr_out_data[i] <= dst7_dct8_out_data[i];
@@ -526,7 +489,6 @@ always @(*) begin
         end
         DCT8    : begin //odd line reverse sign
             tr_out_width <= dst7_dct8_out_width;
-            tr_out_height <= dst7_dct8_out_height;
             tr_out_valid <= dst7_dct8_out_valid;
             for (i = 0; i < 16; i = i + 2) begin
                 tr_out_data[i] <= dst7_dct8_out_data[i];
@@ -559,50 +521,44 @@ u_right_shift(
     .clk        (clk                ),
     .rst_n      (rst_n              ),
 //input parameter
-    .i_type_h   (tr_in_type_h_d[4]  ),
-    .i_type_v   (tr_in_type_v_d[4]  ),
-    .i_width    (tr_out_width       ),
-    .i_height   (tr_out_height      ),
     .i_shift    (tr_shift           ),
+    .i_size     (tr_out_width       ),
 //input pre_coeff
-    .i_valid    (tr_out_valid   ),
-    .i_0        (tr_out_data[0 ]),
-    .i_1        (tr_out_data[1 ]),
-    .i_2        (tr_out_data[2 ]),
-    .i_3        (tr_out_data[3 ]),
-    .i_4        (tr_out_data[4 ]),
-    .i_5        (tr_out_data[5 ]),
-    .i_6        (tr_out_data[6 ]),
-    .i_7        (tr_out_data[7 ]),
-    .i_8        (tr_out_data[8 ]),
-    .i_9        (tr_out_data[9 ]),
-    .i_10       (tr_out_data[10]),
-    .i_11       (tr_out_data[11]),
-    .i_12       (tr_out_data[12]),
-    .i_13       (tr_out_data[13]),
-    .i_14       (tr_out_data[14]),
-    .i_15       (tr_out_data[15]),
-    .i_16       (tr_out_data[16]),
-    .i_17       (tr_out_data[17]),
-    .i_18       (tr_out_data[18]),
-    .i_19       (tr_out_data[19]),
-    .i_20       (tr_out_data[20]),
-    .i_21       (tr_out_data[21]),
-    .i_22       (tr_out_data[22]),
-    .i_23       (tr_out_data[23]),
-    .i_24       (tr_out_data[24]),
-    .i_25       (tr_out_data[25]),
-    .i_26       (tr_out_data[26]),
-    .i_27       (tr_out_data[27]),
-    .i_28       (tr_out_data[28]),
-    .i_29       (tr_out_data[29]),
-    .i_30       (tr_out_data[30]),
-    .i_31       (tr_out_data[31]),
+    .i_valid    (tr_out_valid       ),
+    .i_0        (tr_out_data[0 ]    ),
+    .i_1        (tr_out_data[1 ]    ),
+    .i_2        (tr_out_data[2 ]    ),
+    .i_3        (tr_out_data[3 ]    ),
+    .i_4        (tr_out_data[4 ]    ),
+    .i_5        (tr_out_data[5 ]    ),
+    .i_6        (tr_out_data[6 ]    ),
+    .i_7        (tr_out_data[7 ]    ),
+    .i_8        (tr_out_data[8 ]    ),
+    .i_9        (tr_out_data[9 ]    ),
+    .i_10       (tr_out_data[10]    ),
+    .i_11       (tr_out_data[11]    ),
+    .i_12       (tr_out_data[12]    ),
+    .i_13       (tr_out_data[13]    ),
+    .i_14       (tr_out_data[14]    ),
+    .i_15       (tr_out_data[15]    ),
+    .i_16       (tr_out_data[16]    ),
+    .i_17       (tr_out_data[17]    ),
+    .i_18       (tr_out_data[18]    ),
+    .i_19       (tr_out_data[19]    ),
+    .i_20       (tr_out_data[20]    ),
+    .i_21       (tr_out_data[21]    ),
+    .i_22       (tr_out_data[22]    ),
+    .i_23       (tr_out_data[23]    ),
+    .i_24       (tr_out_data[24]    ),
+    .i_25       (tr_out_data[25]    ),
+    .i_26       (tr_out_data[26]    ),
+    .i_27       (tr_out_data[27]    ),
+    .i_28       (tr_out_data[28]    ),
+    .i_29       (tr_out_data[29]    ),
+    .i_30       (tr_out_data[30]    ),
+    .i_31       (tr_out_data[31]    ),
 //output parameter
-    .o_type_h   (coeff_out_type_h   ),
-    .o_type_v   (coeff_out_type_v   ),
-    .o_width    (coeff_out_width    ),
-    .o_height   (coeff_out_height   ),
+    .o_size     (coeff_out_width    ),
 //output coeff
     .o_valid    (coeff_out_valid    ),
     .o_0        (coeff_out_data[0 ] ),
@@ -640,19 +596,16 @@ u_right_shift(
 );  
 
 //parallel to serial
-parallel_to_serial_1st#(
+parallel_to_serial#(
     .IN_WIDTH   (OUT_WIDTH          ),
     .OUT_WIDTH  (OUT_WIDTH          )
 )
-u_parallel_to_serial_1st(
+u_parallel_to_serial(
 //system input
     .clk        (clk                ),
     .rst_n      (rst_n              ),
 //input parameter
-    .i_type_h   (coeff_out_type_h   ),
-    .i_type_v   (coeff_out_type_v   ),
-    .i_width    (coeff_out_width    ),
-    .i_height   (coeff_out_height   ),
+    .i_size     (coeff_out_width    ),
 //input data
     .i_valid    (coeff_out_valid    ),
     .i_0        (coeff_out_data[0 ] ),
@@ -688,10 +641,7 @@ u_parallel_to_serial_1st(
     .i_30       (coeff_out_data[30] ),
     .i_31       (coeff_out_data[31] ),
 //output parameter
-    .o_type_h   (serial_out_type_h  ),
-    .o_type_v   (serial_out_type_v  ),
-    .o_width    (serial_out_width   ),
-    .o_height   (serial_out_height  ),
+    .o_size     (serial_out_width   ),
 //output data
     .o_valid    (serial_out_valid   ),
     .o_0        (serial_out_data[0 ]),
@@ -713,10 +663,10 @@ u_parallel_to_serial_1st(
 );   
 
 //output
-    assign o_type_h   = serial_out_type_h;
-    assign o_type_v   = serial_out_type_v;
+    assign o_type_h   = i_type_h_d[10];
+    assign o_type_v   = i_type_v_d[10];
     assign o_width  = serial_out_width;
-    assign o_height = serial_out_height;
+    assign o_height = i_height_d[10];
     assign o_valid  = serial_out_valid;
     assign o_0      = serial_out_data[0 ];
     assign o_1      = serial_out_data[1 ];

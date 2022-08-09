@@ -2,7 +2,7 @@
 //input     : 32 data
 //output    : 16 data
 //delay     : 1 clk
-module parallel_to_serial_2nd#(
+module parallel_to_serial#(
     parameter  IN_WIDTH  = 16,
     parameter  OUT_WIDTH = 16
 )
@@ -11,10 +11,7 @@ module parallel_to_serial_2nd#(
     input                               clk     ,
     input                               rst_n   ,
 //input parameter
-    input           [1 : 0]             i_type_h,//0:DCT2 1:DCT8 2:DST7  
-    input           [1 : 0]             i_type_v,
-    input           [2 : 0]             i_width ,//1:4x4, 2:8x8, 3:16x16, 4:32x32, 5:64x64
-    input           [2 : 0]             i_height,
+    input           [2 : 0]             i_size  ,//1:4x4, 2:8x8, 3:16x16, 4:32x32, 5:64x64
 //input data
     input                               i_valid ,
     input   signed  [IN_WIDTH - 1 : 0]  i_0     ,
@@ -50,10 +47,7 @@ module parallel_to_serial_2nd#(
     input   signed  [IN_WIDTH - 1 : 0]  i_30    ,
     input   signed  [IN_WIDTH - 1 : 0]  i_31    ,
 //output parameter
-    output          [1 : 0]             o_type_h, 
-    output          [1 : 0]             o_type_v, 
-    output          [2 : 0]             o_width ,
-    output          [2 : 0]             o_height,
+    output          [2 : 0]             o_size  ,
 //output data
     output                              o_valid ,
     output  signed  [OUT_WIDTH - 1 : 0] o_0     ,
@@ -83,10 +77,7 @@ integer i;
 
 //input delay
     wire signed [IN_WIDTH - 1 : 0] i_data0[0 : 15], i_data1[0 : 15];
-    reg [1 : 0] i_type_h_d1;
-    reg [1 : 0] i_type_v_d1;
-    reg [2 : 0] i_width_d1;
-    reg [2 : 0] i_height_d1;
+    reg [2 : 0] i_size_d1;
     reg i_valid_d1;
     reg signed [IN_WIDTH - 1 : 0] i_data1_d1[0 : 15];
 //serial to parallel
@@ -131,20 +122,14 @@ integer i;
 //delay
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin 
-        i_type_h_d1 <= 0;
-        i_type_v_d1 <= 0;
-        i_width_d1 <= 0;
-        i_height_d1 <= 0;
+        i_size_d1 <= 0;
         i_valid_d1 <= 0; 
         for (i = 0; i < 16; i = i + 1) begin
             i_data1_d1[i] <= 0;
         end
     end
     else begin
-        i_type_h_d1 <= i_type_h;
-        i_type_v_d1 <= i_type_v;
-        i_width_d1 <= i_width;
-        i_height_d1 <= i_height;
+        i_size_d1 <= i_size;
         i_valid_d1 <= i_valid;
         for (i = 0; i < 16; i = i + 1) begin
             i_data1_d1[i] <= i_data1[i]; 
@@ -153,7 +138,7 @@ always @(posedge clk or negedge rst_n) begin
 end
 
 always @(*) begin
-    case (i_height) 
+    case (i_size) 
         SIZE64  : count_max <= 3;
         SIZE32  : count_max <= 1;
         default : count_max <= 0;
@@ -169,63 +154,38 @@ always @(posedge clk or negedge rst_n) begin
     end
     else begin
         if (count == count_max) begin
-            count <= 0;
-            case (count) 
-                0 : begin
-                    for (i = 0; i < 16; i = i + 1) begin
-                        o_data[i] <= i_data0[i];
-                    end
-                end
-                1 : begin
-                    for (i = 0; i < 16; i = i + 1) begin
-                        o_data[i] <= i_data1_d1[i];
-                    end
-                end
-                2 : begin
-                    for (i = 0; i < 16; i = i + 1) begin
-                        o_data[i] <= 0;
-                    end
-                end
-                3 : begin
-                    for (i = 0; i < 16; i = i + 1) begin
-                        o_data[i] <= 0;
-                    end
-                end
-            endcase
+            count <= 0;  
         end
         else begin
             count <= count + 1;
-            case (count) 
-                0 : begin
-                    for (i = 0; i < 16; i = i + 1) begin
-                        o_data[i] <= i_data0[i];
-                    end
-                end
-                1 : begin
-                    for (i = 0; i < 16; i = i + 1) begin
-                        o_data[i] <= i_data1_d1[i];
-                    end
-                end
-                2 : begin
-                    for (i = 0; i < 16; i = i + 1) begin
-                        o_data[i] <= 0;
-                    end
-                end
-                3 : begin
-                    for (i = 0; i < 16; i = i + 1) begin
-                        o_data[i] <= 0;
-                    end
-                end
-            endcase
         end
+        case (count) 
+            0 : begin
+                for (i = 0; i < 16; i = i + 1) begin
+                    o_data[i] <= i_data0[i];
+                end
+            end
+            1 : begin
+                for (i = 0; i < 16; i = i + 1) begin
+                    o_data[i] <= i_data1_d1[i];
+                end
+            end
+            2 : begin
+                for (i = 0; i < 16; i = i + 1) begin
+                    o_data[i] <= 0;
+                end
+            end
+            3 : begin
+                for (i = 0; i < 16; i = i + 1) begin
+                    o_data[i] <= 0;
+                end
+            end
+        endcase
     end
 end
 
 //output
-    assign o_type_h = i_type_h_d1;
-    assign o_type_v = i_type_v_d1;
-    assign o_width  = i_width_d1;
-    assign o_height = i_height_d1;
+    assign o_size   = i_size_d1;
     assign o_valid  = i_valid_d1;
     assign o_0      = o_data[0 ];
     assign o_1      = o_data[1 ];

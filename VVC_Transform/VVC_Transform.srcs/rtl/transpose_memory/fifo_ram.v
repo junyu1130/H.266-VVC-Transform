@@ -1,4 +1,4 @@
-module syn_fifo#(
+module fifo_ram#(
     parameter DATA_WIDTH = 10,
     parameter DATA_DEPTH = 256)
     (

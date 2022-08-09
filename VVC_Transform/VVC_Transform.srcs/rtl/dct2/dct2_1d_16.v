@@ -1,4 +1,4 @@
-//describe  : 16x16点DCT计算
+//describe  : 16点DCT计算
 //input     : 16个像素残差/一维变换系数
 //output    : 8个预变换系数(后需右移)+8个16_E
 //delay     : 16_E : 1 clk , 16_precoeff : 3 clk
