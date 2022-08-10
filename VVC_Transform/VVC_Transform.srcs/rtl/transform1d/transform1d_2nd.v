@@ -1,7 +1,7 @@
 //describe  : 第二次一维正变换/行变换(DCT2/DCT8/DST7)
 //input     : 32个一维变换系数
 //output    : 32个二维变换系数
-//delay     : 8 clk
+//delay     : 7 clk
 module transform1d_2nd#(
     parameter  IN_WIDTH = 16,
     parameter  OUT_WIDTH = 16
@@ -101,9 +101,9 @@ localparam  SIZE4  = 3'd1,
 integer i;
 
 //input delay
-    reg [1 : 0] i_type_h_d[0 : 7];
-    reg [1 : 0] i_type_v_d[0 : 7];
-    reg [2 : 0] i_width_d[0 : 7];
+    reg [1 : 0] i_type_h_d[0 : 6];
+    reg [1 : 0] i_type_v_d[0 : 6];
+    reg [2 : 0] i_width_d[0 : 6];
 //serial to parallel
     wire [2 : 0] tr_in_height;
     wire tr_in_valid;
@@ -134,7 +134,7 @@ integer i;
 //delay
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin 
-        for (i = 0; i < 8; i = i + 1) begin
+        for (i = 0; i < 7; i = i + 1) begin
             i_width_d[i] <= 0;
             i_type_h_d[i] <= 0;
             i_type_v_d[i] <= 0;
@@ -144,7 +144,7 @@ always @(posedge clk or negedge rst_n) begin
         i_width_d[0] <= i_width;
         i_type_h_d[0] <= i_type_h;
         i_type_v_d[0] <= i_type_v;
-        for (i = 0; i < 7; i = i + 1) begin
+        for (i = 0; i < 6; i = i + 1) begin
             i_width_d[i + 1] <= i_width_d[i];
             i_type_h_d[i + 1] <= i_type_h_d[i];
             i_type_v_d[i + 1] <= i_type_v_d[i];
@@ -539,7 +539,7 @@ always @(*) begin
     for (i = 0; i < 32; i = i + 1) begin
         tr_out_data[i] <= 0;
     end
-    case (i_type_v_d[6]) 
+    case (i_type_v_d[5]) 
         DCT2    : begin
             tr_out_height <= dct2_out_height;
             tr_out_valid <= dct2_out_valid;
@@ -663,9 +663,9 @@ u_right_shift(
 );  
 
 //output
-    assign o_type_h = i_type_h_d[7];
-    assign o_type_v = i_type_v_d[7];
-    assign o_width  = i_width_d[7];
+    assign o_type_h = i_type_h_d[6];
+    assign o_type_v = i_type_v_d[6];
+    assign o_width  = i_width_d[6];
     assign o_height = coeff_out_height;
     assign o_valid  = coeff_out_valid;
     assign o_0      = coeff_out_data[0 ];

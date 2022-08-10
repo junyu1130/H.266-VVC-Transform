@@ -1,7 +1,7 @@
 //describe  : 32点DCT计算
 //input     : 32个像素残差/一维变换系数
 //output    : 16个预变换系数(后需右移)+16个32_E
-//delay     : 32_E : 1 clk , 32_precoeff : 4 clk
+//delay     : 32_E : 1 clk , 32_precoeff : 3 clk
 module dct2_1d_32#(
     parameter  IN_WIDTH  = 17
 )

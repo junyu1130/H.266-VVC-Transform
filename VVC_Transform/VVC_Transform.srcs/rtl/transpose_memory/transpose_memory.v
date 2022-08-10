@@ -1,7 +1,7 @@
 //describe  : 转置存储器
 //input     : 16个变换系数(H)
 //output    : 16个变换系数(V)
-//delay     : 259(64x64) / 131(other) clk (1 + 256/128 + 2)
+//delay     : 131(64x64) / 67(other) clk (2 + 128/64 + 1)
 module transpose_memory#(
     parameter  WIDTH  = 16
 )
@@ -900,7 +900,7 @@ always @(posedge clk or negedge rst_n) begin
     end
 end 
 
-//ram 16 * 256
+//ram 32x128x16bits
     dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(7)) dual_port_ram_0 (.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[0 ]), .rd_data(rd_data[0 ]), .wr_addr(wr_addr_shift[0 ]), .rd_addr(rd_point));
     dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(7)) dual_port_ram_1 (.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[1 ]), .rd_data(rd_data[1 ]), .wr_addr(wr_addr_shift[1 ]), .rd_addr(rd_point));
     dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(7)) dual_port_ram_2 (.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[2 ]), .rd_data(rd_data[2 ]), .wr_addr(wr_addr_shift[2 ]), .rd_addr(rd_point));

@@ -1,7 +1,7 @@
 //describe  : 一维DCT2
 //input     : 64个像素残差/一维变换系数
 //output    : 32个一维变换系数/二维变换系数
-//delay     : 5 clk
+//delay     : 4 clk
 module dct2_1d#(
     parameter  IN_WIDTH  = 16,
     parameter  OUT_WIDTH = 28
@@ -124,10 +124,10 @@ localparam  SIZE4  = 3'd1,
 integer i;
 
 //input
-    reg i_valid_d1, i_valid_d2, i_valid_d3, i_valid_d4;
+    reg i_valid_d1, i_valid_d2, i_valid_d3;
     wire signed [IN_WIDTH - 1 : 0] i_data[0 : 63];
-    reg signed [IN_WIDTH - 1 : 0] i_data_d1[0 : 31], i_data_d2[0 : 31], i_data_d3[0 : 31], i_data_d4[0 : 31];
-    reg [2 : 0] i_size_d[0 : 4];
+    reg signed [IN_WIDTH - 1 : 0] i_data_d1[0 : 31], i_data_d2[0 : 31], i_data_d3[0 : 31];
+    reg [2 : 0] i_size_d[0 : 3];
 //size mux in
     reg tr_in_64_valid, tr_in_32_valid, tr_in_16_valid, tr_in_8_valid, tr_in_4_valid;  
     reg  signed [IN_WIDTH - 1 : 0] tr_in_64_u0[0 : 63];
@@ -221,13 +221,13 @@ integer i;
 //parameter delay
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin 
-        for (i = 0; i < 5; i = i + 1) begin
+        for (i = 0; i < 4; i = i + 1) begin
             i_size_d[i] <= 0;
         end
     end
     else begin
         i_size_d[0] <= i_size;
-        for (i = 0; i < 4; i = i + 1) begin
+        for (i = 0; i < 3; i = i + 1) begin
             i_size_d[i + 1] <= i_size_d[i];
         end
     end
@@ -238,25 +238,21 @@ always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         i_valid_d1 <= 0; 
         i_valid_d2 <= 0; 
-        i_valid_d3 <= 0; 
-        i_valid_d4 <= 0;
+        i_valid_d3 <= 0;
         for (i = 0; i < 32; i = i + 1) begin
             i_data_d1[i] <= 0; 
             i_data_d2[i] <= 0; 
             i_data_d3[i] <= 0; 
-            i_data_d4[i] <= 0; 
         end
     end
     else begin
         i_valid_d1 <= i_valid; 
         i_valid_d2 <= i_valid_d1; 
         i_valid_d3 <= i_valid_d2; 
-        i_valid_d4 <= i_valid_d3;
         for (i = 0; i < 32; i = i + 1) begin
             i_data_d1[i] <= i_data[i]; 
             i_data_d2[i] <= i_data_d1[i]; 
             i_data_d3[i] <= i_data_d2[i]; 
-            i_data_d4[i] <= i_data_d3[i]; 
         end
     end
 end
@@ -313,10 +309,16 @@ always @(*) begin
             for (i = 0; i < 16; i = i + 1) begin
                 tr_in_16_u0[i] <= butterfly_32_u0[i];
             end
+            for (i = 0; i < 8; i = i + 1) begin
+                tr_in_8_u0[i] <= butterfly_16_u0[i];
+            end
         end
         SIZE32 : begin
             for (i = 0; i < 16; i = i + 1) begin
                 tr_in_16_u0[i] <= butterfly_32_u0[i];
+            end
+            for (i = 0; i < 8; i = i + 1) begin
+                tr_in_8_u0[i] <= butterfly_16_u0[i];
             end
         end
         SIZE16 : begin
@@ -325,38 +327,23 @@ always @(*) begin
                 tr_in_16_u0[i] <= i_data_d2[i];
                 tr_in_16_u1[i] <= i_data_d2[i + 16];
             end
-        end
-    endcase
-    //delay 3 clk
-    case (i_size_d[2]) 
-        SIZE64 : begin
-            for (i = 0; i < 8; i = i + 1) begin
-                tr_in_8_u0[i] <= butterfly_16_u0[i];
-            end
-        end
-        SIZE32 : begin
-            for (i = 0; i < 8; i = i + 1) begin
-                tr_in_8_u0[i] <= butterfly_16_u0[i];
-            end
-        end
-        SIZE16 : begin
             for (i = 0; i < 8; i = i + 1) begin
                 tr_in_8_u0[i] <= butterfly_16_u0[i];
                 tr_in_8_u1[i] <= butterfly_16_u1[i];
             end
         end
         SIZE8 : begin
-            tr_in_8_valid <= i_valid_d3;
+            tr_in_8_valid <= i_valid_d2;
             for (i = 0; i < 8; i = i + 1) begin
-                tr_in_8_u0[i] <= i_data_d3[i];
-                tr_in_8_u1[i] <= i_data_d3[i + 8];
-                tr_in_8_u2[i] <= i_data_d3[i + 16];
-                tr_in_8_u3[i] <= i_data_d3[i + 24];
+                tr_in_8_u0[i] <= i_data_d2[i];
+                tr_in_8_u1[i] <= i_data_d2[i + 8];
+                tr_in_8_u2[i] <= i_data_d2[i + 16];
+                tr_in_8_u3[i] <= i_data_d2[i + 24];
             end
         end
     endcase
-    //delay 4 clk
-    case (i_size_d[3]) 
+    //delay 3 clk
+    case (i_size_d[2]) 
         SIZE64 : begin
             for (i = 0; i < 4; i = i + 1) begin
                 tr_in_4_u0[i] <= butterfly_8_u0[i];
@@ -382,16 +369,16 @@ always @(*) begin
             end
         end
         SIZE4 : begin
-            tr_in_4_valid <= i_valid_d4;
+            tr_in_4_valid <= i_valid_d3;
             for (i = 0; i < 4; i = i + 1) begin
-                tr_in_4_u0[i] <= i_data_d4[i];
-                tr_in_4_u1[i] <= i_data_d4[i + 4];
-                tr_in_4_u2[i] <= i_data_d4[i + 8];
-                tr_in_4_u3[i] <= i_data_d4[i + 12];
-                tr_in_4_u4[i] <= i_data_d4[i + 16];
-                tr_in_4_u5[i] <= i_data_d4[i + 20];
-                tr_in_4_u6[i] <= i_data_d4[i + 24];
-                tr_in_4_u7[i] <= i_data_d4[i + 28];
+                tr_in_4_u0[i] <= i_data_d3[i];
+                tr_in_4_u1[i] <= i_data_d3[i + 4];
+                tr_in_4_u2[i] <= i_data_d3[i + 8];
+                tr_in_4_u3[i] <= i_data_d3[i + 12];
+                tr_in_4_u4[i] <= i_data_d3[i + 16];
+                tr_in_4_u5[i] <= i_data_d3[i + 20];
+                tr_in_4_u6[i] <= i_data_d3[i + 24];
+                tr_in_4_u7[i] <= i_data_d3[i + 28];
             end
         end
     endcase
@@ -532,7 +519,7 @@ u0_dct2_1d_32(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_size_d[3]        ),
+    .i_size (i_size_d[2]        ),
 //input data
     .i_valid(tr_in_32_valid     ),
     .i_0    (tr_in_32_u0[0 ]    ),
@@ -612,7 +599,7 @@ u0_dct2_1d_16(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_size_d[3]        ),
+    .i_size (i_size_d[2]        ),
 //input data
     .i_valid(tr_in_16_valid     ),
     .i_0    (tr_in_16_u0[0 ]    ),
@@ -658,7 +645,7 @@ u1_dct2_1d_16(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_size_d[3]        ),
+    .i_size (i_size_d[2]        ),
 //input data
     .i_valid(tr_in_16_valid     ),
     .i_0    (tr_in_16_u1[0 ]    ),
@@ -706,7 +693,7 @@ u0_dct2_1d_8(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_size_d[3]        ),
+    .i_size (i_size_d[2]        ),
 //input data
     .i_valid(tr_in_8_valid      ),
     .i_0    (tr_in_8_u0[0 ]     ),
@@ -736,7 +723,7 @@ u1_dct2_1d_8(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_size_d[3]        ),
+    .i_size (i_size_d[2]        ),
 //input data
     .i_valid(tr_in_8_valid      ),
     .i_0    (tr_in_8_u1[0 ]     ),
@@ -766,7 +753,7 @@ u2_dct2_1d_8(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_size_d[3]        ),
+    .i_size (i_size_d[2]        ),
 //input data
     .i_valid(tr_in_8_valid      ),
     .i_0    (tr_in_8_u2[0 ]     ),
@@ -796,7 +783,7 @@ u3_dct2_1d_8(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_size_d[3]        ),
+    .i_size (i_size_d[2]        ),
 //input data
     .i_valid(tr_in_8_valid      ),
     .i_0    (tr_in_8_u3[0 ]     ),
@@ -828,7 +815,7 @@ u0_dct2_1d_4(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_size_d[3]        ),
+    .i_size (i_size_d[2]        ),
 //input data
     .i_valid(tr_in_4_valid      ),
     .i_0    (tr_in_4_u0[0 ]     ),
@@ -850,7 +837,7 @@ u1_dct2_1d_4(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_size_d[3]        ),
+    .i_size (i_size_d[2]        ),
 //input data
     .i_valid(tr_in_4_valid      ),
     .i_0    (tr_in_4_u1[0 ]     ),
@@ -872,7 +859,7 @@ u2_dct2_1d_4(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_size_d[3]        ),
+    .i_size (i_size_d[2]        ),
 //input data
     .i_valid(tr_in_4_valid      ),
     .i_0    (tr_in_4_u2[0 ]     ),
@@ -894,7 +881,7 @@ u3_dct2_1d_4(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_size_d[3]        ),
+    .i_size (i_size_d[2]        ),
 //input data
     .i_valid(tr_in_4_valid      ),
     .i_0    (tr_in_4_u3[0 ]     ),
@@ -916,7 +903,7 @@ u4_dct2_1d_4(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_size_d[3]        ),
+    .i_size (i_size_d[2]        ),
 //input data
     .i_valid(tr_in_4_valid      ),
     .i_0    (tr_in_4_u4[0 ]     ),
@@ -938,7 +925,7 @@ u5_dct2_1d_4(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_size_d[3]        ),
+    .i_size (i_size_d[2]        ),
 //input data
     .i_valid(tr_in_4_valid      ),
     .i_0    (tr_in_4_u5[0 ]     ),
@@ -960,7 +947,7 @@ u6_dct2_1d_4(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_size_d[3]        ),
+    .i_size (i_size_d[2]        ),
 //input data
     .i_valid(tr_in_4_valid      ),
     .i_0    (tr_in_4_u6[0 ]     ),
@@ -982,7 +969,7 @@ u7_dct2_1d_4(
     .clk    (clk                ),
     .rst_n  (rst_n              ),
 //input parameter
-    .i_size (i_size_d[3]        ),
+    .i_size (i_size_d[2]        ),
 //input data
     .i_valid(tr_in_4_valid      ),
     .i_0    (tr_in_4_u7[0 ]     ),
@@ -1003,7 +990,7 @@ always @(*) begin
     for (i = 0; i < 32; i = i + 1) begin
         pre_coeff[i] <= 0;
     end
-    case (i_size_d[4])
+    case (i_size_d[3])
         SIZE64  : begin //high frequency coefficients are set to zero
             pre_coeff_valid <= pre_coeff_64_valid;
             for (i = 0; i < 16; i = i + 1) begin
@@ -1084,7 +1071,7 @@ always @(*) begin
 end
 
 //output
-    assign o_size   = i_size_d[4]    ;
+    assign o_size   = i_size_d[3]    ;
     assign o_valid  = pre_coeff_valid;
     assign o_0      = pre_coeff[0 ]  ;
     assign o_1      = pre_coeff[1 ]  ;

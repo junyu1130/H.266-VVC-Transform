@@ -6,9 +6,6 @@ module dct2_butterfly_4#(
     parameter IN_WIDTH = 20
 )
 (
-//system input
-    input                                   clk     ,
-    input                                   rst_n   ,
 //input data
     input                                   i_valid ,
     input       signed  [IN_WIDTH - 1 : 0]  i_0     ,

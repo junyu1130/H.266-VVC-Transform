@@ -26,7 +26,6 @@ module dct2_1d_4#(
 );
 
 //butterfly
-    wire butterfly_4_valid;
     wire signed [IN_WIDTH : 0]  butterfly_4[0 : 3];
 //calculate : mcm + sum
     wire pre_coeff_valid;
@@ -37,9 +36,6 @@ dct2_butterfly_4#(
     .IN_WIDTH   (IN_WIDTH)
 )
 u_dct2_butterfly_4(
-//system input
-    .clk    (clk                ),
-    .rst_n  (rst_n              ),
 //input data
     .i_valid(i_valid            ),
     .i_0    (i_0                ),

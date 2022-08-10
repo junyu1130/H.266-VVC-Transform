@@ -1,7 +1,7 @@
 //describe  : 二维正变换(DCT2/DCT8/DST7)
 //input     : 32个像素残差
 //output    : 32个变换系数
-//delay     : 281(64x64) / 153(other) clk
+//delay     : 145(64x64) / 81(other) clk
 module transform2d_top#(
     parameter  BIT_DEPTH = 8,
     parameter  OUT_WIDTH = 16
