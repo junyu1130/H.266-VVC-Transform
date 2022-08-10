@@ -304,21 +304,17 @@ always @(*) begin
     case ({i_width_d1, i_height_d1})
         {SIZE4 , SIZE4 } : begin 
             for (i = 0; i < 8; i = i + 1) begin
-                for (j = 0; j < 1; j = j + 1) begin
-                    for (k = 0; k < 8; k = k + 1) begin
-                        wr_data[i * 4 + j * 4 + k] <= i_data_d1[i + 4 * j + 4 * k];
-                        wr_addr[i * 4 + j * 4 + k] <= wr_point + j;
-                    end
+                for (k = 0; k < 4; k = k + 1) begin
+                    wr_data[i * 4 + k] <= i_data_d1[i + 4 * k];
+                    wr_addr[i * 4 + k] <= wr_point;
                 end
             end
         end
         {SIZE8 , SIZE4 } : begin  
             for (i = 0; i < 8; i = i + 1) begin
-                for (j = 0; j < 1; j = j + 1) begin
-                    for (k = 0; k < 4; k = k + 1) begin
-                        wr_data[i * 4 + j * 4 + k] <= i_data_d1[i + 8 * j + 8 * k];
-                        wr_addr[i * 4 + j * 4 + k] <= wr_point + j;
-                    end
+                for (k = 0; k < 4; k = k + 1) begin
+                    wr_data[i * 4 + k] <= i_data_d1[i + 8 * k];
+                    wr_addr[i * 4 + k] <= wr_point;
                 end
             end
         end
@@ -335,10 +331,8 @@ always @(*) begin
         {SIZE32, SIZE4 } : begin 
             for (i = 0; i < 8; i = i + 1) begin
                 for (j = 0; j < 4; j = j + 1) begin
-                    for (k = 0; k < 1; k = k + 1) begin
-                        wr_data[i * 4 + j * 1 + k] <= i_data_d1[i + 8 * j + 32 * k];
-                        wr_addr[i * 4 + j * 1 + k] <= wr_point + j;
-                    end
+                    wr_data[i * 4 + j * 1] <= i_data_d1[i + 8 * j];
+                    wr_addr[i * 4 + j * 1] <= wr_point + j;
                 end
             end
         end
@@ -355,11 +349,9 @@ always @(*) begin
         end
         {SIZE4 , SIZE8 } : begin
             for (i = 0; i < 4; i = i + 1) begin
-                for (j = 0; j < 1; j = j + 1) begin
-                    for (k = 0; k < 8; k = k + 1) begin
-                        wr_data[i * 8 + j * 8 + k] <= i_data_d1[i + 4 * j + 4 * k];
-                        wr_addr[i * 8 + j * 8 + k] <= wr_point + j;
-                    end
+                for (k = 0; k < 8; k = k + 1) begin
+                    wr_data[i * 8 + k] <= i_data_d1[i + 4 * k];
+                    wr_addr[i * 8 + k] <= wr_point;
                 end
             end
         end
@@ -386,10 +378,8 @@ always @(*) begin
         {SIZE32, SIZE8 } : begin
             for (i = 0; i < 4; i = i + 1) begin
                 for (j = 0; j < 8; j = j + 1) begin
-                    for (k = 0; k < 1; k = k + 1) begin
-                        wr_data[i * 8 + j * 1 + k] <= i_data_d1[i + 4 * j + 32 * k];
-                        wr_addr[i * 8 + j * 1 + k] <= wr_point + j;
-                    end
+                    wr_data[i * 8 + j * 1] <= i_data_d1[i + 4 * j];
+                    wr_addr[i * 8 + j * 1] <= wr_point + j;
                 end
             end
         end
@@ -437,10 +427,8 @@ always @(*) begin
         {SIZE32, SIZE16} : begin
             for (i = 0; i < 2; i = i + 1) begin
                 for (j = 0; j < 16; j = j + 1) begin
-                    for (k = 0; k < 1; k = k + 1) begin
-                        wr_data[i * 16 + j * 1 + k] <= i_data_d1[i + 2 * j + 32 * k];
-                        wr_addr[i * 16 + j * 1 + k] <= wr_point + j;
-                    end
+                    wr_data[i * 16 + j * 1] <= i_data_d1[i + 2 * j];
+                    wr_addr[i * 16 + j * 1] <= wr_point + j;
                 end
             end
         end
@@ -456,43 +444,33 @@ always @(*) begin
             end
         end
         {SIZE4 , SIZE32} : begin
-            for (i = 0; i < 1; i = i + 1) begin
-                for (j = 0; j < 4; j = j + 1) begin
-                    for (k = 0; k < 8; k = k + 1) begin
-                        wr_data[i * 32 + j * 8 + k] <= i_data_d1[i + 1 * j + 4 * k];
-                        wr_addr[i * 32 + j * 8 + k] <= wr_point + j;
-                    end
+            for (j = 0; j < 4; j = j + 1) begin
+                for (k = 0; k < 8; k = k + 1) begin
+                    wr_data[j * 8 + k] <= i_data_d1[j + 4 * k];
+                    wr_addr[j * 8 + k] <= wr_point + j;
                 end
             end
         end
         {SIZE8 , SIZE32} : begin
-            for (i = 0; i < 1; i = i + 1) begin
-                for (j = 0; j < 8; j = j + 1) begin
-                    for (k = 0; k < 4; k = k + 1) begin
-                        wr_data[i * 32 + j * 4 + k] <= i_data_d1[i + 1 * j + 8 * k];
-                        wr_addr[i * 32 + j * 4 + k] <= wr_point + j;
-                    end
+            for (j = 0; j < 8; j = j + 1) begin
+                for (k = 0; k < 4; k = k + 1) begin
+                    wr_data[j * 4 + k] <= i_data_d1[j + 8 * k];
+                    wr_addr[j * 4 + k] <= wr_point + j;
                 end
             end
         end
         {SIZE16, SIZE32} : begin
-            for (i = 0; i < 1; i = i + 1) begin
-                for (j = 0; j < 16; j = j + 1) begin
-                    for (k = 0; k < 2; k = k + 1) begin
-                        wr_data[i * 32 + j * 2 + k] <= i_data_d1[i + 1 * j + 16 * k];
-                        wr_addr[i * 32 + j * 2 + k] <= wr_point + j;
-                    end
+            for (j = 0; j < 16; j = j + 1) begin
+                for (k = 0; k < 2; k = k + 1) begin
+                    wr_data[j * 2 + k] <= i_data_d1[j + 16 * k];
+                    wr_addr[j * 2 + k] <= wr_point + j;
                 end
             end
         end
         {SIZE32, SIZE32} : begin
-            for (i = 0; i < 1; i = i + 1) begin
-                for (j = 0; j < 32; j = j + 1) begin
-                    for (k = 0; k < 1; k = k + 1) begin
-                        wr_data[i * 32 + j * 1 + k] <= i_data_d1[i + 1 * j + 32 * k];
-                        wr_addr[i * 32 + j * 1 + k] <= wr_point + j;
-                    end
-                end
+            for (j = 0; j < 32; j = j + 1) begin
+                wr_data[j] <= i_data_d1[j];
+                wr_addr[j] <= wr_point + j;
             end
         end
         {SIZE64, SIZE32} : begin
@@ -723,7 +701,6 @@ always @(posedge clk or negedge rst_n) begin
     else if (rd_valid) 
         pop_en <= 1;
 end
-
 
 
 //decide the rd_count_max
