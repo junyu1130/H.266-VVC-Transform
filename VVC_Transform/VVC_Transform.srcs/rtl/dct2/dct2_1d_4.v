@@ -37,9 +37,6 @@ dct2_butterfly_4#(
     .IN_WIDTH   (IN_WIDTH)
 )
 u_dct2_butterfly_4(
-//system input
-    .clk    (clk                ),
-    .rst_n  (rst_n              ),
 //input data
     .i_valid(i_valid            ),
     .i_0    (i_0                ),

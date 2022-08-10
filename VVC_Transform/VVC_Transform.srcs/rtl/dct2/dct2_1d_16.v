@@ -1,7 +1,7 @@
 //describe  : 16点DCT计算
 //input     : 16个像素残差/一维变换系数
 //output    : 8个预变换系数(后需右移)+8个16_E
-//delay     : 16_E : 1 clk , 16_precoeff : 3 clk
+//delay     : 16_E : 0 clk , 16_precoeff : 2 clk
 module dct2_1d_16#(
     parameter  IN_WIDTH  = 18
 )
@@ -61,9 +61,6 @@ dct2_butterfly_16#(
     .IN_WIDTH   (IN_WIDTH)
 )
 u_dct2_butterfly_16(
-//system input
-    .clk    (clk                ),
-    .rst_n  (rst_n              ),
 //input data
     .i_valid(i_valid            ),
     .i_0    (i_0                ),

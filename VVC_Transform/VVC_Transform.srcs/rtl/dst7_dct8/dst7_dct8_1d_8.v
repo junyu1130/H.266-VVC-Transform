@@ -202,14 +202,14 @@ always @(posedge clk or negedge rst_n) begin
     end
     else begin
         o_valid <= i_valid_d1;
-        o_0 <= sum0_0[0] + sum0_1[0] + sum0_2[0] + sum0_3[0];
-        o_1 <= sum0_0[1] + sum0_1[1] + sum0_2[1] - sum0_3[1];
-        o_2 <= sum0_0[2] + sum0_1[2] - sum0_2[2] + sum0_3[2];
-        o_3 <= sum0_0[3] - sum0_1[3] + sum0_2[3] + sum0_3[3];
-        o_4 <= sum0_0[4] - sum0_1[4] + sum0_2[4] - sum0_3[4];
-        o_5 <= sum0_0[5] - sum0_1[5] - sum0_2[5] + sum0_3[5];
-        o_6 <= sum0_0[6] + sum0_1[6] - sum0_2[6] - sum0_3[6];
-        o_7 <= sum0_0[7] + sum0_1[7] + sum0_2[7] + sum0_3[7];
+        o_0 <= (sum0_0[0] + sum0_1[0]) + (+ sum0_2[0] + sum0_3[0]);
+        o_1 <= (sum0_0[1] + sum0_1[1]) + (+ sum0_2[1] - sum0_3[1]);
+        o_2 <= (sum0_0[2] + sum0_1[2]) + (- sum0_2[2] + sum0_3[2]);
+        o_3 <= (sum0_0[3] - sum0_1[3]) + (+ sum0_2[3] + sum0_3[3]);
+        o_4 <= (sum0_0[4] - sum0_1[4]) + (+ sum0_2[4] - sum0_3[4]);
+        o_5 <= (sum0_0[5] - sum0_1[5]) + (- sum0_2[5] + sum0_3[5]);
+        o_6 <= (sum0_0[6] + sum0_1[6]) + (- sum0_2[6] - sum0_3[6]);
+        o_7 <= (sum0_0[7] + sum0_1[7]) + (+ sum0_2[7] + sum0_3[7]);
     end
 end
 

@@ -6,9 +6,6 @@ module dct2_butterfly_16#(
     parameter IN_WIDTH = 18
 )
 (
-//system input
-    input                                   clk     ,
-    input                                   rst_n   ,
 //input data
     input                                   i_valid ,
     input       signed  [IN_WIDTH - 1 : 0]  i_0     ,
@@ -28,23 +25,23 @@ module dct2_butterfly_16#(
     input       signed  [IN_WIDTH - 1 : 0]  i_14    ,
     input       signed  [IN_WIDTH - 1 : 0]  i_15    ,
 //output data
-    output reg                              o_valid ,
-    output reg  signed  [IN_WIDTH     : 0]  o_0     ,//E
-    output reg  signed  [IN_WIDTH     : 0]  o_1     ,
-    output reg  signed  [IN_WIDTH     : 0]  o_2     ,
-    output reg  signed  [IN_WIDTH     : 0]  o_3     ,
-    output reg  signed  [IN_WIDTH     : 0]  o_4     ,
-    output reg  signed  [IN_WIDTH     : 0]  o_5     ,
-    output reg  signed  [IN_WIDTH     : 0]  o_6     ,
-    output reg  signed  [IN_WIDTH     : 0]  o_7     ,
-    output reg  signed  [IN_WIDTH     : 0]  o_8     ,//O
-    output reg  signed  [IN_WIDTH     : 0]  o_9     ,
-    output reg  signed  [IN_WIDTH     : 0]  o_10    ,
-    output reg  signed  [IN_WIDTH     : 0]  o_11    ,
-    output reg  signed  [IN_WIDTH     : 0]  o_12    ,
-    output reg  signed  [IN_WIDTH     : 0]  o_13    ,
-    output reg  signed  [IN_WIDTH     : 0]  o_14    ,
-    output reg  signed  [IN_WIDTH     : 0]  o_15    
+    output                              o_valid ,
+    output  signed  [IN_WIDTH     : 0]  o_0     ,//E
+    output  signed  [IN_WIDTH     : 0]  o_1     ,
+    output  signed  [IN_WIDTH     : 0]  o_2     ,
+    output  signed  [IN_WIDTH     : 0]  o_3     ,
+    output  signed  [IN_WIDTH     : 0]  o_4     ,
+    output  signed  [IN_WIDTH     : 0]  o_5     ,
+    output  signed  [IN_WIDTH     : 0]  o_6     ,
+    output  signed  [IN_WIDTH     : 0]  o_7     ,
+    output  signed  [IN_WIDTH     : 0]  o_8     ,//O
+    output  signed  [IN_WIDTH     : 0]  o_9     ,
+    output  signed  [IN_WIDTH     : 0]  o_10    ,
+    output  signed  [IN_WIDTH     : 0]  o_11    ,
+    output  signed  [IN_WIDTH     : 0]  o_12    ,
+    output  signed  [IN_WIDTH     : 0]  o_13    ,
+    output  signed  [IN_WIDTH     : 0]  o_14    ,
+    output  signed  [IN_WIDTH     : 0]  o_15    
 );
 
 //生成蝶形运算单元
@@ -67,45 +64,22 @@ module dct2_butterfly_16#(
     wire signed [IN_WIDTH : 0] O_7 = i_7 - i_8 ;
 
 //output
-always @(posedge clk or negedge rst_n) begin
-    if (!rst_n) begin
-        o_valid <= 0;
-        o_0     <= 0;
-        o_1     <= 0;
-        o_2     <= 0;
-        o_3     <= 0;
-        o_4     <= 0;
-        o_5     <= 0;
-        o_6     <= 0;
-        o_7     <= 0;
-        o_8     <= 0;
-        o_9     <= 0;
-        o_10    <= 0;
-        o_11    <= 0;
-        o_12    <= 0;
-        o_13    <= 0;
-        o_14    <= 0;
-        o_15    <= 0;
-    end
-    else begin
-        o_valid <= i_valid;
-        o_0     <= E_0;
-        o_1     <= E_1;
-        o_2     <= E_2;
-        o_3     <= E_3;
-        o_4     <= E_4;
-        o_5     <= E_5;
-        o_6     <= E_6;
-        o_7     <= E_7;
-        o_8     <= O_0;
-        o_9     <= O_1;
-        o_10    <= O_2;
-        o_11    <= O_3;
-        o_12    <= O_4;
-        o_13    <= O_5;
-        o_14    <= O_6;
-        o_15    <= O_7;
-    end
-end
+    assign o_valid = i_valid;
+    assign o_0     = E_0;
+    assign o_1     = E_1;
+    assign o_2     = E_2;
+    assign o_3     = E_3;
+    assign o_4     = E_4;
+    assign o_5     = E_5;
+    assign o_6     = E_6;
+    assign o_7     = E_7;
+    assign o_8     = O_0;
+    assign o_9     = O_1;
+    assign o_10    = O_2;
+    assign o_11    = O_3;
+    assign o_12    = O_4;
+    assign o_13    = O_5;
+    assign o_14    = O_6;
+    assign o_15    = O_7;
 
 endmodule

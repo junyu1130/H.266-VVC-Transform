@@ -1,7 +1,7 @@
 //describe  : 正序输入DST7，倒序输入DCT8(1/3/5/7/9/11/13/15输出反号)，大小为32，高频置零
 //input     : 32个像素残差
 //output    : 16个系数
-//delay     : 4 clk
+//delay     : 3 clk
 module dst7_dct8_1d_32#(
     parameter IN_WIDTH = 16
 )
@@ -67,7 +67,7 @@ integer i;
 
 //input
     wire signed [IN_WIDTH - 1 : 0] i_data[0 : 31];
-    reg i_valid_d1, i_valid_d2, i_valid_d3;
+    reg i_valid_d1, i_valid_d2;
 
     assign i_data[0 ] = i_0 ;
     assign i_data[1 ] = i_1 ;
@@ -1037,7 +1037,6 @@ end
 
 //sum
     reg signed  [IN_WIDTH + 10 : 0] sum0_0[0 : 15], sum0_1[0 : 15], sum0_2[0 : 15], sum0_3[0 : 15], sum0_4[0 : 15], sum0_5[0 : 15], sum0_6[0 : 15], sum0_7[0 : 15], sum0_8[0 : 15], sum0_9[0 : 15], sum0_10[0 : 15], sum0_11[0 : 15];
-    reg signed  [IN_WIDTH + 10 : 0] sum1_0[0 : 15], sum1_1[0 : 15];
     reg signed  [IN_WIDTH +  3 : 0] c[0 : 1];
 
 //stage 2
@@ -1089,34 +1088,6 @@ end
 //stage 3
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
-        i_valid_d3 <= 0;
-        for (i = 0; i < 16; i = i + 1) begin
-            sum1_0[i] <= 0; sum1_1[i] <= 0;
-        end
-    end
-    else begin
-        i_valid_d3 <= i_valid_d2;
-        sum1_0[0 ] <= sum0_0[0 ] + sum0_1[0 ] + sum0_2[0 ] + sum0_3[0 ] + sum0_4[0 ] + sum0_5[0 ]; sum1_1[0 ] <= sum0_6[0 ] + sum0_7[0 ] + sum0_8[0 ] + sum0_9[0 ] + sum0_10[0 ] + sum0_11[0 ];
-        sum1_0[1 ] <= sum0_0[1 ] + sum0_1[1 ] + sum0_2[1 ] + sum0_3[1 ] + sum0_4[1 ] + sum0_5[1 ]; sum1_1[1 ] <= sum0_6[1 ] + sum0_7[1 ] + sum0_8[1 ] + sum0_9[1 ] + sum0_10[1 ] + sum0_11[1 ];
-        sum1_0[2 ] <= sum0_0[2 ] + sum0_1[2 ];
-        sum1_0[3 ] <= sum0_0[3 ] + sum0_1[3 ] + sum0_2[3 ] + sum0_3[3 ] + sum0_4[3 ] + sum0_5[3 ]; sum1_1[3 ] <= sum0_6[3 ] + sum0_7[3 ] + sum0_8[3 ] + sum0_9[3 ] + sum0_10[3 ] + sum0_11[3 ];
-        sum1_0[4 ] <= sum0_0[4 ] + sum0_1[4 ] + sum0_2[4 ] + sum0_3[4 ] + sum0_4[4 ] + sum0_5[4 ]; sum1_1[4 ] <= sum0_6[4 ] + sum0_7[4 ] + sum0_8[4 ] + sum0_9[4 ] + sum0_10[4 ] + sum0_11[4 ];
-        sum1_0[5 ] <= sum0_0[5 ] + sum0_1[5 ] + sum0_2[5 ] + sum0_3[5 ] + sum0_4[5 ] + sum0_5[5 ]; sum1_1[5 ] <= sum0_6[5 ] + sum0_7[5 ] + sum0_8[5 ] + sum0_9[5 ] + sum0_10[5 ] + sum0_11[5 ];
-        sum1_0[6 ] <= c0_53 + c1_85;
-        sum1_0[7 ] <= sum0_0[7 ] + sum0_1[7 ];
-        sum1_0[8 ] <= sum0_0[8 ] + sum0_1[8 ] + sum0_2[8 ] + sum0_3[8 ] + sum0_4[8 ] + sum0_5[8 ]; sum1_1[8 ] <= sum0_6[8 ] + sum0_7[8 ] + sum0_8[8 ] + sum0_9[8 ] + sum0_10[8 ] + sum0_11[8 ];
-        sum1_0[9 ] <= sum0_0[9 ] + sum0_1[9 ] + sum0_2[9 ] + sum0_3[9 ] + sum0_4[9 ] + sum0_5[9 ]; sum1_1[9 ] <= sum0_6[9 ] + sum0_7[9 ] + sum0_8[9 ] + sum0_9[9 ] + sum0_10[9 ] + sum0_11[9 ];
-        sum1_0[10] <= sum0_0[10] + sum0_1[10] + sum0_2[10] + sum0_3[10] + sum0_4[10] + sum0_5[10]; sum1_1[10] <= sum0_6[10] + sum0_7[10] + sum0_8[10] + sum0_9[10] + sum0_10[10] + sum0_11[10];
-        sum1_0[11] <= sum0_0[11] + sum0_1[11] + sum0_2[11] + sum0_3[11] + sum0_4[11] + sum0_5[11]; sum1_1[11] <= sum0_6[11] + sum0_7[11] + sum0_8[11] + sum0_9[11] + sum0_10[11] + sum0_11[11];
-        sum1_0[12] <= sum0_0[12] + sum0_1[12];
-        sum1_0[13] <= sum0_0[13] + sum0_1[13] + sum0_2[13] + sum0_3[13] + sum0_4[13] + sum0_5[13]; sum1_1[13] <= sum0_6[13] + sum0_7[13] + sum0_8[13] + sum0_9[13] + sum0_10[13] + sum0_11[13];
-        sum1_0[14] <= sum0_0[14] + sum0_1[14] + sum0_2[14] + sum0_3[14] + sum0_4[14] + sum0_5[14]; sum1_1[14] <= sum0_6[14] + sum0_7[14] + sum0_8[14] + sum0_9[14] + sum0_10[14] + sum0_11[14];
-        sum1_0[15] <= sum0_0[15] + sum0_1[15] + sum0_2[15] + sum0_3[15] + sum0_4[15] + sum0_5[15]; sum1_1[15] <= sum0_6[15] + sum0_7[15] + sum0_8[15] + sum0_9[15] + sum0_10[15] + sum0_11[15];
-    end
-end
-//stage 4
-always @(posedge clk or negedge rst_n) begin
-    if (!rst_n) begin
         o_valid <= 0;
         o_0  <= 0;
         o_1  <= 0;
@@ -1136,23 +1107,23 @@ always @(posedge clk or negedge rst_n) begin
         o_15 <= 0;
     end
     else begin
-        o_valid <= i_valid_d3;
-        o_0  <= sum1_0[0 ] + sum1_1[0 ];
-        o_1  <= sum1_0[1 ] + sum1_1[1 ];
-        o_2  <= sum1_0[2 ];
-        o_3  <= sum1_0[3 ] + sum1_1[3 ];
-        o_4  <= sum1_0[4 ] + sum1_1[4 ];
-        o_5  <= sum1_0[5 ] + sum1_1[5 ];
-        o_6  <= sum1_0[6 ];
-        o_7  <= sum1_0[7 ];
-        o_8  <= sum1_0[8 ] + sum1_1[8 ];
-        o_9  <= sum1_0[9 ] + sum1_1[9 ];
-        o_10 <= sum1_0[10] + sum1_1[10];
-        o_11 <= sum1_0[11] + sum1_1[11];
-        o_12 <= sum1_0[12];
-        o_13 <= sum1_0[13] + sum1_1[13];
-        o_14 <= sum1_0[14] + sum1_1[14];
-        o_15 <= sum1_0[15] + sum1_1[15];
+        o_valid <= i_valid_d2;
+        o_0  <= ((sum0_0[0 ] + sum0_1[0 ]) + (sum0_2[0 ] + sum0_3[0 ]) + (sum0_4[0 ] + sum0_5[0 ])) + ((sum0_6[0 ] + sum0_7[0 ]) + (sum0_8[0 ] + sum0_9[0 ]) + (sum0_10[0 ] + sum0_11[0 ]));
+        o_1  <= ((sum0_0[1 ] + sum0_1[1 ]) + (sum0_2[1 ] + sum0_3[1 ]) + (sum0_4[1 ] + sum0_5[1 ])) + ((sum0_6[1 ] + sum0_7[1 ]) + (sum0_8[1 ] + sum0_9[1 ]) + (sum0_10[1 ] + sum0_11[1 ]));
+        o_2  <= sum0_0[2 ] + sum0_1[2 ];
+        o_3  <= ((sum0_0[3 ] + sum0_1[3 ]) + (sum0_2[3 ] + sum0_3[3 ]) + (sum0_4[3 ] + sum0_5[3 ])) + ((sum0_6[3 ] + sum0_7[3 ]) + (sum0_8[3 ] + sum0_9[3 ]) + (sum0_10[3 ] + sum0_11[3 ]));
+        o_4  <= ((sum0_0[4 ] + sum0_1[4 ]) + (sum0_2[4 ] + sum0_3[4 ]) + (sum0_4[4 ] + sum0_5[4 ])) + ((sum0_6[4 ] + sum0_7[4 ]) + (sum0_8[4 ] + sum0_9[4 ]) + (sum0_10[4 ] + sum0_11[4 ]));
+        o_5  <= ((sum0_0[5 ] + sum0_1[5 ]) + (sum0_2[5 ] + sum0_3[5 ]) + (sum0_4[5 ] + sum0_5[5 ])) + ((sum0_6[5 ] + sum0_7[5 ]) + (sum0_8[5 ] + sum0_9[5 ]) + (sum0_10[5 ] + sum0_11[5 ]));
+        o_6  <= c0_53 + c1_85;
+        o_7  <= sum0_0[7 ] + sum0_1[7 ];
+        o_8  <= ((sum0_0[8 ] + sum0_1[8 ]) + (sum0_2[8 ] + sum0_3[8 ]) + (sum0_4[8 ] + sum0_5[8 ])) + ((sum0_6[8 ] + sum0_7[8 ]) + (sum0_8[8 ] + sum0_9[8 ]) + (sum0_10[8 ] + sum0_11[8 ]));
+        o_9  <= ((sum0_0[9 ] + sum0_1[9 ]) + (sum0_2[9 ] + sum0_3[9 ]) + (sum0_4[9 ] + sum0_5[9 ])) + ((sum0_6[9 ] + sum0_7[9 ]) + (sum0_8[9 ] + sum0_9[9 ]) + (sum0_10[9 ] + sum0_11[9 ]));
+        o_10 <= ((sum0_0[10] + sum0_1[10]) + (sum0_2[10] + sum0_3[10]) + (sum0_4[10] + sum0_5[10])) + ((sum0_6[10] + sum0_7[10]) + (sum0_8[10] + sum0_9[10]) + (sum0_10[10] + sum0_11[10]));
+        o_11 <= ((sum0_0[11] + sum0_1[11]) + (sum0_2[11] + sum0_3[11]) + (sum0_4[11] + sum0_5[11])) + ((sum0_6[11] + sum0_7[11]) + (sum0_8[11] + sum0_9[11]) + (sum0_10[11] + sum0_11[11]));
+        o_12 <= sum0_0[12] + sum0_1[12];
+        o_13 <= ((sum0_0[13] + sum0_1[13]) + (sum0_2[13] + sum0_3[13]) + (sum0_4[13] + sum0_5[13])) + ((sum0_6[13] + sum0_7[13]) + (sum0_8[13] + sum0_9[13]) + (sum0_10[13] + sum0_11[13]));
+        o_14 <= ((sum0_0[14] + sum0_1[14]) + (sum0_2[14] + sum0_3[14]) + (sum0_4[14] + sum0_5[14])) + ((sum0_6[14] + sum0_7[14]) + (sum0_8[14] + sum0_9[14]) + (sum0_10[14] + sum0_11[14]));
+        o_15 <= ((sum0_0[15] + sum0_1[15]) + (sum0_2[15] + sum0_3[15]) + (sum0_4[15] + sum0_5[15])) + ((sum0_6[15] + sum0_7[15]) + (sum0_8[15] + sum0_9[15]) + (sum0_10[15] + sum0_11[15]));
     end
 end
 
