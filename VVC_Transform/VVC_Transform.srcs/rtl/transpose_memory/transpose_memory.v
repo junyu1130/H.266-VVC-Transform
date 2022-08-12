@@ -934,11 +934,12 @@ end
     dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(7)) dual_port_ram_30(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[30]), .rd_data(rd_data[30]), .wr_addr(wr_addr_shift[30]), .rd_addr(rd_point));
     dual_port_ram#(.RAM_WIDTH(WIDTH), .ADDR_LINE(7)) dual_port_ram_31(.clk(clk), .wr_en(wr_en_d1 && !is_maxblock_zero_data), .rd_en(rd_en), .wr_data(wr_data_shift[31]), .rd_data(rd_data[31]), .wr_addr(wr_addr_shift[31]), .rd_addr(rd_point));
 
-
-syn_fifo#(.DATA_WIDTH(10), .DATA_DEPTH(64))
-    syn_fifo(
-    .clk        (clk),   
-    
+fifo_ram#(
+    .DATA_WIDTH(10), 
+    .DATA_DEPTH(64)
+)
+fifo_ram(
+    .clk        (clk),     
     //write port
     .wr_en      (i_valid),
     .wr_data    ({i_type_h,i_type_v,i_width,i_height}),
