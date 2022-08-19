@@ -975,7 +975,7 @@ reg signed  [IN_WIDTH +  7 : 0] sum0_0 [0 : 15], sum0_1 [0 : 15], sum0_2 [0 : 15
                                 sum0_4 [0 : 15], sum0_5 [0 : 15], sum0_6 [0 : 15], sum0_7 [0 : 15],
                                 sum0_8 [0 : 15], sum0_9 [0 : 15], sum0_10[0 : 15], sum0_11[0 : 15],
                                 sum0_12[0 : 15], sum0_13[0 : 15], sum0_14[0 : 15], sum0_15[0 : 15];
-reg signed  [IN_WIDTH +  9 : 0] sum1_0 [0 : 15], sum1_1 [0 : 15];
+reg signed  [IN_WIDTH + 10 : 0] sum1_0 [0 : 15], sum1_1 [0 : 15];
 //stage 1
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
