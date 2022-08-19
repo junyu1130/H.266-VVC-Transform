@@ -101,52 +101,62 @@ localparam  SIZE4  = 3'd1,
 integer i;
 
 //input delay
-    reg [1 : 0] i_type_h_d[0 : 6];
+    reg [1 : 0] i_type_h_d[0 : 2];
     reg [1 : 0] i_type_v_d[0 : 6];
     reg [2 : 0] i_height_d[0 : 6];
 //serial to parallel
-    wire [2 : 0] tr_in_width;
+    wire [2 : 0] tr_in_size;
     wire tr_in_valid;
     wire signed [IN_WIDTH - 1 : 0] tr_in_data[0 : 63];
+//butterfly
+    wire [2 : 0] butterfly_out_size;
+    wire butterfly_out_valid;
+    wire signed [IN_WIDTH + 4 : 0] butterfly_out_data1[0 : 3];
+    wire signed [IN_WIDTH + 3 : 0] butterfly_out_data2[4 : 7];
+    wire signed [IN_WIDTH + 2 : 0] butterfly_out_data3[8 : 15];
+    wire signed [IN_WIDTH + 1 : 0] butterfly_out_data4[16 : 31];
+    wire signed [IN_WIDTH     : 0] butterfly_out_data5[32 : 63];
+    reg signed [IN_WIDTH - 1 : 0] tr_in_data_d1[0 : 31];
 //type mux in
-    reg [2 : 0] dct2_in_width;
-    reg dct2_in_valid;
-    reg signed [IN_WIDTH - 1 : 0] dct2_in_data[0 : 63];
-    reg [2 : 0] dst7_dct8_in_width;
-    reg dst7_dct8_in_valid;
-    reg signed [IN_WIDTH - 1 : 0] dst7_dct8_in_data[0 : 31];
+    reg signed [IN_WIDTH + 4 : 0] calculate_in_data1[0 : 3];
+    reg signed [IN_WIDTH + 3 : 0] calculate_in_data2[4 : 7];
+    reg signed [IN_WIDTH + 2 : 0] calculate_in_data3[8 : 15];
+    reg signed [IN_WIDTH + 1 : 0] calculate_in_data4[16 : 31];
+    reg signed [IN_WIDTH     : 0] calculate_in_data5[32 : 63];
+//calculate
+    wire [1 : 0] calculate_out_type;
+    wire [2 : 0] calculate_out_size;
+    wire calculate_out_valid;
+    wire signed [IN_WIDTH + 11 : 0] calculate_out_data[0 : 31];
 //type mux out
-    wire [2 : 0] dct2_out_width;
-    wire dct2_out_valid;
-    wire signed [IN_WIDTH + 11 : 0] dct2_out_data[0 : 31];
-    wire [2 : 0] dst7_dct8_out_width;
-    wire dst7_dct8_out_valid;
-    wire signed [IN_WIDTH + 10 : 0] dst7_dct8_out_data[0 : 31];
-    reg [2 : 0] tr_out_width;
-    reg tr_out_valid;
     reg signed [IN_WIDTH + 11 : 0] tr_out_data[0 : 31];
 //shift
+    reg [1 : 0] calculate_out_type_d1;
     reg [3 : 0] tr_shift;
-    wire [2 : 0] coeff_out_width;
+    wire [2 : 0] coeff_out_size;
     wire coeff_out_valid;
     wire signed [OUT_WIDTH - 1 : 0] coeff_out_data[0 : 31];
 
 //delay
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin 
+        for (i = 0; i < 3; i = i + 1) begin
+            i_type_h_d[i] <= 0;
+        end
         for (i = 0; i < 7; i = i + 1) begin
             i_height_d[i] <= 0;
-            i_type_h_d[i] <= 0;
             i_type_v_d[i] <= 0;
         end
     end
     else begin
-        i_height_d[0] <= i_height;
         i_type_h_d[0] <= i_type_h;
+        for (i = 0; i < 2; i = i + 1) begin
+            i_type_h_d[i + 1] <= i_type_h_d[i];
+        end
+        i_height_d[0] <= i_height;
         i_type_v_d[0] <= i_type_v;
         for (i = 0; i < 6; i = i + 1) begin
             i_height_d[i + 1] <= i_height_d[i];
-            i_type_h_d[i + 1] <= i_type_h_d[i];
             i_type_v_d[i + 1] <= i_type_v_d[i];
         end
     end
@@ -198,7 +208,7 @@ u_serial_to_parallel(
     .i_30       (i_30           ),
     .i_31       (i_31           ),
 //output parameter
-    .o_size     (tr_in_width    ),
+    .o_size     (tr_in_size     ),
 //output data
     .o_valid    (tr_in_valid    ),
     .o_0        (tr_in_data[0 ] ),
@@ -267,66 +277,236 @@ u_serial_to_parallel(
     .o_63       (tr_in_data[63] )
 );
 
+dct2_butterfly#(
+    .IN_WIDTH   (IN_WIDTH)
+)
+u_dct2_butterfly(
+//system input
+    .clk        (clk                    ),
+    .rst_n      (rst_n                  ),
+//input parameter
+    .i_size     (tr_in_size             ),
+//input data
+    .i_valid    (tr_in_valid            ),
+    .i_0        (tr_in_data[0 ]         ),
+    .i_1        (tr_in_data[1 ]         ),
+    .i_2        (tr_in_data[2 ]         ),
+    .i_3        (tr_in_data[3 ]         ),
+    .i_4        (tr_in_data[4 ]         ),
+    .i_5        (tr_in_data[5 ]         ),
+    .i_6        (tr_in_data[6 ]         ),
+    .i_7        (tr_in_data[7 ]         ),
+    .i_8        (tr_in_data[8 ]         ),
+    .i_9        (tr_in_data[9 ]         ),
+    .i_10       (tr_in_data[10]         ),
+    .i_11       (tr_in_data[11]         ),
+    .i_12       (tr_in_data[12]         ),
+    .i_13       (tr_in_data[13]         ),
+    .i_14       (tr_in_data[14]         ),
+    .i_15       (tr_in_data[15]         ),
+    .i_16       (tr_in_data[16]         ),
+    .i_17       (tr_in_data[17]         ),
+    .i_18       (tr_in_data[18]         ),
+    .i_19       (tr_in_data[19]         ),
+    .i_20       (tr_in_data[20]         ),
+    .i_21       (tr_in_data[21]         ),
+    .i_22       (tr_in_data[22]         ),
+    .i_23       (tr_in_data[23]         ),
+    .i_24       (tr_in_data[24]         ),
+    .i_25       (tr_in_data[25]         ),
+    .i_26       (tr_in_data[26]         ),
+    .i_27       (tr_in_data[27]         ),
+    .i_28       (tr_in_data[28]         ),
+    .i_29       (tr_in_data[29]         ),
+    .i_30       (tr_in_data[30]         ),
+    .i_31       (tr_in_data[31]         ),
+    .i_32       (tr_in_data[32]         ),
+    .i_33       (tr_in_data[33]         ),
+    .i_34       (tr_in_data[34]         ),
+    .i_35       (tr_in_data[35]         ),
+    .i_36       (tr_in_data[36]         ),
+    .i_37       (tr_in_data[37]         ),
+    .i_38       (tr_in_data[38]         ),
+    .i_39       (tr_in_data[39]         ),
+    .i_40       (tr_in_data[40]         ),
+    .i_41       (tr_in_data[41]         ),
+    .i_42       (tr_in_data[42]         ),
+    .i_43       (tr_in_data[43]         ),
+    .i_44       (tr_in_data[44]         ),
+    .i_45       (tr_in_data[45]         ),
+    .i_46       (tr_in_data[46]         ),
+    .i_47       (tr_in_data[47]         ),
+    .i_48       (tr_in_data[48]         ),
+    .i_49       (tr_in_data[49]         ),
+    .i_50       (tr_in_data[50]         ),
+    .i_51       (tr_in_data[51]         ),
+    .i_52       (tr_in_data[52]         ),
+    .i_53       (tr_in_data[53]         ),
+    .i_54       (tr_in_data[54]         ),
+    .i_55       (tr_in_data[55]         ),
+    .i_56       (tr_in_data[56]         ),
+    .i_57       (tr_in_data[57]         ),
+    .i_58       (tr_in_data[58]         ),
+    .i_59       (tr_in_data[59]         ),
+    .i_60       (tr_in_data[60]         ),
+    .i_61       (tr_in_data[61]         ),
+    .i_62       (tr_in_data[62]         ),
+    .i_63       (tr_in_data[63]         ),
+//output parameter
+    .o_size     (butterfly_out_size     ),
+//output data
+    .o_valid    (butterfly_out_valid    ),
+    .o_0        (butterfly_out_data1[0 ]),
+    .o_1        (butterfly_out_data1[1 ]),
+    .o_2        (butterfly_out_data1[2 ]),
+    .o_3        (butterfly_out_data1[3 ]),
+    .o_4        (butterfly_out_data2[4 ]),
+    .o_5        (butterfly_out_data2[5 ]),
+    .o_6        (butterfly_out_data2[6 ]),
+    .o_7        (butterfly_out_data2[7 ]),
+    .o_8        (butterfly_out_data3[8 ]),
+    .o_9        (butterfly_out_data3[9 ]),
+    .o_10       (butterfly_out_data3[10]),
+    .o_11       (butterfly_out_data3[11]),
+    .o_12       (butterfly_out_data3[12]),
+    .o_13       (butterfly_out_data3[13]),
+    .o_14       (butterfly_out_data3[14]),
+    .o_15       (butterfly_out_data3[15]),
+    .o_16       (butterfly_out_data4[16]),
+    .o_17       (butterfly_out_data4[17]),
+    .o_18       (butterfly_out_data4[18]),
+    .o_19       (butterfly_out_data4[19]),
+    .o_20       (butterfly_out_data4[20]),
+    .o_21       (butterfly_out_data4[21]),
+    .o_22       (butterfly_out_data4[22]),
+    .o_23       (butterfly_out_data4[23]),
+    .o_24       (butterfly_out_data4[24]),
+    .o_25       (butterfly_out_data4[25]),
+    .o_26       (butterfly_out_data4[26]),
+    .o_27       (butterfly_out_data4[27]),
+    .o_28       (butterfly_out_data4[28]),
+    .o_29       (butterfly_out_data4[29]),
+    .o_30       (butterfly_out_data4[30]),
+    .o_31       (butterfly_out_data4[31]),
+    .o_32       (butterfly_out_data5[32]),
+    .o_33       (butterfly_out_data5[33]),
+    .o_34       (butterfly_out_data5[34]),
+    .o_35       (butterfly_out_data5[35]),
+    .o_36       (butterfly_out_data5[36]),
+    .o_37       (butterfly_out_data5[37]),
+    .o_38       (butterfly_out_data5[38]),
+    .o_39       (butterfly_out_data5[39]),
+    .o_40       (butterfly_out_data5[40]),
+    .o_41       (butterfly_out_data5[41]),
+    .o_42       (butterfly_out_data5[42]),
+    .o_43       (butterfly_out_data5[43]),
+    .o_44       (butterfly_out_data5[44]),
+    .o_45       (butterfly_out_data5[45]),
+    .o_46       (butterfly_out_data5[46]),
+    .o_47       (butterfly_out_data5[47]),
+    .o_48       (butterfly_out_data5[48]),
+    .o_49       (butterfly_out_data5[49]),
+    .o_50       (butterfly_out_data5[50]),
+    .o_51       (butterfly_out_data5[51]),
+    .o_52       (butterfly_out_data5[52]),
+    .o_53       (butterfly_out_data5[53]),
+    .o_54       (butterfly_out_data5[54]),
+    .o_55       (butterfly_out_data5[55]),
+    .o_56       (butterfly_out_data5[56]),
+    .o_57       (butterfly_out_data5[57]),
+    .o_58       (butterfly_out_data5[58]),
+    .o_59       (butterfly_out_data5[59]),
+    .o_60       (butterfly_out_data5[60]),
+    .o_61       (butterfly_out_data5[61]),
+    .o_62       (butterfly_out_data5[62]),
+    .o_63       (butterfly_out_data5[63])
+);
+
+//no butterfly delay 1 clk
+always @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+        for (i = 0; i < 32; i = i + 1) begin
+            tr_in_data_d1[i] <= 0; 
+        end
+    end
+    else begin
+        for (i = 0; i < 32; i = i + 1) begin
+            tr_in_data_d1[i] <= tr_in_data[i]; 
+        end
+    end
+end
+
 //type mux in
 always @(*) begin
-    dct2_in_width <= 0;
-    dct2_in_valid <= 0;
-    for (i = 0; i < 64; i = i + 1) begin
-        dct2_in_data[i] <= 0;
+    for (i = 0; i < 4; i = i + 1) begin
+        calculate_in_data1[i] <= 0;
     end
-    dst7_dct8_in_width <= 0;
-    dst7_dct8_in_valid <= 0;
-    for (i = 0; i < 32; i = i + 1) begin
-        dst7_dct8_in_data[i] <= 0;
+    for (i = 4; i < 8; i = i + 1) begin
+        calculate_in_data2[i] <= 0;
     end
-    case (i_type_h_d[1]) 
+    for (i = 8; i < 16; i = i + 1) begin
+        calculate_in_data3[i] <= 0;
+    end
+    for (i = 16; i < 32; i = i + 1) begin
+        calculate_in_data4[i] <= 0;
+    end
+    for (i = 32; i < 64; i = i + 1) begin
+        calculate_in_data5[i] <= 0;
+    end
+    case (i_type_h_d[2]) 
         DCT2    : begin
-            dct2_in_width <= tr_in_width;
-            dct2_in_valid <= tr_in_valid;
-            for (i = 0; i < 64; i = i + 1) begin
-                dct2_in_data[i] <= tr_in_data[i];
+            for (i = 0; i < 4; i = i + 1) begin
+                calculate_in_data1[i] <= butterfly_out_data1[i];
+            end
+            for (i = 4; i < 8; i = i + 1) begin
+                calculate_in_data2[i] <= butterfly_out_data2[i];
+            end
+            for (i = 8; i < 16; i = i + 1) begin
+                calculate_in_data3[i] <= butterfly_out_data3[i];
+            end
+            for (i = 16; i < 32; i = i + 1) begin
+                calculate_in_data4[i] <= butterfly_out_data4[i];
+            end
+            for (i = 32; i < 64; i = i + 1) begin
+                calculate_in_data5[i] <= butterfly_out_data5[i];
             end
         end
         DST7    : begin
-            dst7_dct8_in_width <= tr_in_width;
-            dst7_dct8_in_valid <= tr_in_valid;
             for (i = 0; i < 32; i = i + 1) begin
-                dst7_dct8_in_data[i] <= tr_in_data[i];
+                calculate_in_data5[i + 32] <= tr_in_data_d1[i];
             end
         end
         DCT8    : begin //reverse input
-            dst7_dct8_in_width <= tr_in_width;
-            dst7_dct8_in_valid <= tr_in_valid;
-            case (tr_in_width)
+            case (butterfly_out_size)
                 SIZE32 : begin
                     for (i = 0; i < 32; i = i + 1) begin
-                        dst7_dct8_in_data[i] <= tr_in_data[31 - i];
+                        calculate_in_data5[32 + i] <= tr_in_data_d1[31 - i];
                     end
                 end
                 SIZE16 : begin
                     for (i = 0; i < 16; i = i + 1) begin
-                        dst7_dct8_in_data[i] <= tr_in_data[15 - i];
-                        dst7_dct8_in_data[16 + i] <= tr_in_data[31 - i];
+                        calculate_in_data5[32 + i] <= tr_in_data_d1[15 - i];
+                        calculate_in_data5[48 + i] <= tr_in_data_d1[31 - i];
                     end
                 end
                 SIZE8 : begin
                     for (i = 0; i < 8; i = i + 1) begin
-                        dst7_dct8_in_data[i] <= tr_in_data[7 - i];
-                        dst7_dct8_in_data[8 + i] <= tr_in_data[15 - i];
-                        dst7_dct8_in_data[16 + i] <= tr_in_data[23 - i];
-                        dst7_dct8_in_data[24 + i] <= tr_in_data[31 - i];
+                        calculate_in_data5[32 + i] <= tr_in_data_d1[7 - i];
+                        calculate_in_data5[40 + i] <= tr_in_data_d1[15 - i];
+                        calculate_in_data5[48 + i] <= tr_in_data_d1[23 - i];
+                        calculate_in_data5[56 + i] <= tr_in_data_d1[31 - i];
                     end
                 end
                 SIZE4 : begin
                     for (i = 0; i < 4; i = i + 1) begin
-                        dst7_dct8_in_data[i] <= tr_in_data[3 - i];
-                        dst7_dct8_in_data[4 + i] <= tr_in_data[7 - i];
-                        dst7_dct8_in_data[8 + i] <= tr_in_data[11 - i];
-                        dst7_dct8_in_data[12 + i] <= tr_in_data[15 - i];
-                        dst7_dct8_in_data[16 + i] <= tr_in_data[19 - i];
-                        dst7_dct8_in_data[20 + i] <= tr_in_data[23 - i];
-                        dst7_dct8_in_data[24 + i] <= tr_in_data[27 - i];
-                        dst7_dct8_in_data[28 + i] <= tr_in_data[31 - i];
+                        calculate_in_data5[32 + i] <= tr_in_data_d1[3 - i];
+                        calculate_in_data5[36 + i] <= tr_in_data_d1[7 - i];
+                        calculate_in_data5[40 + i] <= tr_in_data_d1[11 - i];
+                        calculate_in_data5[44 + i] <= tr_in_data_d1[15 - i];
+                        calculate_in_data5[48 + i] <= tr_in_data_d1[19 - i];
+                        calculate_in_data5[52 + i] <= tr_in_data_d1[23 - i];
+                        calculate_in_data5[56 + i] <= tr_in_data_d1[27 - i];
+                        calculate_in_data5[60 + i] <= tr_in_data_d1[31 - i];
                     end
                 end
             endcase
@@ -334,234 +514,144 @@ always @(*) begin
     endcase
 end
 
-//dct2
-dct2_1d#(
-    .IN_WIDTH   (IN_WIDTH       ),
-    .OUT_WIDTH  (IN_WIDTH + 12  )
+tranform1d_calculate#(
+    .IN_WIDTH   (IN_WIDTH + 1),
+    .OUT_WIDTH  (IN_WIDTH + 12)
 )
-u_dct2_1d(
+u_tranform1d_calculate(
 //system input
-    .clk     (clk               ),
-    .rst_n   (rst_n             ),
+    .clk        (clk                    ),
+    .rst_n      (rst_n                  ),
 //input parameter
-    .i_size  (dct2_in_width     ),
+    .i_type     (i_type_h_d[2]          ),
+    .i_size     (butterfly_out_size     ),
 //input data
-    .i_valid (dct2_in_valid     ),
-    .i_0     (dct2_in_data[0 ]  ),
-    .i_1     (dct2_in_data[1 ]  ),
-    .i_2     (dct2_in_data[2 ]  ),
-    .i_3     (dct2_in_data[3 ]  ),
-    .i_4     (dct2_in_data[4 ]  ),
-    .i_5     (dct2_in_data[5 ]  ),
-    .i_6     (dct2_in_data[6 ]  ),
-    .i_7     (dct2_in_data[7 ]  ),
-    .i_8     (dct2_in_data[8 ]  ),
-    .i_9     (dct2_in_data[9 ]  ),
-    .i_10    (dct2_in_data[10]  ),
-    .i_11    (dct2_in_data[11]  ),
-    .i_12    (dct2_in_data[12]  ),
-    .i_13    (dct2_in_data[13]  ),
-    .i_14    (dct2_in_data[14]  ),
-    .i_15    (dct2_in_data[15]  ),
-    .i_16    (dct2_in_data[16]  ),
-    .i_17    (dct2_in_data[17]  ),
-    .i_18    (dct2_in_data[18]  ),
-    .i_19    (dct2_in_data[19]  ),
-    .i_20    (dct2_in_data[20]  ),
-    .i_21    (dct2_in_data[21]  ),
-    .i_22    (dct2_in_data[22]  ),
-    .i_23    (dct2_in_data[23]  ),
-    .i_24    (dct2_in_data[24]  ),
-    .i_25    (dct2_in_data[25]  ),
-    .i_26    (dct2_in_data[26]  ),
-    .i_27    (dct2_in_data[27]  ),
-    .i_28    (dct2_in_data[28]  ),
-    .i_29    (dct2_in_data[29]  ),
-    .i_30    (dct2_in_data[30]  ),
-    .i_31    (dct2_in_data[31]  ),
-    .i_32    (dct2_in_data[32]  ),
-    .i_33    (dct2_in_data[33]  ),
-    .i_34    (dct2_in_data[34]  ),
-    .i_35    (dct2_in_data[35]  ),
-    .i_36    (dct2_in_data[36]  ),
-    .i_37    (dct2_in_data[37]  ),
-    .i_38    (dct2_in_data[38]  ),
-    .i_39    (dct2_in_data[39]  ),
-    .i_40    (dct2_in_data[40]  ),
-    .i_41    (dct2_in_data[41]  ),
-    .i_42    (dct2_in_data[42]  ),
-    .i_43    (dct2_in_data[43]  ),
-    .i_44    (dct2_in_data[44]  ),
-    .i_45    (dct2_in_data[45]  ),
-    .i_46    (dct2_in_data[46]  ),
-    .i_47    (dct2_in_data[47]  ),
-    .i_48    (dct2_in_data[48]  ),
-    .i_49    (dct2_in_data[49]  ),
-    .i_50    (dct2_in_data[50]  ),
-    .i_51    (dct2_in_data[51]  ),
-    .i_52    (dct2_in_data[52]  ),
-    .i_53    (dct2_in_data[53]  ),
-    .i_54    (dct2_in_data[54]  ),
-    .i_55    (dct2_in_data[55]  ),
-    .i_56    (dct2_in_data[56]  ),
-    .i_57    (dct2_in_data[57]  ),
-    .i_58    (dct2_in_data[58]  ),
-    .i_59    (dct2_in_data[59]  ),
-    .i_60    (dct2_in_data[60]  ),
-    .i_61    (dct2_in_data[61]  ),
-    .i_62    (dct2_in_data[62]  ),
-    .i_63    (dct2_in_data[63]  ),
+    .i_valid    (butterfly_out_valid    ),
+    .i_0        (calculate_in_data1[0 ] ),
+    .i_1        (calculate_in_data1[1 ] ),
+    .i_2        (calculate_in_data1[2 ] ),
+    .i_3        (calculate_in_data1[3 ] ),
+    .i_4        (calculate_in_data2[4 ] ),
+    .i_5        (calculate_in_data2[5 ] ),
+    .i_6        (calculate_in_data2[6 ] ),
+    .i_7        (calculate_in_data2[7 ] ),
+    .i_8        (calculate_in_data3[8 ] ),
+    .i_9        (calculate_in_data3[9 ] ),
+    .i_10       (calculate_in_data3[10] ),
+    .i_11       (calculate_in_data3[11] ),
+    .i_12       (calculate_in_data3[12] ),
+    .i_13       (calculate_in_data3[13] ),
+    .i_14       (calculate_in_data3[14] ),
+    .i_15       (calculate_in_data3[15] ),
+    .i_16       (calculate_in_data4[16] ),
+    .i_17       (calculate_in_data4[17] ),
+    .i_18       (calculate_in_data4[18] ),
+    .i_19       (calculate_in_data4[19] ),
+    .i_20       (calculate_in_data4[20] ),
+    .i_21       (calculate_in_data4[21] ),
+    .i_22       (calculate_in_data4[22] ),
+    .i_23       (calculate_in_data4[23] ),
+    .i_24       (calculate_in_data4[24] ),
+    .i_25       (calculate_in_data4[25] ),
+    .i_26       (calculate_in_data4[26] ),
+    .i_27       (calculate_in_data4[27] ),
+    .i_28       (calculate_in_data4[28] ),
+    .i_29       (calculate_in_data4[29] ),
+    .i_30       (calculate_in_data4[30] ),
+    .i_31       (calculate_in_data4[31] ),
+    .i_32       (calculate_in_data5[32] ),
+    .i_33       (calculate_in_data5[33] ),
+    .i_34       (calculate_in_data5[34] ),
+    .i_35       (calculate_in_data5[35] ),
+    .i_36       (calculate_in_data5[36] ),
+    .i_37       (calculate_in_data5[37] ),
+    .i_38       (calculate_in_data5[38] ),
+    .i_39       (calculate_in_data5[39] ),
+    .i_40       (calculate_in_data5[40] ),
+    .i_41       (calculate_in_data5[41] ),
+    .i_42       (calculate_in_data5[42] ),
+    .i_43       (calculate_in_data5[43] ),
+    .i_44       (calculate_in_data5[44] ),
+    .i_45       (calculate_in_data5[45] ),
+    .i_46       (calculate_in_data5[46] ),
+    .i_47       (calculate_in_data5[47] ),
+    .i_48       (calculate_in_data5[48] ),
+    .i_49       (calculate_in_data5[49] ),
+    .i_50       (calculate_in_data5[50] ),
+    .i_51       (calculate_in_data5[51] ),
+    .i_52       (calculate_in_data5[52] ),
+    .i_53       (calculate_in_data5[53] ),
+    .i_54       (calculate_in_data5[54] ),
+    .i_55       (calculate_in_data5[55] ),
+    .i_56       (calculate_in_data5[56] ),
+    .i_57       (calculate_in_data5[57] ),
+    .i_58       (calculate_in_data5[58] ),
+    .i_59       (calculate_in_data5[59] ),
+    .i_60       (calculate_in_data5[60] ),
+    .i_61       (calculate_in_data5[61] ),
+    .i_62       (calculate_in_data5[62] ),
+    .i_63       (calculate_in_data5[63] ),
 //output parameter
-    .o_size  (dct2_out_width    ),
-//output 1st stage's coeff
-    .o_valid (dct2_out_valid    ),
-    .o_0     (dct2_out_data[0 ] ),
-    .o_1     (dct2_out_data[1 ] ),
-    .o_2     (dct2_out_data[2 ] ),
-    .o_3     (dct2_out_data[3 ] ),
-    .o_4     (dct2_out_data[4 ] ),
-    .o_5     (dct2_out_data[5 ] ),
-    .o_6     (dct2_out_data[6 ] ),
-    .o_7     (dct2_out_data[7 ] ),
-    .o_8     (dct2_out_data[8 ] ),
-    .o_9     (dct2_out_data[9 ] ),
-    .o_10    (dct2_out_data[10] ),
-    .o_11    (dct2_out_data[11] ),
-    .o_12    (dct2_out_data[12] ),
-    .o_13    (dct2_out_data[13] ),
-    .o_14    (dct2_out_data[14] ),
-    .o_15    (dct2_out_data[15] ),
-    .o_16    (dct2_out_data[16] ),
-    .o_17    (dct2_out_data[17] ),
-    .o_18    (dct2_out_data[18] ),
-    .o_19    (dct2_out_data[19] ),
-    .o_20    (dct2_out_data[20] ),
-    .o_21    (dct2_out_data[21] ),
-    .o_22    (dct2_out_data[22] ),
-    .o_23    (dct2_out_data[23] ),
-    .o_24    (dct2_out_data[24] ),
-    .o_25    (dct2_out_data[25] ),
-    .o_26    (dct2_out_data[26] ),
-    .o_27    (dct2_out_data[27] ),
-    .o_28    (dct2_out_data[28] ),
-    .o_29    (dct2_out_data[29] ),
-    .o_30    (dct2_out_data[30] ),
-    .o_31    (dct2_out_data[31] )
-); 
-
-//dst7/dct8
-dst7_dct8_1d#(
-    .IN_WIDTH   (IN_WIDTH           ),
-    .OUT_WIDTH  (IN_WIDTH + 11      )
-)
-u_dst7_dct8_1d(
-//system input
-    .clk     (clk                   ),
-    .rst_n   (rst_n                 ),
-//input parameter
-    .i_size  (dst7_dct8_in_width    ),
-//input data
-    .i_valid (dst7_dct8_in_valid    ),
-    .i_0     (dst7_dct8_in_data[0 ] ),
-    .i_1     (dst7_dct8_in_data[1 ] ),
-    .i_2     (dst7_dct8_in_data[2 ] ),
-    .i_3     (dst7_dct8_in_data[3 ] ),
-    .i_4     (dst7_dct8_in_data[4 ] ),
-    .i_5     (dst7_dct8_in_data[5 ] ),
-    .i_6     (dst7_dct8_in_data[6 ] ),
-    .i_7     (dst7_dct8_in_data[7 ] ),
-    .i_8     (dst7_dct8_in_data[8 ] ),
-    .i_9     (dst7_dct8_in_data[9 ] ),
-    .i_10    (dst7_dct8_in_data[10] ),
-    .i_11    (dst7_dct8_in_data[11] ),
-    .i_12    (dst7_dct8_in_data[12] ),
-    .i_13    (dst7_dct8_in_data[13] ),
-    .i_14    (dst7_dct8_in_data[14] ),
-    .i_15    (dst7_dct8_in_data[15] ),
-    .i_16    (dst7_dct8_in_data[16] ),
-    .i_17    (dst7_dct8_in_data[17] ),
-    .i_18    (dst7_dct8_in_data[18] ),
-    .i_19    (dst7_dct8_in_data[19] ),
-    .i_20    (dst7_dct8_in_data[20] ),
-    .i_21    (dst7_dct8_in_data[21] ),
-    .i_22    (dst7_dct8_in_data[22] ),
-    .i_23    (dst7_dct8_in_data[23] ),
-    .i_24    (dst7_dct8_in_data[24] ),
-    .i_25    (dst7_dct8_in_data[25] ),
-    .i_26    (dst7_dct8_in_data[26] ),
-    .i_27    (dst7_dct8_in_data[27] ),
-    .i_28    (dst7_dct8_in_data[28] ),
-    .i_29    (dst7_dct8_in_data[29] ),
-    .i_30    (dst7_dct8_in_data[30] ),
-    .i_31    (dst7_dct8_in_data[31] ),
-//output parameter
-    .o_size  (dst7_dct8_out_width   ),
-//output 1st stage's coeff
-    .o_valid (dst7_dct8_out_valid   ),
-    .o_0     (dst7_dct8_out_data[0 ]),
-    .o_1     (dst7_dct8_out_data[1 ]),
-    .o_2     (dst7_dct8_out_data[2 ]),
-    .o_3     (dst7_dct8_out_data[3 ]),
-    .o_4     (dst7_dct8_out_data[4 ]),
-    .o_5     (dst7_dct8_out_data[5 ]),
-    .o_6     (dst7_dct8_out_data[6 ]),
-    .o_7     (dst7_dct8_out_data[7 ]),
-    .o_8     (dst7_dct8_out_data[8 ]),
-    .o_9     (dst7_dct8_out_data[9 ]),
-    .o_10    (dst7_dct8_out_data[10]),
-    .o_11    (dst7_dct8_out_data[11]),
-    .o_12    (dst7_dct8_out_data[12]),
-    .o_13    (dst7_dct8_out_data[13]),
-    .o_14    (dst7_dct8_out_data[14]),
-    .o_15    (dst7_dct8_out_data[15]),
-    .o_16    (dst7_dct8_out_data[16]),
-    .o_17    (dst7_dct8_out_data[17]),
-    .o_18    (dst7_dct8_out_data[18]),
-    .o_19    (dst7_dct8_out_data[19]),
-    .o_20    (dst7_dct8_out_data[20]),
-    .o_21    (dst7_dct8_out_data[21]),
-    .o_22    (dst7_dct8_out_data[22]),
-    .o_23    (dst7_dct8_out_data[23]),
-    .o_24    (dst7_dct8_out_data[24]),
-    .o_25    (dst7_dct8_out_data[25]),
-    .o_26    (dst7_dct8_out_data[26]),
-    .o_27    (dst7_dct8_out_data[27]),
-    .o_28    (dst7_dct8_out_data[28]),
-    .o_29    (dst7_dct8_out_data[29]),
-    .o_30    (dst7_dct8_out_data[30]),
-    .o_31    (dst7_dct8_out_data[31])
-); 
+    .o_type     (calculate_out_type     ),
+    .o_size     (calculate_out_size     ),
+//output data
+    .o_valid    (calculate_out_valid    ),
+    .o_0        (calculate_out_data[0 ] ),
+    .o_1        (calculate_out_data[1 ] ),
+    .o_2        (calculate_out_data[2 ] ),
+    .o_3        (calculate_out_data[3 ] ),
+    .o_4        (calculate_out_data[4 ] ),
+    .o_5        (calculate_out_data[5 ] ),
+    .o_6        (calculate_out_data[6 ] ),
+    .o_7        (calculate_out_data[7 ] ),
+    .o_8        (calculate_out_data[8 ] ),
+    .o_9        (calculate_out_data[9 ] ),
+    .o_10       (calculate_out_data[10] ),
+    .o_11       (calculate_out_data[11] ),
+    .o_12       (calculate_out_data[12] ),
+    .o_13       (calculate_out_data[13] ),
+    .o_14       (calculate_out_data[14] ),
+    .o_15       (calculate_out_data[15] ),
+    .o_16       (calculate_out_data[16] ),
+    .o_17       (calculate_out_data[17] ),
+    .o_18       (calculate_out_data[18] ),
+    .o_19       (calculate_out_data[19] ),
+    .o_20       (calculate_out_data[20] ),
+    .o_21       (calculate_out_data[21] ),
+    .o_22       (calculate_out_data[22] ),
+    .o_23       (calculate_out_data[23] ),
+    .o_24       (calculate_out_data[24] ),
+    .o_25       (calculate_out_data[25] ),
+    .o_26       (calculate_out_data[26] ),
+    .o_27       (calculate_out_data[27] ),
+    .o_28       (calculate_out_data[28] ),
+    .o_29       (calculate_out_data[29] ),
+    .o_30       (calculate_out_data[30] ),
+    .o_31       (calculate_out_data[31] )
+);
 
 //type mux out
 always @(*) begin
-    tr_out_width <= 0;
-    tr_out_valid <= 0;
     for (i = 0; i < 32; i = i + 1) begin
         tr_out_data[i] <= 0;
     end
-    case (i_type_h_d[5]) 
+    case (calculate_out_type) 
         DCT2    : begin
-            tr_out_width <= dct2_out_width;
-            tr_out_valid <= dct2_out_valid;
             for (i = 0; i < 32; i = i + 1) begin
-                tr_out_data[i] <= dct2_out_data[i];
+                tr_out_data[i] <= calculate_out_data[i];
             end
         end
         DST7    : begin
-            tr_out_width <= dst7_dct8_out_width;
-            tr_out_valid <= dst7_dct8_out_valid;
             for (i = 0; i < 32; i = i + 1) begin
-                tr_out_data[i] <= dst7_dct8_out_data[i];
+                tr_out_data[i] <= calculate_out_data[i];
             end
         end
         DCT8    : begin //odd line reverse sign
-            tr_out_width <= dst7_dct8_out_width;
-            tr_out_valid <= dst7_dct8_out_valid;
             for (i = 0; i < 32; i = i + 2) begin
-                tr_out_data[i] <= dst7_dct8_out_data[i];
+                tr_out_data[i] <= calculate_out_data[i];
             end
             for (i = 1; i < 32; i = i + 2) begin
-                tr_out_data[i] <= -dst7_dct8_out_data[i];
+                tr_out_data[i] <= -calculate_out_data[i];
             end
         end
     endcase
@@ -569,7 +659,7 @@ end
 
 //shift
 always @(*) begin
-    case (tr_out_width)//first stage : log2(Width) + BitDepth - 9
+    case (calculate_out_size)//first stage : log2(Width) + BitDepth - 9
         SIZE4   : tr_shift <= IN_WIDTH - 8;
         SIZE8   : tr_shift <= IN_WIDTH - 7;
         SIZE16  : tr_shift <= IN_WIDTH - 6;
@@ -589,9 +679,9 @@ u_right_shift(
     .rst_n      (rst_n              ),
 //input parameter
     .i_shift    (tr_shift           ),
-    .i_size     (tr_out_width       ),
+    .i_size     (calculate_out_size ),
 //input pre_coeff
-    .i_valid    (tr_out_valid       ),
+    .i_valid    (calculate_out_valid),
     .i_0        (tr_out_data[0 ]    ),
     .i_1        (tr_out_data[1 ]    ),
     .i_2        (tr_out_data[2 ]    ),
@@ -625,7 +715,7 @@ u_right_shift(
     .i_30       (tr_out_data[30]    ),
     .i_31       (tr_out_data[31]    ),
 //output parameter
-    .o_size     (coeff_out_width    ),
+    .o_size     (coeff_out_size     ),
 //output coeff
     .o_valid    (coeff_out_valid    ),
     .o_0        (coeff_out_data[0 ] ),
@@ -662,10 +752,20 @@ u_right_shift(
     .o_31       (coeff_out_data[31] )
 );  
 
+//delay
+always @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin 
+        calculate_out_type_d1 <= 0;
+    end
+    else begin
+        calculate_out_type_d1 <= calculate_out_type;
+    end
+end
+
 //output
-    assign o_type_h = i_type_h_d[6];
+    assign o_type_h = calculate_out_type_d1;
     assign o_type_v = i_type_v_d[6];
-    assign o_width  = coeff_out_width;
+    assign o_width  = coeff_out_size;
     assign o_height = i_height_d[6];
     assign o_valid  = coeff_out_valid;
     assign o_0      = coeff_out_data[0 ];
