@@ -2,7 +2,7 @@
 //input     : 16个像素残差
 //output    : 16个变换系数
 //delay     : 279(64x64) / 151(other) clk
-module transform2d_top#(
+module transform_top#(
     parameter  BIT_DEPTH = 8,
     parameter  OUT_WIDTH = 16
 )
@@ -73,8 +73,81 @@ integer i;
     wire transpose_out_valid;
     wire signed [OUT_WIDTH - 1 : 0] transpose_out[0 : 15];
 
+
+    reg     [1 : 0]     i_type_h_d1;  
+    reg     [1 : 0]     i_type_v_d1;  
+    reg     [2 : 0]     i_width_d1 ;  
+    reg     [2 : 0]     i_height_d1;  
+
+    reg                               i_valid_d1;
+    reg   signed  [BIT_DEPTH : 0]     i_0_d1    ;
+    reg   signed  [BIT_DEPTH : 0]     i_1_d1    ;
+    reg   signed  [BIT_DEPTH : 0]     i_2_d1    ;
+    reg   signed  [BIT_DEPTH : 0]     i_3_d1    ;
+    reg   signed  [BIT_DEPTH : 0]     i_4_d1    ;
+    reg   signed  [BIT_DEPTH : 0]     i_5_d1    ;
+    reg   signed  [BIT_DEPTH : 0]     i_6_d1    ;
+    reg   signed  [BIT_DEPTH : 0]     i_7_d1    ;
+    reg   signed  [BIT_DEPTH : 0]     i_8_d1    ;
+    reg   signed  [BIT_DEPTH : 0]     i_9_d1    ;
+    reg   signed  [BIT_DEPTH : 0]     i_10_d1   ;
+    reg   signed  [BIT_DEPTH : 0]     i_11_d1   ;
+    reg   signed  [BIT_DEPTH : 0]     i_12_d1   ;
+    reg   signed  [BIT_DEPTH : 0]     i_13_d1   ;
+    reg   signed  [BIT_DEPTH : 0]     i_14_d1   ;
+    reg   signed  [BIT_DEPTH : 0]     i_15_d1   ;
+
+
+always@(posedge clk or negedge reset )
+    if(!reset) begin
+        i_type_h_d1     <=  0;
+        i_type_v_d1     <=  0;
+        i_width_d1      <=  0;
+        i_height_d1     <=  0;
+        i_valid_d1      <=  0;
+        i_0_d1          <=  0;
+        i_1_d1          <=  0;
+        i_2_d1          <=  0;
+        i_3_d1          <=  0;
+        i_4_d1          <=  0;
+        i_5_d1          <=  0;
+        i_6_d1          <=  0;
+        i_7_d1          <=  0;
+        i_8_d1          <=  0;
+        i_9_d1          <=  0;
+        i_10_d1         <=  0;
+        i_11_d1         <=  0;
+        i_12_d1         <=  0;
+        i_13_d1         <=  0;
+        i_14_d1         <=  0;
+        i_15_d1         <=  0;
+    end
+    else begin
+        i_type_h_d1     <=  i_type_h;
+        i_type_v_d1     <=  i_type_v;
+        i_width_d1      <=  i_width ;
+        i_height_d1     <=  i_height;
+        i_valid_d1      <=  i_valid ;
+        i_0_d1          <=  i_0     ;
+        i_1_d1          <=  i_1     ;
+        i_2_d1          <=  i_2     ;
+        i_3_d1          <=  i_3     ;
+        i_4_d1          <=  i_4     ;
+        i_5_d1          <=  i_5     ;
+        i_6_d1          <=  i_6     ;
+        i_7_d1          <=  i_7     ;
+        i_8_d1          <=  i_8     ;
+        i_9_d1          <=  i_9     ;
+        i_10_d1         <=  i_10    ;
+        i_11_d1         <=  i_11    ;
+        i_12_d1         <=  i_12    ;
+        i_13_d1         <=  i_13    ;
+        i_14_d1         <=  i_14    ;
+        i_15_d1         <=  i_15    ;
+    end
+
 //first stage transform1d
-transform1d_1st#(
+transform1d#(
     .IN_WIDTH   (BIT_DEPTH + 1          ),
     .OUT_WIDTH  (OUT_WIDTH              )
 )
@@ -83,28 +156,29 @@ u_transform1d_1st(
     .clk        (clk                    ),
     .rst_n      (reset                  ),
 //input parameter
-    .i_type_h   (i_type_h               ),
-    .i_type_v   (i_type_v               ),
-    .i_width    (i_width                ),
-    .i_height   (i_height               ),
+    .tr_sequence(0                      ),//0 first transform ;1 second transform;
+    .i_type_h   (i_type_h_d1            ),
+    .i_type_v   (i_type_v_d1            ),
+    .i_width    (i_width_d1             ),
+    .i_height   (i_height_d1            ),
 //input data
-    .i_valid    (i_valid                ),
-    .i_0        (i_0                    ),
-    .i_1        (i_1                    ),
-    .i_2        (i_2                    ),
-    .i_3        (i_3                    ),
-    .i_4        (i_4                    ),
-    .i_5        (i_5                    ),
-    .i_6        (i_6                    ),
-    .i_7        (i_7                    ),
-    .i_8        (i_8                    ),
-    .i_9        (i_9                    ),
-    .i_10       (i_10                   ),
-    .i_11       (i_11                   ),
-    .i_12       (i_12                   ),
-    .i_13       (i_13                   ),
-    .i_14       (i_14                   ),
-    .i_15       (i_15                   ),
+    .i_valid    (i_valid_d1             ),
+    .i_0        (i_0_d1                 ),
+    .i_1        (i_1_d1                 ),
+    .i_2        (i_2_d1                 ),
+    .i_3        (i_3_d1                 ),
+    .i_4        (i_4_d1                 ),
+    .i_5        (i_5_d1                 ),
+    .i_6        (i_6_d1                 ),
+    .i_7        (i_7_d1                 ),
+    .i_8        (i_8_d1                 ),
+    .i_9        (i_9_d1                 ),
+    .i_10       (i_10_d1                ),
+    .i_11       (i_11_d1                ),
+    .i_12       (i_12_d1                ),
+    .i_13       (i_13_d1                ),
+    .i_14       (i_14_d1                ),
+    .i_15       (i_15_d1                ),
 //output parameter
     .o_type_h   (transform1d_out_type_h ),
     .o_type_v   (transform1d_out_type_v ),
@@ -128,7 +202,10 @@ u_transform1d_1st(
     .o_13       (transform1d_out[13]    ),
     .o_14       (transform1d_out[14]    ),
     .o_15       (transform1d_out[15]    )
-); 
+);
+
+
+
 
 //transpose memory
 transpose_memory#(
@@ -187,7 +264,7 @@ u_transpose_memory(
 );
 
 //second stage 1D-DCT
-transform1d_2nd#(
+transform1d#(
     .IN_WIDTH   (OUT_WIDTH              ),
     .OUT_WIDTH  (OUT_WIDTH              )
 )
@@ -196,6 +273,7 @@ u_transform1d_2nd(
     .clk        (clk                    ),
     .rst_n      (reset                  ),
 //input parameter
+    .tr_sequence(1                      ),//0 first transform ;1 second transform;
     .i_type_h   (transpose_out_type_h   ),
     .i_type_v   (transpose_out_type_v   ),
     .i_width    (transpose_out_width    ),
@@ -242,5 +320,7 @@ u_transform1d_2nd(
     .o_14       (o_14                   ),
     .o_15       (o_15                   )
 ); 
+
+
 
 endmodule

@@ -39,11 +39,11 @@ integer fp_r, fp_w, rd_i, rd_j, rd_k, wr_i, wr_j, wr_k;
     reg signed [BIT_DEPTH : 0] rd_data[0 : 63];
     reg signed [OUT_WIDTH - 1 : 0] wr_data[0 : 63];
 
-transform2d_top#(
+transform_top#(
     .BIT_DEPTH (BIT_DEPTH ),
     .OUT_WIDTH (OUT_WIDTH )
 )
-u_transform2d_top(
+u_transform_top(
 //system input
     .clk         (clk         ),
     .reset       (reset       ),
@@ -838,7 +838,7 @@ end
 //write
 initial begin 
     #2;
-    #558; //delay 279 clk
+    #560; //delay 279 clk
 //DCT2
     //64x64
     fp_w = $fopen("../../../../../result/fpga_coeff/dct2/fpga_coeff_dct2_64x64.txt", "w");
