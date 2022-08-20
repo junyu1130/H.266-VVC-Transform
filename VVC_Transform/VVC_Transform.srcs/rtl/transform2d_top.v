@@ -2,7 +2,7 @@
 //input     : 16个像素残差
 //output    : 16个变换系数
 //delay     : 279(64x64) / 151(other) clk
-module transform_top#(
+module transform2d_top#(
     parameter  BIT_DEPTH = 8,
     parameter  OUT_WIDTH = 16
 )
