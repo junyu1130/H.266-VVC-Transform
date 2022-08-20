@@ -90,10 +90,16 @@ module transform2d_top#(
     output  signed  [OUT_WIDTH - 1 : 0] o_31        
 );
 
+integer i;
+
+//input
+    reg [1 : 0] i_type_v_d[0 : 6];
+    reg [2 : 0] i_height_d[0 : 6];
 //transform1d
     wire [1 : 0] transform1d_out_type_h;
-    wire [1 : 0] transform1d_out_type_v;
-    wire [2 : 0] transform1d_out_width, transform1d_out_height;
+    wire [1 : 0] transform1d_out_type_v = i_type_v_d[6];
+    wire [2 : 0] transform1d_out_width;
+    wire [2 : 0] transform1d_out_height = i_height_d[6];
     wire transform1d_out_valid;
     wire signed [OUT_WIDTH - 1 : 0] transform1d_out[0 : 31];
 //transpose memory
@@ -102,9 +108,35 @@ module transform2d_top#(
     wire [2 : 0] transpose_out_width, transpose_out_height;
     wire transpose_out_valid;
     wire signed [OUT_WIDTH - 1 : 0] transpose_out[0 : 31];
+    reg [1 : 0] transpose_out_type_h_d[0 : 6];
+    reg [2 : 0] transpose_out_width_d[0 : 6];
+
+//parameter delay
+always @(posedge clk or negedge reset) begin
+    if (!reset) begin 
+        for (i = 0; i < 7; i = i + 1) begin
+            i_height_d[i] <= 0;
+            i_type_v_d[i] <= 0;
+            transpose_out_width_d[i] <= 0;
+            transpose_out_type_h_d[i] <= 0;
+        end
+    end
+    else begin
+        i_height_d[0] <= i_height;
+        i_type_v_d[0] <= i_type_v;
+        transpose_out_width_d[0] <= transpose_out_width;
+        transpose_out_type_h_d[0] <= transpose_out_type_h;
+        for (i = 0; i < 6; i = i + 1) begin
+            i_height_d[i + 1] <= i_height_d[i];
+            i_type_v_d[i + 1] <= i_type_v_d[i];
+            transpose_out_width_d[i + 1] <= transpose_out_width_d[i];
+            transpose_out_type_h_d[i + 1] <= transpose_out_type_h_d[i];
+        end
+    end
+end
 
 //transform1d 1st stage
-transform1d_1st#(
+transform1d#(
     .IN_WIDTH   (BIT_DEPTH + 1          ),
     .OUT_WIDTH  (OUT_WIDTH              )
 )
@@ -113,10 +145,9 @@ u_transform1d_1st(
     .clk        (clk                    ),
     .rst_n      (reset                  ),
 //input parameter
-    .i_type_h   (i_type_h               ),
-    .i_type_v   (i_type_v               ),
-    .i_width    (i_width                ),
-    .i_height   (i_height               ),
+    .i_stage    (0                      ),
+    .i_type     (i_type_h               ),
+    .i_size     (i_width                ),
 //input data
     .i_valid    (i_valid                ),
     .i_0        (i_0                    ),
@@ -152,10 +183,8 @@ u_transform1d_1st(
     .i_30       (i_30                   ),
     .i_31       (i_31                   ),
 //output parameter
-    .o_type_h   (transform1d_out_type_h ),
-    .o_type_v   (transform1d_out_type_v ),
-    .o_width    (transform1d_out_width  ),
-    .o_height   (transform1d_out_height ),
+    .o_type     (transform1d_out_type_h ),
+    .o_size     (transform1d_out_width  ),
 //output 1st stage's coeff
     .o_valid    (transform1d_out_valid  ),
     .o_0        (transform1d_out[0 ]    ),
@@ -281,7 +310,7 @@ u_transpose_memory(
 );
 
 //transform1d 2nd stage 
-transform1d_2nd#(
+transform1d#(
     .IN_WIDTH   (OUT_WIDTH              ),
     .OUT_WIDTH  (OUT_WIDTH              )
 )
@@ -290,10 +319,9 @@ u_transform1d_2nd(
     .clk        (clk                    ),
     .rst_n      (reset                  ),
 //input parameter
-    .i_type_h   (transpose_out_type_h   ),
-    .i_type_v   (transpose_out_type_v   ),
-    .i_width    (transpose_out_width    ),
-    .i_height   (transpose_out_height   ),
+    .i_stage    (1                      ),
+    .i_type     (transpose_out_type_v   ),
+    .i_size     (transpose_out_height   ),
 //input transposed 1st stage's coeff
     .i_valid    (transpose_out_valid    ),
     .i_0        (transpose_out[0 ]      ),
@@ -329,10 +357,8 @@ u_transform1d_2nd(
     .i_30       (transpose_out[30]      ),
     .i_31       (transpose_out[31]      ),
 //output parameter
-    .o_type_h   (o_type_h               ),
-    .o_type_v   (o_type_v               ),
-    .o_width    (o_width                ),
-    .o_height   (o_height               ),
+    .o_type     (o_type_v               ),
+    .o_size     (o_height               ),
 //output 2nd stage's coeff
     .o_valid    (o_valid                ),
     .o_0        (o_0                    ),
@@ -368,5 +394,8 @@ u_transform1d_2nd(
     .o_30       (o_30                   ),
     .o_31       (o_31                   )
 ); 
+
+assign o_type_h = transpose_out_type_h_d[6];
+assign o_width = transpose_out_width_d[6];
 
 endmodule

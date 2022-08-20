@@ -1,8 +1,8 @@
-//describe  : 第二次一维正变换/行变换(DCT2/DCT8/DST7)
-//input     : 32个像素残差
-//output    : 32个一维变换系数
+//describe  : 一维正变换/行变换(DCT2/DCT8/DST7)
+//input     : 32个像素残差/一维变换系数
+//output    : 32个一维变换系数/二维变换系数
 //delay     : 7 clk
-module transform1d_2nd#(
+module transform1d#(
     parameter  IN_WIDTH = 16,
     parameter  OUT_WIDTH = 16
 )
@@ -11,10 +11,9 @@ module transform1d_2nd#(
     input                               clk         ,
     input                               rst_n       ,
 //input parameter
-    input           [1 : 0]             i_type_h    ,//0:DCT2 1:DCT8 2:DST7   
-    input           [1 : 0]             i_type_v    ,                 
-    input           [2 : 0]             i_width     ,//1:4x4, 2:8x8, 3:16x16, 4:32x32, 5:64x64
-    input           [2 : 0]             i_height    ,
+    input                               i_stage     ,//0: 1st stage, 1: 2nd stage
+    input           [1 : 0]             i_type      ,//0:DCT2 1:DCT8 2:DST7               
+    input           [2 : 0]             i_size      ,//1:4x4, 2:8x8, 3:16x16, 4:32x32, 5:64x64
 //input data
     input                               i_valid     ,
     input   signed  [IN_WIDTH - 1 : 0]  i_0         ,
@@ -50,10 +49,8 @@ module transform1d_2nd#(
     input   signed  [IN_WIDTH - 1 : 0]  i_30        ,
     input   signed  [IN_WIDTH - 1 : 0]  i_31        ,
 //output parameter
-    output          [1 : 0]             o_type_h    ,
-    output          [1 : 0]             o_type_v    ,
-    output          [2 : 0]             o_width     ,
-    output          [2 : 0]             o_height    ,
+    output          [1 : 0]             o_type      ,
+    output          [2 : 0]             o_size      ,
 //output coeff
     output                              o_valid     ,
     output  signed  [OUT_WIDTH - 1 : 0] o_0         ,
@@ -101,9 +98,7 @@ localparam  SIZE4  = 3'd1,
 integer i;
 
 //input delay
-    reg [1 : 0] i_type_v_d[0 : 2];
-    reg [1 : 0] i_type_h_d[0 : 6];
-    reg [2 : 0] i_width_d[0 : 6];
+    reg [1 : 0] i_type_d[0 : 2];
 //serial to parallel
     wire [2 : 0] tr_in_size;
     wire tr_in_valid;
@@ -141,23 +136,13 @@ integer i;
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin 
         for (i = 0; i < 3; i = i + 1) begin
-            i_type_v_d[i] <= 0;
-        end
-        for (i = 0; i < 7; i = i + 1) begin
-            i_width_d[i] <= 0;
-            i_type_h_d[i] <= 0;
+            i_type_d[i] <= 0;
         end
     end
     else begin
-        i_type_v_d[0] <= i_type_v;
+        i_type_d[0] <= i_type;
         for (i = 0; i < 2; i = i + 1) begin
-            i_type_v_d[i + 1] <= i_type_v_d[i];
-        end
-        i_width_d[0] <= i_width;
-        i_type_h_d[0] <= i_type_h;
-        for (i = 0; i < 6; i = i + 1) begin
-            i_width_d[i + 1] <= i_width_d[i];
-            i_type_h_d[i + 1] <= i_type_h_d[i];
+            i_type_d[i + 1] <= i_type_d[i];
         end
     end
 end
@@ -172,7 +157,7 @@ u_serial_to_parallel(
     .clk        (clk            ),
     .rst_n      (rst_n          ),
 //input parameter
-    .i_size     (i_height       ),
+    .i_size     (i_size         ),
 //input data
     .i_valid    (i_valid        ),
     .i_0        (i_0            ),
@@ -453,7 +438,7 @@ always @(*) begin
     for (i = 32; i < 64; i = i + 1) begin
         calculate_in_data5[i] <= 0;
     end
-    case (i_type_v_d[2]) 
+    case (i_type_d[2]) 
         DCT2    : begin
             for (i = 0; i < 4; i = i + 1) begin
                 calculate_in_data1[i] <= butterfly_out_data1[i];
@@ -523,7 +508,7 @@ u_tranform1d_calculate(
     .clk        (clk                    ),
     .rst_n      (rst_n                  ),
 //input parameter
-    .i_type     (i_type_h_d[2]          ),
+    .i_type     (i_type_d[2]            ),
     .i_size     (butterfly_out_size     ),
 //input data
     .i_valid    (butterfly_out_valid    ),
@@ -632,9 +617,6 @@ u_tranform1d_calculate(
 
 //type mux out
 always @(*) begin
-    for (i = 0; i < 32; i = i + 1) begin
-        tr_out_data[i] <= 0;
-    end
     case (calculate_out_type) 
         DCT2    : begin
             for (i = 0; i < 32; i = i + 1) begin
@@ -654,19 +636,36 @@ always @(*) begin
                 tr_out_data[i] <= -calculate_out_data[i];
             end
         end
+        default : begin
+            for (i = 0; i < 32; i = i + 1) begin
+                tr_out_data[i] <= 0;
+            end
+        end
     endcase
 end
 
 //shift
 always @(*) begin
-    case (calculate_out_size)//second stage : log2(Height) + 6
-        SIZE4   : tr_shift <= 8;
-        SIZE8   : tr_shift <= 9;
-        SIZE16  : tr_shift <= 10;
-        SIZE32  : tr_shift <= 11;
-        SIZE64  : tr_shift <= 12;
-        default : tr_shift <= 0;
-    endcase
+    if (i_stage == 0) begin //first stage : log2(Width) + BitDepth - 9
+        case (calculate_out_size)
+            SIZE4   : tr_shift <= IN_WIDTH - 8;
+            SIZE8   : tr_shift <= IN_WIDTH - 7;
+            SIZE16  : tr_shift <= IN_WIDTH - 6;
+            SIZE32  : tr_shift <= IN_WIDTH - 5;
+            SIZE64  : tr_shift <= IN_WIDTH - 4;
+            default : tr_shift <= 0;
+        endcase
+    end
+    else begin //second stage : log2(Height) + 6
+        case (calculate_out_size)
+            SIZE4   : tr_shift <= 8;
+            SIZE8   : tr_shift <= 9;
+            SIZE16  : tr_shift <= 10;
+            SIZE32  : tr_shift <= 11;
+            SIZE64  : tr_shift <= 12;
+            default : tr_shift <= 0;
+        endcase
+    end
 end
 
 right_shift#(
@@ -763,10 +762,8 @@ always @(posedge clk or negedge rst_n) begin
 end
 
 //output
-    assign o_type_h = i_type_h_d[6];
-    assign o_type_v = calculate_out_type_d1;
-    assign o_width  = i_width_d[6];
-    assign o_height = coeff_out_size;
+    assign o_type = calculate_out_type_d1;
+    assign o_size = coeff_out_size;
     assign o_valid  = coeff_out_valid;
     assign o_0      = coeff_out_data[0 ];
     assign o_1      = coeff_out_data[1 ];

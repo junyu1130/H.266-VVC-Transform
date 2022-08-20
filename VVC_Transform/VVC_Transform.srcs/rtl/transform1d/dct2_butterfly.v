@@ -113,8 +113,8 @@ module dct2_butterfly#(
     output reg  signed  [IN_WIDTH + 1 : 0]  o_29    ,
     output reg  signed  [IN_WIDTH + 1 : 0]  o_30    ,
     output reg  signed  [IN_WIDTH + 1 : 0]  o_31    ,
-    output reg  signed  [IN_WIDTH + 1 : 0]  o_32    ,
-    output reg  signed  [IN_WIDTH     : 0]  o_33    ,//64 17bit
+    output reg  signed  [IN_WIDTH     : 0]  o_32    ,//64 17bit
+    output reg  signed  [IN_WIDTH     : 0]  o_33    ,
     output reg  signed  [IN_WIDTH     : 0]  o_34    ,
     output reg  signed  [IN_WIDTH     : 0]  o_35    ,
     output reg  signed  [IN_WIDTH     : 0]  o_36    ,
