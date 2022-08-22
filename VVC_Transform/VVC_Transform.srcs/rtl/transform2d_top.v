@@ -145,7 +145,7 @@ u_transform1d_1st(
     .clk        (clk                    ),
     .rst_n      (reset                  ),
 //input parameter
-    .i_stage    (0                      ),
+    .i_stage    (1'b0                   ),
     .i_type     (i_type_h               ),
     .i_size     (i_width                ),
 //input data
@@ -319,7 +319,7 @@ u_transform1d_2nd(
     .clk        (clk                    ),
     .rst_n      (reset                  ),
 //input parameter
-    .i_stage    (1                      ),
+    .i_stage    (1'b1                   ),
     .i_type     (transpose_out_type_v   ),
     .i_size     (transpose_out_height   ),
 //input transposed 1st stage's coeff
