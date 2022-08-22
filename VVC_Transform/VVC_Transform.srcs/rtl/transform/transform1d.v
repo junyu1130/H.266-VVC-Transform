@@ -68,13 +68,17 @@ localparam  SIZE4  = 3'd1,
             SIZE64 = 3'd5;
 integer i;
 
-
+//input
+    wire signed [IN_WIDTH - 1 : 0] i_data[0 : 15];
     wire    [1 : 0] i_type;
     wire    [2 : 0] i_size;
-
-    wire            [2 : 0]                 tr_out_size;
-    wire                                    tr_out_valid;
-    wire    signed  [IN_WIDTH + 11 : 0]     tr_out_data[0 : 15];
+    reg signed [IN_WIDTH - 1 : 0] tr_in_data[0 : 15];
+//calculate
+    wire [2 : 0] calculate_out_size;
+    wire calculate_out_valid;
+    wire signed [IN_WIDTH + 11 : 0] calculate_out_data[0 : 15];
+    reg signed  [IN_WIDTH + 11 : 0]     tr_out_data[0 : 15];
+//shift
     wire    signed  [OUT_WIDTH - 1 : 0]     coeff_out_data[0 : 15];
     wire                                    coeff_out_valid;
     reg             [3 : 0]                 tr_shift;
@@ -85,7 +89,23 @@ integer i;
     reg             [2 : 0]                 i_height_d[0 : 9];
     reg             [2 : 0]                 i_width_d[0 : 9];
 
-
+//input
+    assign i_data[0 ] = i_0 ;
+    assign i_data[1 ] = i_1 ;
+    assign i_data[2 ] = i_2 ;
+    assign i_data[3 ] = i_3 ;
+    assign i_data[4 ] = i_4 ;
+    assign i_data[5 ] = i_5 ;
+    assign i_data[6 ] = i_6 ;
+    assign i_data[7 ] = i_7 ;
+    assign i_data[8 ] = i_8 ;
+    assign i_data[9 ] = i_9 ;
+    assign i_data[10] = i_10;
+    assign i_data[11] = i_11;
+    assign i_data[12] = i_12;
+    assign i_data[13] = i_13;
+    assign i_data[14] = i_14;
+    assign i_data[15] = i_15;
 
 //delay
 always @(posedge clk or negedge rst_n) begin
@@ -111,11 +131,56 @@ always @(posedge clk or negedge rst_n) begin
     end
 end
 
-
-
-
 assign i_type = tr_sequence ? i_type_v : i_type_h;
 assign i_size = tr_sequence ? i_height : i_width;
+
+//type mux in
+always @(*) begin
+    case (i_type) 
+        DCT2    : begin
+            for (i = 0; i < 16; i = i + 1) begin
+                tr_in_data[i] <= i_data[i];
+            end
+        end
+        DST7    : begin
+            for (i = 0; i < 16; i = i + 1) begin
+                tr_in_data[i] <= i_data[i];
+            end
+        end
+        DCT8    : begin //reverse input
+            case (i_size)
+                SIZE32, SIZE16 : begin
+                    for (i = 0; i < 16; i = i + 1) begin
+                        tr_in_data[i] <= i_data[15 - i];
+                    end
+                end
+                SIZE8 : begin
+                    for (i = 0; i < 8; i = i + 1) begin
+                        tr_in_data[i] <= i_data[7 - i];
+                        tr_in_data[8 + i] <= i_data[15 - i];
+                    end
+                end
+                SIZE4 : begin
+                    for (i = 0; i < 4; i = i + 1) begin
+                        tr_in_data[i] <= i_data[3 - i];
+                        tr_in_data[4 + i] <= i_data[7 - i];
+                        tr_in_data[8 + i] <= i_data[11 - i];
+                        tr_in_data[12 + i] <= i_data[15 - i];
+                    end
+                end
+            endcase
+        end
+        default : begin
+            for (i = 0; i < 16; i = i + 1) begin
+                tr_in_data[i] <= 0;
+            end
+        end
+    endcase
+end
+
+
+
+
 
 transform#(
     .IN_WIDTH   (IN_WIDTH       ),
@@ -130,48 +195,77 @@ u_transform(
     .i_type  (i_type      ), 
 //input data
     .i_valid (i_valid     ),
-    .i_0     (i_0         ),
-    .i_1     (i_1         ),
-    .i_2     (i_2         ),
-    .i_3     (i_3         ),
-    .i_4     (i_4         ),
-    .i_5     (i_5         ),
-    .i_6     (i_6         ),
-    .i_7     (i_7         ),
-    .i_8     (i_8         ),
-    .i_9     (i_9         ),
-    .i_10    (i_10        ),
-    .i_11    (i_11        ),
-    .i_12    (i_12        ),
-    .i_13    (i_13        ),
-    .i_14    (i_14        ),
-    .i_15    (i_15        ),
+    .i_0     (tr_in_data[0 ] ),
+    .i_1     (tr_in_data[1 ] ),
+    .i_2     (tr_in_data[2 ] ),
+    .i_3     (tr_in_data[3 ] ),
+    .i_4     (tr_in_data[4 ] ),
+    .i_5     (tr_in_data[5 ] ),
+    .i_6     (tr_in_data[6 ] ),
+    .i_7     (tr_in_data[7 ] ),
+    .i_8     (tr_in_data[8 ] ),
+    .i_9     (tr_in_data[9 ] ),
+    .i_10    (tr_in_data[10] ),
+    .i_11    (tr_in_data[11] ),
+    .i_12    (tr_in_data[12] ),
+    .i_13    (tr_in_data[13] ),
+    .i_14    (tr_in_data[14] ),
+    .i_15    (tr_in_data[15] ),
 //output parameter
-    .o_size  (tr_out_size    ),
-    .o_valid (tr_out_valid   ),
+    .o_size  (calculate_out_size    ),
+    .o_valid (calculate_out_valid   ),
 //output 1st stage's coeff
-    .o_0     (tr_out_data[0 ] ),
-    .o_1     (tr_out_data[1 ] ),
-    .o_2     (tr_out_data[2 ] ),
-    .o_3     (tr_out_data[3 ] ),
-    .o_4     (tr_out_data[4 ] ),
-    .o_5     (tr_out_data[5 ] ),
-    .o_6     (tr_out_data[6 ] ),
-    .o_7     (tr_out_data[7 ] ),
-    .o_8     (tr_out_data[8 ] ),
-    .o_9     (tr_out_data[9 ] ),
-    .o_10    (tr_out_data[10] ),
-    .o_11    (tr_out_data[11] ),
-    .o_12    (tr_out_data[12] ),
-    .o_13    (tr_out_data[13] ),
-    .o_14    (tr_out_data[14] ),
-    .o_15    (tr_out_data[15] )
+    .o_0     (calculate_out_data[0 ] ),
+    .o_1     (calculate_out_data[1 ] ),
+    .o_2     (calculate_out_data[2 ] ),
+    .o_3     (calculate_out_data[3 ] ),
+    .o_4     (calculate_out_data[4 ] ),
+    .o_5     (calculate_out_data[5 ] ),
+    .o_6     (calculate_out_data[6 ] ),
+    .o_7     (calculate_out_data[7 ] ),
+    .o_8     (calculate_out_data[8 ] ),
+    .o_9     (calculate_out_data[9 ] ),
+    .o_10    (calculate_out_data[10] ),
+    .o_11    (calculate_out_data[11] ),
+    .o_12    (calculate_out_data[12] ),
+    .o_13    (calculate_out_data[13] ),
+    .o_14    (calculate_out_data[14] ),
+    .o_15    (calculate_out_data[15] )
 ); 
+
+//type mux out
+always @(*) begin
+    case (i_type_h_d[8]) 
+        DCT2    : begin
+            for (i = 0; i < 16; i = i + 1) begin
+                tr_out_data[i] <= calculate_out_data[i];
+            end
+        end
+        DST7    : begin
+            for (i = 0; i < 16; i = i + 1) begin
+                tr_out_data[i] <= calculate_out_data[i];
+            end
+        end
+        DCT8    : begin //odd line reverse sign
+            for (i = 0; i < 16; i = i + 2) begin
+                tr_out_data[i] <= calculate_out_data[i];
+            end
+            for (i = 1; i < 16; i = i + 2) begin
+                tr_out_data[i] <= -calculate_out_data[i];
+            end
+        end
+        default : begin
+            for (i = 0; i < 16; i = i + 1) begin
+                tr_out_data[i] <= 0;
+            end
+        end
+    endcase
+end
 
 
 //shift
 always @(*) begin
-    case (tr_out_size)//first stage : log2(Width) + BitDepth - 9
+    case (calculate_out_size)//first stage : log2(Width) + BitDepth - 9
         SIZE4   : tr_shift <= IN_WIDTH - 8;
         SIZE8   : tr_shift <= IN_WIDTH - 7;
         SIZE16  : tr_shift <= IN_WIDTH - 6;
@@ -192,7 +286,7 @@ u_right_shift(
 //input parameter
     .i_shift    (tr_shift           ),
 //input pre_coeff
-    .i_valid    (tr_out_valid       ),
+    .i_valid    (calculate_out_valid),
     .i_0        (tr_out_data[0 ]    ),
     .i_1        (tr_out_data[1 ]    ),
     .i_2        (tr_out_data[2 ]    ),
