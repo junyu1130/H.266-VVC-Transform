@@ -1,20 +1,18 @@
-//describe  : 第一次一维正变换(DCT2/DCT8/DST7)
-//input     : 16个像素残差
-//output    : 16个一维变换系数
+//describe  : 一维正变换(DCT2/DCT8/DST7)
+//input     : 16个像素残差/一维变换系数
+//output    : 16个一维变换系数/二维变换系数
 //delay     : 10 clk
 module transform1d#(
     parameter  IN_WIDTH = 9,
     parameter  OUT_WIDTH = 16
-)(
+)
+(
 //system input
     input                               clk         ,
     input                               rst_n       ,
 //input parameter
-    input                               tr_sequence ,
-    input           [1 : 0]             i_type_h    ,//0:DCT2 1:DCT8 2:DST7   
-    input           [1 : 0]             i_type_v    ,                 
-    input           [2 : 0]             i_width     ,//1:4x4, 2:8x8, 3:16x16, 4:32x32, 5:64x64
-    input           [2 : 0]             i_height    ,
+    input           [1 : 0]             i_type      ,//0:DCT2 1:DCT8 2:DST7                  
+    input           [2 : 0]             i_size      ,//1:4x4, 2:8x8, 3:16x16, 4:32x32, 5:64x64
 //input data
     input                               i_valid     ,
     input   signed  [IN_WIDTH - 1 : 0]  i_0         ,
@@ -34,10 +32,8 @@ module transform1d#(
     input   signed  [IN_WIDTH - 1 : 0]  i_14        ,
     input   signed  [IN_WIDTH - 1 : 0]  i_15        ,
 //output parameter
-    output          [1 : 0]             o_type_h    ,
-    output          [1 : 0]             o_type_v    ,
-    output          [2 : 0]             o_width     ,
-    output          [2 : 0]             o_height    ,
+    output          [1 : 0]             o_type      ,
+    output          [2 : 0]             o_size      ,
 //output coeff
     output                              o_valid     ,
     output  signed  [OUT_WIDTH - 1 : 0] o_0         ,
@@ -70,24 +66,18 @@ integer i;
 
 //input
     wire signed [IN_WIDTH - 1 : 0] i_data[0 : 15];
-    wire    [1 : 0] i_type;
-    wire    [2 : 0] i_size;
+    reg [1 : 0] i_type_d[0 : 9];
+    reg [2 : 0] i_size_d[0 : 9];
     reg signed [IN_WIDTH - 1 : 0] tr_in_data[0 : 15];
 //calculate
     wire [2 : 0] calculate_out_size;
     wire calculate_out_valid;
     wire signed [IN_WIDTH + 11 : 0] calculate_out_data[0 : 15];
-    reg signed  [IN_WIDTH + 11 : 0]     tr_out_data[0 : 15];
+    reg signed  [IN_WIDTH + 11 : 0] tr_out_data[0 : 15];
 //shift
-    wire    signed  [OUT_WIDTH - 1 : 0]     coeff_out_data[0 : 15];
-    wire                                    coeff_out_valid;
-    reg             [3 : 0]                 tr_shift;
-
-//input delay
-    reg             [1 : 0]                 i_type_h_d[0 : 9];
-    reg             [1 : 0]                 i_type_v_d[0 : 9];
-    reg             [2 : 0]                 i_height_d[0 : 9];
-    reg             [2 : 0]                 i_width_d[0 : 9];
+    wire signed [OUT_WIDTH - 1 : 0] coeff_out_data[0 : 15];
+    wire coeff_out_valid;
+    reg [3 : 0] tr_shift;
 
 //input
     assign i_data[0 ] = i_0 ;
@@ -111,28 +101,19 @@ integer i;
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin 
         for (i = 0; i < 10; i = i + 1) begin
-            i_width_d[i]  <= 0;
-            i_height_d[i] <= 0;
-            i_type_h_d[i] <= 0;
-            i_type_v_d[i] <= 0;
+            i_size_d[i]  <= 0;
+            i_type_d[i] <= 0;
         end
     end
     else begin
-        i_width_d[0]  <= i_width;
-        i_height_d[0] <= i_height;
-        i_type_h_d[0] <= i_type_h;
-        i_type_v_d[0] <= i_type_v;
+        i_size_d[0]  <= i_size;
+        i_type_d[0] <= i_type;
         for (i = 0; i < 9; i = i + 1) begin
-            i_width_d[i + 1]  <= i_width_d[i];
-            i_height_d[i + 1] <= i_height_d[i];
-            i_type_h_d[i + 1] <= i_type_h_d[i];
-            i_type_v_d[i + 1] <= i_type_v_d[i];
+            i_size_d[i + 1]  <= i_size_d[i];
+            i_type_d[i + 1] <= i_type_d[i];
         end
     end
 end
-
-assign i_type = tr_sequence ? i_type_v : i_type_h;
-assign i_size = tr_sequence ? i_height : i_width;
 
 //type mux in
 always @(*) begin
@@ -168,6 +149,11 @@ always @(*) begin
                         tr_in_data[12 + i] <= i_data[15 - i];
                     end
                 end
+                default : begin
+                    for (i = 0; i < 16; i = i + 1) begin
+                        tr_in_data[i] <= 0;
+                    end
+                end
             endcase
         end
         default : begin
@@ -177,10 +163,6 @@ always @(*) begin
         end
     endcase
 end
-
-
-
-
 
 transform#(
     .IN_WIDTH   (IN_WIDTH       ),
@@ -235,7 +217,7 @@ u_transform(
 
 //type mux out
 always @(*) begin
-    case (i_type_h_d[8]) 
+    case (i_type_d[8]) 
         DCT2    : begin
             for (i = 0; i < 16; i = i + 1) begin
                 tr_out_data[i] <= calculate_out_data[i];
@@ -262,10 +244,9 @@ always @(*) begin
     endcase
 end
 
-
 //shift
 always @(*) begin
-    case (calculate_out_size)//first stage : log2(Width) + BitDepth - 9
+    case (calculate_out_size)
         SIZE4   : tr_shift <= IN_WIDTH - 8;
         SIZE8   : tr_shift <= IN_WIDTH - 7;
         SIZE16  : tr_shift <= IN_WIDTH - 6;
@@ -324,30 +305,24 @@ u_right_shift(
 );  
 
 //output
-
-    assign o_type_h     =   i_type_h_d[9];
-    assign o_type_v     =   i_type_v_d[9];
-    assign o_width      =   i_width_d[9];
-    assign o_height     =   i_height_d[9];
-
-
-    assign o_valid      =   coeff_out_valid;
-    assign o_0          =   coeff_out_data[0 ];
-    assign o_1          =   coeff_out_data[1 ];
-    assign o_2          =   coeff_out_data[2 ];
-    assign o_3          =   coeff_out_data[3 ];
-    assign o_4          =   coeff_out_data[4 ];
-    assign o_5          =   coeff_out_data[5 ];
-    assign o_6          =   coeff_out_data[6 ];
-    assign o_7          =   coeff_out_data[7 ];
-    assign o_8          =   coeff_out_data[8 ];
-    assign o_9          =   coeff_out_data[9 ];
-    assign o_10         =   coeff_out_data[10];
-    assign o_11         =   coeff_out_data[11];
-    assign o_12         =   coeff_out_data[12];
-    assign o_13         =   coeff_out_data[13];
-    assign o_14         =   coeff_out_data[14];
-    assign o_15         =   coeff_out_data[15];
-
+    assign o_type   = i_type_d[9];
+    assign o_size   = i_size_d[9];
+    assign o_valid  = coeff_out_valid;
+    assign o_0      = coeff_out_data[0 ];
+    assign o_1      = coeff_out_data[1 ];
+    assign o_2      = coeff_out_data[2 ];
+    assign o_3      = coeff_out_data[3 ];
+    assign o_4      = coeff_out_data[4 ];
+    assign o_5      = coeff_out_data[5 ];
+    assign o_6      = coeff_out_data[6 ];
+    assign o_7      = coeff_out_data[7 ];
+    assign o_8      = coeff_out_data[8 ];
+    assign o_9      = coeff_out_data[9 ];
+    assign o_10     = coeff_out_data[10];
+    assign o_11     = coeff_out_data[11];
+    assign o_12     = coeff_out_data[12];
+    assign o_13     = coeff_out_data[13];
+    assign o_14     = coeff_out_data[14];
+    assign o_15     = coeff_out_data[15];
 
 endmodule

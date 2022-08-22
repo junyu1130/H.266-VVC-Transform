@@ -531,9 +531,10 @@ localparam  SIZE4  = 3'd1,
             SIZE16 = 3'd3,
             SIZE32 = 3'd4,
             SIZE64 = 3'd5;
-    integer     i;
 
-    //matrix_coffecient define
+integer i;
+
+//matrix_coffecient define
     reg     signed      [7:0]   dct_2_matrix_coefficient[63:0][63:0];
 
     reg     signed      [7:0]   DST7P32_coefficient     [31:0][31:0];
@@ -583,7 +584,7 @@ localparam  SIZE4  = 3'd1,
     reg     signed      [7:0]   matrix_coef31   [15:0];
 
 //assignment
-always@(posedge clk) begin
+always @(posedge clk) begin
 //dct_2
    dct_2_matrix_coefficient[0 ][0 ] <= 64;
    dct_2_matrix_coefficient[0 ][1 ] <= 64;
@@ -4681,7 +4682,6 @@ always@(posedge clk) begin
    dct_2_matrix_coefficient[63][61] <= -11;
    dct_2_matrix_coefficient[63][62] <= 7;
    dct_2_matrix_coefficient[63][63] <= -2;
-//
 
 //dst7_32
    DST7P32_coefficient[0 ][0 ] <= 4;
@@ -5708,7 +5708,6 @@ always@(posedge clk) begin
    DST7P32_coefficient[31][29] <= -21;
    DST7P32_coefficient[31][30] <= 13;
    DST7P32_coefficient[31][31] <= -4;
-//
 
 //dst7_16
    DST7P16_coefficient[0 ][0 ] <= 8;
@@ -5967,9 +5966,7 @@ always@(posedge clk) begin
    DST7P16_coefficient[15][13] <= -40;
    DST7P16_coefficient[15][14] <= 25;
    DST7P16_coefficient[15][15] <= -8;
-
-//
-
+   
 //dst7_8
    DST7P8_coefficient[0 ][0 ] <= 17;
    DST7P8_coefficient[0 ][1 ] <= 32;
@@ -6036,8 +6033,6 @@ always@(posedge clk) begin
    DST7P8_coefficient[7 ][6 ] <= 46;
    DST7P8_coefficient[7 ][7 ] <= -17;
 
-//
-
 //dst7_4
    DST7P4_coefficient[0 ][0 ] <= 29;
    DST7P4_coefficient[0 ][1 ] <= 55;
@@ -6055,7 +6050,6 @@ always@(posedge clk) begin
    DST7P4_coefficient[3 ][1 ] <= -84;
    DST7P4_coefficient[3 ][2 ] <= 74;
    DST7P4_coefficient[3 ][3 ] <= -29;
-//
 end
 
 always@(posedge clk or negedge rst_n)
@@ -6084,9 +6078,9 @@ always@(posedge clk or negedge rst_n)
     else if (i_size != 0)
         count   <=  count + 1;
 
-always@(posedge clk or negedge rst_n) begin
-    if(!rst_n)
-        for(i = 0 ;i < 16 ; i = i + 1) begin
+always @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+        for (i = 0; i < 16; i = i + 1) begin
             matrix_coef0 [i]    <=      0;
             matrix_coef1 [i]    <=      0;
             matrix_coef2 [i]    <=      0;
@@ -6120,263 +6114,258 @@ always@(posedge clk or negedge rst_n) begin
             matrix_coef30[i]    <=      0;
             matrix_coef31[i]    <=      0;
         end
+    end
     else begin
-        if(i_type_d1 == 0) begin //0:DCT2  
+        if(i_type_d1 == DCT2) begin
             case(i_size_d1)
-                1       :   begin
-                        for(i = 0 ;i < 4 ; i = i + 1) begin
-                            matrix_coef0 [i]        <=      dct_2_matrix_coefficient[ 0  ][ i];
-                            matrix_coef1 [i]        <=      dct_2_matrix_coefficient[ 16 ][ i];
-                            matrix_coef2 [i]        <=      dct_2_matrix_coefficient[ 32 ][ i];
-                            matrix_coef3 [i]        <=      dct_2_matrix_coefficient[ 48 ][ i];
-                        end
-                        for(i = 0 ;i < 4 ; i = i + 1) begin
-                            matrix_coef0 [i + 4]    <=      dct_2_matrix_coefficient[ 0  ][ i];
-                            matrix_coef1 [i + 4]    <=      dct_2_matrix_coefficient[ 16 ][ i];
-                            matrix_coef2 [i + 4]    <=      dct_2_matrix_coefficient[ 32 ][ i];
-                            matrix_coef3 [i + 4]    <=      dct_2_matrix_coefficient[ 48 ][ i];
-                        end
-                        for(i = 0 ;i < 4 ; i = i + 1) begin
-                            matrix_coef0 [i + 8]    <=      dct_2_matrix_coefficient[ 0  ][ i];
-                            matrix_coef1 [i + 8]    <=      dct_2_matrix_coefficient[ 16 ][ i];
-                            matrix_coef2 [i + 8]    <=      dct_2_matrix_coefficient[ 32 ][ i];
-                            matrix_coef3 [i + 8]    <=      dct_2_matrix_coefficient[ 48 ][ i];
-                        end
-                        for(i = 0 ;i < 4 ; i = i + 1) begin
-                            matrix_coef0 [i + 12]    <=      dct_2_matrix_coefficient[ 0  ][ i ];
-                            matrix_coef1 [i + 12]    <=      dct_2_matrix_coefficient[ 16 ][ i ];
-                            matrix_coef2 [i + 12]    <=      dct_2_matrix_coefficient[ 32 ][ i ];
-                            matrix_coef3 [i + 12]    <=      dct_2_matrix_coefficient[ 48 ][ i ];
-                        end
+                SIZE4   : begin
+                    for(i = 0 ;i < 4 ; i = i + 1) begin
+                        matrix_coef0 [i]        <=      dct_2_matrix_coefficient[ 0  ][ i];
+                        matrix_coef1 [i]        <=      dct_2_matrix_coefficient[ 16 ][ i];
+                        matrix_coef2 [i]        <=      dct_2_matrix_coefficient[ 32 ][ i];
+                        matrix_coef3 [i]        <=      dct_2_matrix_coefficient[ 48 ][ i];
                     end
-                2       :   begin
-                        for(i = 0 ;i < 8 ; i = i + 1) begin
-                            matrix_coef0 [i]        <=      dct_2_matrix_coefficient[0 ][ i];
-                            matrix_coef1 [i]        <=      dct_2_matrix_coefficient[8 ][ i];
-                            matrix_coef2 [i]        <=      dct_2_matrix_coefficient[16][ i];
-                            matrix_coef3 [i]        <=      dct_2_matrix_coefficient[24][ i];
-                            matrix_coef4 [i]        <=      dct_2_matrix_coefficient[32][ i];
-                            matrix_coef5 [i]        <=      dct_2_matrix_coefficient[40][ i];
-                            matrix_coef6 [i]        <=      dct_2_matrix_coefficient[48][ i];
-                            matrix_coef7 [i]        <=      dct_2_matrix_coefficient[56][ i];
-                        end
-                        for(i = 0 ;i < 8 ; i = i + 1) begin
-                            matrix_coef0 [i + 8]    <=      dct_2_matrix_coefficient[0 ][ i];
-                            matrix_coef1 [i + 8]    <=      dct_2_matrix_coefficient[8 ][ i];
-                            matrix_coef2 [i + 8]    <=      dct_2_matrix_coefficient[16][ i];
-                            matrix_coef3 [i + 8]    <=      dct_2_matrix_coefficient[24][ i];
-                            matrix_coef4 [i + 8]    <=      dct_2_matrix_coefficient[32][ i];
-                            matrix_coef5 [i + 8]    <=      dct_2_matrix_coefficient[40][ i];
-                            matrix_coef6 [i + 8]    <=      dct_2_matrix_coefficient[48][ i];
-                            matrix_coef7 [i + 8]    <=      dct_2_matrix_coefficient[56][ i];
-                        end
+                    for(i = 0 ;i < 4 ; i = i + 1) begin
+                        matrix_coef0 [i + 4]    <=      dct_2_matrix_coefficient[ 0  ][ i];
+                        matrix_coef1 [i + 4]    <=      dct_2_matrix_coefficient[ 16 ][ i];
+                        matrix_coef2 [i + 4]    <=      dct_2_matrix_coefficient[ 32 ][ i];
+                        matrix_coef3 [i + 4]    <=      dct_2_matrix_coefficient[ 48 ][ i];
                     end
-                3       :   begin
-                        for(i = 0 ;i < 16 ; i = i + 1) begin
-                            matrix_coef0 [i]    <=      dct_2_matrix_coefficient[0 ][ i ];
-                            matrix_coef1 [i]    <=      dct_2_matrix_coefficient[4 ][ i ];
-                            matrix_coef2 [i]    <=      dct_2_matrix_coefficient[8 ][ i ];
-                            matrix_coef3 [i]    <=      dct_2_matrix_coefficient[12][ i ];
-                            matrix_coef4 [i]    <=      dct_2_matrix_coefficient[16][ i ];
-                            matrix_coef5 [i]    <=      dct_2_matrix_coefficient[20][ i ];
-                            matrix_coef6 [i]    <=      dct_2_matrix_coefficient[24][ i ];
-                            matrix_coef7 [i]    <=      dct_2_matrix_coefficient[28][ i ];
-                            matrix_coef8 [i]    <=      dct_2_matrix_coefficient[32][ i ];
-                            matrix_coef9 [i]    <=      dct_2_matrix_coefficient[36][ i ];
-                            matrix_coef10[i]    <=      dct_2_matrix_coefficient[40][ i ];
-                            matrix_coef11[i]    <=      dct_2_matrix_coefficient[44][ i ];
-                            matrix_coef12[i]    <=      dct_2_matrix_coefficient[48][ i ];
-                            matrix_coef13[i]    <=      dct_2_matrix_coefficient[52][ i ];
-                            matrix_coef14[i]    <=      dct_2_matrix_coefficient[56][ i ];
-                            matrix_coef15[i]    <=      dct_2_matrix_coefficient[60][ i ];
-                        end
+                    for(i = 0 ;i < 4 ; i = i + 1) begin
+                        matrix_coef0 [i + 8]    <=      dct_2_matrix_coefficient[ 0  ][ i];
+                        matrix_coef1 [i + 8]    <=      dct_2_matrix_coefficient[ 16 ][ i];
+                        matrix_coef2 [i + 8]    <=      dct_2_matrix_coefficient[ 32 ][ i];
+                        matrix_coef3 [i + 8]    <=      dct_2_matrix_coefficient[ 48 ][ i];
                     end
-                4       :   begin
-                        for(i = 0 ;i < 16 ; i = i + 1) begin
-                            matrix_coef0 [i]    <=      dct_2_matrix_coefficient[ 0  ][ i + count * 16 ];
-                            matrix_coef1 [i]    <=      dct_2_matrix_coefficient[ 2  ][ i + count * 16 ];
-                            matrix_coef2 [i]    <=      dct_2_matrix_coefficient[ 4  ][ i + count * 16 ];
-                            matrix_coef3 [i]    <=      dct_2_matrix_coefficient[ 6  ][ i + count * 16 ];
-                            matrix_coef4 [i]    <=      dct_2_matrix_coefficient[ 8  ][ i + count * 16 ];
-                            matrix_coef5 [i]    <=      dct_2_matrix_coefficient[ 10 ][ i + count * 16 ];
-                            matrix_coef6 [i]    <=      dct_2_matrix_coefficient[ 12 ][ i + count * 16 ];
-                            matrix_coef7 [i]    <=      dct_2_matrix_coefficient[ 14 ][ i + count * 16 ];
-                            matrix_coef8 [i]    <=      dct_2_matrix_coefficient[ 16 ][ i + count * 16 ];
-                            matrix_coef9 [i]    <=      dct_2_matrix_coefficient[ 18 ][ i + count * 16 ];
-                            matrix_coef10[i]    <=      dct_2_matrix_coefficient[ 20 ][ i + count * 16 ];
-                            matrix_coef11[i]    <=      dct_2_matrix_coefficient[ 22 ][ i + count * 16 ];
-                            matrix_coef12[i]    <=      dct_2_matrix_coefficient[ 24 ][ i + count * 16 ];
-                            matrix_coef13[i]    <=      dct_2_matrix_coefficient[ 26 ][ i + count * 16 ];
-                            matrix_coef14[i]    <=      dct_2_matrix_coefficient[ 28 ][ i + count * 16 ];
-                            matrix_coef15[i]    <=      dct_2_matrix_coefficient[ 30 ][ i + count * 16 ];
-                            matrix_coef16[i]    <=      dct_2_matrix_coefficient[ 32 ][ i + count * 16 ];
-                            matrix_coef17[i]    <=      dct_2_matrix_coefficient[ 34 ][ i + count * 16 ];
-                            matrix_coef18[i]    <=      dct_2_matrix_coefficient[ 36 ][ i + count * 16 ];
-                            matrix_coef19[i]    <=      dct_2_matrix_coefficient[ 38 ][ i + count * 16 ];
-                            matrix_coef20[i]    <=      dct_2_matrix_coefficient[ 40 ][ i + count * 16 ];
-                            matrix_coef21[i]    <=      dct_2_matrix_coefficient[ 42 ][ i + count * 16 ];
-                            matrix_coef22[i]    <=      dct_2_matrix_coefficient[ 44 ][ i + count * 16 ];
-                            matrix_coef23[i]    <=      dct_2_matrix_coefficient[ 46 ][ i + count * 16 ];
-                            matrix_coef24[i]    <=      dct_2_matrix_coefficient[ 48 ][ i + count * 16 ];
-                            matrix_coef25[i]    <=      dct_2_matrix_coefficient[ 50 ][ i + count * 16 ];
-                            matrix_coef26[i]    <=      dct_2_matrix_coefficient[ 52 ][ i + count * 16 ];
-                            matrix_coef27[i]    <=      dct_2_matrix_coefficient[ 54 ][ i + count * 16 ];
-                            matrix_coef28[i]    <=      dct_2_matrix_coefficient[ 56 ][ i + count * 16 ];
-                            matrix_coef29[i]    <=      dct_2_matrix_coefficient[ 58 ][ i + count * 16 ];
-                            matrix_coef30[i]    <=      dct_2_matrix_coefficient[ 60 ][ i + count * 16 ];
-                            matrix_coef31[i]    <=      dct_2_matrix_coefficient[ 62 ][ i + count * 16 ];
-                        end
+                    for(i = 0 ;i < 4 ; i = i + 1) begin
+                        matrix_coef0 [i + 12]    <=      dct_2_matrix_coefficient[ 0  ][ i ];
+                        matrix_coef1 [i + 12]    <=      dct_2_matrix_coefficient[ 16 ][ i ];
+                        matrix_coef2 [i + 12]    <=      dct_2_matrix_coefficient[ 32 ][ i ];
+                        matrix_coef3 [i + 12]    <=      dct_2_matrix_coefficient[ 48 ][ i ];
                     end
-                5       :   begin
-                        for(i = 0 ;i < 16 ; i = i + 1) begin
-                            matrix_coef0 [i]    <=      dct_2_matrix_coefficient[0 ][i + count * 16 ];
-                            matrix_coef1 [i]    <=      dct_2_matrix_coefficient[1 ][i + count * 16 ];
-                            matrix_coef2 [i]    <=      dct_2_matrix_coefficient[2 ][i + count * 16 ];
-                            matrix_coef3 [i]    <=      dct_2_matrix_coefficient[3 ][i + count * 16 ];
-                            matrix_coef4 [i]    <=      dct_2_matrix_coefficient[4 ][i + count * 16 ];
-                            matrix_coef5 [i]    <=      dct_2_matrix_coefficient[5 ][i + count * 16 ];
-                            matrix_coef6 [i]    <=      dct_2_matrix_coefficient[6 ][i + count * 16 ];
-                            matrix_coef7 [i]    <=      dct_2_matrix_coefficient[7 ][i + count * 16 ];
-                            matrix_coef8 [i]    <=      dct_2_matrix_coefficient[8 ][i + count * 16 ];
-                            matrix_coef9 [i]    <=      dct_2_matrix_coefficient[9 ][i + count * 16 ];
-                            matrix_coef10[i]    <=      dct_2_matrix_coefficient[10][i + count * 16 ];
-                            matrix_coef11[i]    <=      dct_2_matrix_coefficient[11][i + count * 16 ];
-                            matrix_coef12[i]    <=      dct_2_matrix_coefficient[12][i + count * 16 ];
-                            matrix_coef13[i]    <=      dct_2_matrix_coefficient[13][i + count * 16 ];
-                            matrix_coef14[i]    <=      dct_2_matrix_coefficient[14][i + count * 16 ];
-                            matrix_coef15[i]    <=      dct_2_matrix_coefficient[15][i + count * 16 ];
-                            matrix_coef16[i]    <=      dct_2_matrix_coefficient[16][i + count * 16 ];
-                            matrix_coef17[i]    <=      dct_2_matrix_coefficient[17][i + count * 16 ];
-                            matrix_coef18[i]    <=      dct_2_matrix_coefficient[18][i + count * 16 ];
-                            matrix_coef19[i]    <=      dct_2_matrix_coefficient[19][i + count * 16 ];
-                            matrix_coef20[i]    <=      dct_2_matrix_coefficient[20][i + count * 16 ];
-                            matrix_coef21[i]    <=      dct_2_matrix_coefficient[21][i + count * 16 ];
-                            matrix_coef22[i]    <=      dct_2_matrix_coefficient[22][i + count * 16 ];
-                            matrix_coef23[i]    <=      dct_2_matrix_coefficient[23][i + count * 16 ];
-                            matrix_coef24[i]    <=      dct_2_matrix_coefficient[24][i + count * 16 ];
-                            matrix_coef25[i]    <=      dct_2_matrix_coefficient[25][i + count * 16 ];
-                            matrix_coef26[i]    <=      dct_2_matrix_coefficient[26][i + count * 16 ];
-                            matrix_coef27[i]    <=      dct_2_matrix_coefficient[27][i + count * 16 ];
-                            matrix_coef28[i]    <=      dct_2_matrix_coefficient[28][i + count * 16 ];
-                            matrix_coef29[i]    <=      dct_2_matrix_coefficient[29][i + count * 16 ];
-                            matrix_coef30[i]    <=      dct_2_matrix_coefficient[30][i + count * 16 ];
-                            matrix_coef31[i]    <=      dct_2_matrix_coefficient[31][i + count * 16 ];
-                        end
+                end
+                SIZE8   : begin
+                    for(i = 0 ;i < 8 ; i = i + 1) begin
+                        matrix_coef0 [i]        <=      dct_2_matrix_coefficient[0 ][ i];
+                        matrix_coef1 [i]        <=      dct_2_matrix_coefficient[8 ][ i];
+                        matrix_coef2 [i]        <=      dct_2_matrix_coefficient[16][ i];
+                        matrix_coef3 [i]        <=      dct_2_matrix_coefficient[24][ i];
+                        matrix_coef4 [i]        <=      dct_2_matrix_coefficient[32][ i];
+                        matrix_coef5 [i]        <=      dct_2_matrix_coefficient[40][ i];
+                        matrix_coef6 [i]        <=      dct_2_matrix_coefficient[48][ i];
+                        matrix_coef7 [i]        <=      dct_2_matrix_coefficient[56][ i];
                     end
-                default :   begin
-                        ;
+                    for(i = 0 ;i < 8 ; i = i + 1) begin
+                        matrix_coef0 [i + 8]    <=      dct_2_matrix_coefficient[0 ][ i];
+                        matrix_coef1 [i + 8]    <=      dct_2_matrix_coefficient[8 ][ i];
+                        matrix_coef2 [i + 8]    <=      dct_2_matrix_coefficient[16][ i];
+                        matrix_coef3 [i + 8]    <=      dct_2_matrix_coefficient[24][ i];
+                        matrix_coef4 [i + 8]    <=      dct_2_matrix_coefficient[32][ i];
+                        matrix_coef5 [i + 8]    <=      dct_2_matrix_coefficient[40][ i];
+                        matrix_coef6 [i + 8]    <=      dct_2_matrix_coefficient[48][ i];
+                        matrix_coef7 [i + 8]    <=      dct_2_matrix_coefficient[56][ i];
                     end
+                end
+                SIZE16  : begin
+                    for(i = 0 ;i < 16 ; i = i + 1) begin
+                        matrix_coef0 [i]    <=      dct_2_matrix_coefficient[0 ][ i ];
+                        matrix_coef1 [i]    <=      dct_2_matrix_coefficient[4 ][ i ];
+                        matrix_coef2 [i]    <=      dct_2_matrix_coefficient[8 ][ i ];
+                        matrix_coef3 [i]    <=      dct_2_matrix_coefficient[12][ i ];
+                        matrix_coef4 [i]    <=      dct_2_matrix_coefficient[16][ i ];
+                        matrix_coef5 [i]    <=      dct_2_matrix_coefficient[20][ i ];
+                        matrix_coef6 [i]    <=      dct_2_matrix_coefficient[24][ i ];
+                        matrix_coef7 [i]    <=      dct_2_matrix_coefficient[28][ i ];
+                        matrix_coef8 [i]    <=      dct_2_matrix_coefficient[32][ i ];
+                        matrix_coef9 [i]    <=      dct_2_matrix_coefficient[36][ i ];
+                        matrix_coef10[i]    <=      dct_2_matrix_coefficient[40][ i ];
+                        matrix_coef11[i]    <=      dct_2_matrix_coefficient[44][ i ];
+                        matrix_coef12[i]    <=      dct_2_matrix_coefficient[48][ i ];
+                        matrix_coef13[i]    <=      dct_2_matrix_coefficient[52][ i ];
+                        matrix_coef14[i]    <=      dct_2_matrix_coefficient[56][ i ];
+                        matrix_coef15[i]    <=      dct_2_matrix_coefficient[60][ i ];
+                    end
+                end
+                SIZE32  : begin
+                    for(i = 0 ;i < 16 ; i = i + 1) begin
+                        matrix_coef0 [i]    <=      dct_2_matrix_coefficient[ 0  ][ i + count * 16 ];
+                        matrix_coef1 [i]    <=      dct_2_matrix_coefficient[ 2  ][ i + count * 16 ];
+                        matrix_coef2 [i]    <=      dct_2_matrix_coefficient[ 4  ][ i + count * 16 ];
+                        matrix_coef3 [i]    <=      dct_2_matrix_coefficient[ 6  ][ i + count * 16 ];
+                        matrix_coef4 [i]    <=      dct_2_matrix_coefficient[ 8  ][ i + count * 16 ];
+                        matrix_coef5 [i]    <=      dct_2_matrix_coefficient[ 10 ][ i + count * 16 ];
+                        matrix_coef6 [i]    <=      dct_2_matrix_coefficient[ 12 ][ i + count * 16 ];
+                        matrix_coef7 [i]    <=      dct_2_matrix_coefficient[ 14 ][ i + count * 16 ];
+                        matrix_coef8 [i]    <=      dct_2_matrix_coefficient[ 16 ][ i + count * 16 ];
+                        matrix_coef9 [i]    <=      dct_2_matrix_coefficient[ 18 ][ i + count * 16 ];
+                        matrix_coef10[i]    <=      dct_2_matrix_coefficient[ 20 ][ i + count * 16 ];
+                        matrix_coef11[i]    <=      dct_2_matrix_coefficient[ 22 ][ i + count * 16 ];
+                        matrix_coef12[i]    <=      dct_2_matrix_coefficient[ 24 ][ i + count * 16 ];
+                        matrix_coef13[i]    <=      dct_2_matrix_coefficient[ 26 ][ i + count * 16 ];
+                        matrix_coef14[i]    <=      dct_2_matrix_coefficient[ 28 ][ i + count * 16 ];
+                        matrix_coef15[i]    <=      dct_2_matrix_coefficient[ 30 ][ i + count * 16 ];
+                        matrix_coef16[i]    <=      dct_2_matrix_coefficient[ 32 ][ i + count * 16 ];
+                        matrix_coef17[i]    <=      dct_2_matrix_coefficient[ 34 ][ i + count * 16 ];
+                        matrix_coef18[i]    <=      dct_2_matrix_coefficient[ 36 ][ i + count * 16 ];
+                        matrix_coef19[i]    <=      dct_2_matrix_coefficient[ 38 ][ i + count * 16 ];
+                        matrix_coef20[i]    <=      dct_2_matrix_coefficient[ 40 ][ i + count * 16 ];
+                        matrix_coef21[i]    <=      dct_2_matrix_coefficient[ 42 ][ i + count * 16 ];
+                        matrix_coef22[i]    <=      dct_2_matrix_coefficient[ 44 ][ i + count * 16 ];
+                        matrix_coef23[i]    <=      dct_2_matrix_coefficient[ 46 ][ i + count * 16 ];
+                        matrix_coef24[i]    <=      dct_2_matrix_coefficient[ 48 ][ i + count * 16 ];
+                        matrix_coef25[i]    <=      dct_2_matrix_coefficient[ 50 ][ i + count * 16 ];
+                        matrix_coef26[i]    <=      dct_2_matrix_coefficient[ 52 ][ i + count * 16 ];
+                        matrix_coef27[i]    <=      dct_2_matrix_coefficient[ 54 ][ i + count * 16 ];
+                        matrix_coef28[i]    <=      dct_2_matrix_coefficient[ 56 ][ i + count * 16 ];
+                        matrix_coef29[i]    <=      dct_2_matrix_coefficient[ 58 ][ i + count * 16 ];
+                        matrix_coef30[i]    <=      dct_2_matrix_coefficient[ 60 ][ i + count * 16 ];
+                        matrix_coef31[i]    <=      dct_2_matrix_coefficient[ 62 ][ i + count * 16 ];
+                    end
+                end
+                SIZE64  : begin
+                    for(i = 0 ;i < 16 ; i = i + 1) begin
+                        matrix_coef0 [i]    <=      dct_2_matrix_coefficient[0 ][i + count * 16 ];
+                        matrix_coef1 [i]    <=      dct_2_matrix_coefficient[1 ][i + count * 16 ];
+                        matrix_coef2 [i]    <=      dct_2_matrix_coefficient[2 ][i + count * 16 ];
+                        matrix_coef3 [i]    <=      dct_2_matrix_coefficient[3 ][i + count * 16 ];
+                        matrix_coef4 [i]    <=      dct_2_matrix_coefficient[4 ][i + count * 16 ];
+                        matrix_coef5 [i]    <=      dct_2_matrix_coefficient[5 ][i + count * 16 ];
+                        matrix_coef6 [i]    <=      dct_2_matrix_coefficient[6 ][i + count * 16 ];
+                        matrix_coef7 [i]    <=      dct_2_matrix_coefficient[7 ][i + count * 16 ];
+                        matrix_coef8 [i]    <=      dct_2_matrix_coefficient[8 ][i + count * 16 ];
+                        matrix_coef9 [i]    <=      dct_2_matrix_coefficient[9 ][i + count * 16 ];
+                        matrix_coef10[i]    <=      dct_2_matrix_coefficient[10][i + count * 16 ];
+                        matrix_coef11[i]    <=      dct_2_matrix_coefficient[11][i + count * 16 ];
+                        matrix_coef12[i]    <=      dct_2_matrix_coefficient[12][i + count * 16 ];
+                        matrix_coef13[i]    <=      dct_2_matrix_coefficient[13][i + count * 16 ];
+                        matrix_coef14[i]    <=      dct_2_matrix_coefficient[14][i + count * 16 ];
+                        matrix_coef15[i]    <=      dct_2_matrix_coefficient[15][i + count * 16 ];
+                        matrix_coef16[i]    <=      dct_2_matrix_coefficient[16][i + count * 16 ];
+                        matrix_coef17[i]    <=      dct_2_matrix_coefficient[17][i + count * 16 ];
+                        matrix_coef18[i]    <=      dct_2_matrix_coefficient[18][i + count * 16 ];
+                        matrix_coef19[i]    <=      dct_2_matrix_coefficient[19][i + count * 16 ];
+                        matrix_coef20[i]    <=      dct_2_matrix_coefficient[20][i + count * 16 ];
+                        matrix_coef21[i]    <=      dct_2_matrix_coefficient[21][i + count * 16 ];
+                        matrix_coef22[i]    <=      dct_2_matrix_coefficient[22][i + count * 16 ];
+                        matrix_coef23[i]    <=      dct_2_matrix_coefficient[23][i + count * 16 ];
+                        matrix_coef24[i]    <=      dct_2_matrix_coefficient[24][i + count * 16 ];
+                        matrix_coef25[i]    <=      dct_2_matrix_coefficient[25][i + count * 16 ];
+                        matrix_coef26[i]    <=      dct_2_matrix_coefficient[26][i + count * 16 ];
+                        matrix_coef27[i]    <=      dct_2_matrix_coefficient[27][i + count * 16 ];
+                        matrix_coef28[i]    <=      dct_2_matrix_coefficient[28][i + count * 16 ];
+                        matrix_coef29[i]    <=      dct_2_matrix_coefficient[29][i + count * 16 ];
+                        matrix_coef30[i]    <=      dct_2_matrix_coefficient[30][i + count * 16 ];
+                        matrix_coef31[i]    <=      dct_2_matrix_coefficient[31][i + count * 16 ];
+                    end
+                end
             endcase
         end
-        else begin//2:DST7 1:DCT8
+        else begin//DST7/DCT8
             case(i_size_d1)
-                1       :   begin
-                        for(i = 0 ;i < 4 ; i = i + 1) begin
-                            matrix_coef0 [i]        <=      DST7P4_coefficient[ 0 ][ i];
-                            matrix_coef1 [i]        <=      DST7P4_coefficient[ 1 ][ i];
-                            matrix_coef2 [i]        <=      DST7P4_coefficient[ 2 ][ i];
-                            matrix_coef3 [i]        <=      DST7P4_coefficient[ 3 ][ i];
-                        end
-                        for(i = 0 ;i < 4 ; i = i + 1) begin
-                            matrix_coef0 [i + 4]    <=      DST7P4_coefficient[ 0 ][ i];
-                            matrix_coef1 [i + 4]    <=      DST7P4_coefficient[ 1 ][ i];
-                            matrix_coef2 [i + 4]    <=      DST7P4_coefficient[ 2 ][ i];
-                            matrix_coef3 [i + 4]    <=      DST7P4_coefficient[ 3 ][ i];
-                        end
-                        for(i = 0 ;i < 4 ; i = i + 1) begin
-                            matrix_coef0 [i + 8]    <=      DST7P4_coefficient[ 0 ][ i];
-                            matrix_coef1 [i + 8]    <=      DST7P4_coefficient[ 1 ][ i];
-                            matrix_coef2 [i + 8]    <=      DST7P4_coefficient[ 2 ][ i];
-                            matrix_coef3 [i + 8]    <=      DST7P4_coefficient[ 3 ][ i];
-                        end
-                        for(i = 0 ;i < 4 ; i = i + 1) begin
-                            matrix_coef0 [i + 12]    <=      DST7P4_coefficient[ 0 ][ i ];
-                            matrix_coef1 [i + 12]    <=      DST7P4_coefficient[ 1 ][ i ];
-                            matrix_coef2 [i + 12]    <=      DST7P4_coefficient[ 2 ][ i ];
-                            matrix_coef3 [i + 12]    <=      DST7P4_coefficient[ 3 ][ i ];
-                        end
+                SIZE4   : begin
+                    for(i = 0 ;i < 4 ; i = i + 1) begin
+                        matrix_coef0 [i]        <=      DST7P4_coefficient[ 0 ][ i];
+                        matrix_coef1 [i]        <=      DST7P4_coefficient[ 1 ][ i];
+                        matrix_coef2 [i]        <=      DST7P4_coefficient[ 2 ][ i];
+                        matrix_coef3 [i]        <=      DST7P4_coefficient[ 3 ][ i];
                     end
-                2       :   begin
-                        for(i = 0 ;i < 8 ; i = i + 1) begin
-                            matrix_coef0 [i]        <=      DST7P8_coefficient[0 ][ i];
-                            matrix_coef1 [i]        <=      DST7P8_coefficient[1 ][ i];
-                            matrix_coef2 [i]        <=      DST7P8_coefficient[2 ][ i];
-                            matrix_coef3 [i]        <=      DST7P8_coefficient[3 ][ i];
-                            matrix_coef4 [i]        <=      DST7P8_coefficient[4 ][ i];
-                            matrix_coef5 [i]        <=      DST7P8_coefficient[5 ][ i];
-                            matrix_coef6 [i]        <=      DST7P8_coefficient[6 ][ i];
-                            matrix_coef7 [i]        <=      DST7P8_coefficient[7 ][ i];
-                        end
-                        for(i = 0 ;i < 8 ; i = i + 1) begin
-                            matrix_coef0 [i + 8]    <=      DST7P8_coefficient[0 ][ i];
-                            matrix_coef1 [i + 8]    <=      DST7P8_coefficient[1 ][ i];
-                            matrix_coef2 [i + 8]    <=      DST7P8_coefficient[2 ][ i];
-                            matrix_coef3 [i + 8]    <=      DST7P8_coefficient[3 ][ i];
-                            matrix_coef4 [i + 8]    <=      DST7P8_coefficient[4 ][ i];
-                            matrix_coef5 [i + 8]    <=      DST7P8_coefficient[5 ][ i];
-                            matrix_coef6 [i + 8]    <=      DST7P8_coefficient[6 ][ i];
-                            matrix_coef7 [i + 8]    <=      DST7P8_coefficient[7 ][ i];
-                        end
+                    for(i = 0 ;i < 4 ; i = i + 1) begin
+                        matrix_coef0 [i + 4]    <=      DST7P4_coefficient[ 0 ][ i];
+                        matrix_coef1 [i + 4]    <=      DST7P4_coefficient[ 1 ][ i];
+                        matrix_coef2 [i + 4]    <=      DST7P4_coefficient[ 2 ][ i];
+                        matrix_coef3 [i + 4]    <=      DST7P4_coefficient[ 3 ][ i];
                     end
-                3       :   begin
-                        for(i = 0 ;i < 16 ; i = i + 1) begin
-                            matrix_coef0 [i]    <=      DST7P16_coefficient[0 ][ i ];
-                            matrix_coef1 [i]    <=      DST7P16_coefficient[1 ][ i ];
-                            matrix_coef2 [i]    <=      DST7P16_coefficient[2 ][ i ];
-                            matrix_coef3 [i]    <=      DST7P16_coefficient[3 ][ i ];
-                            matrix_coef4 [i]    <=      DST7P16_coefficient[4 ][ i ];
-                            matrix_coef5 [i]    <=      DST7P16_coefficient[5 ][ i ];
-                            matrix_coef6 [i]    <=      DST7P16_coefficient[6 ][ i ];
-                            matrix_coef7 [i]    <=      DST7P16_coefficient[7 ][ i ];
-                            matrix_coef8 [i]    <=      DST7P16_coefficient[8 ][ i ];
-                            matrix_coef9 [i]    <=      DST7P16_coefficient[9 ][ i ];
-                            matrix_coef10[i]    <=      DST7P16_coefficient[10][ i ];
-                            matrix_coef11[i]    <=      DST7P16_coefficient[11][ i ];
-                            matrix_coef12[i]    <=      DST7P16_coefficient[12][ i ];
-                            matrix_coef13[i]    <=      DST7P16_coefficient[13][ i ];
-                            matrix_coef14[i]    <=      DST7P16_coefficient[14][ i ];
-                            matrix_coef15[i]    <=      DST7P16_coefficient[15][ i ];
-                        end
+                    for(i = 0 ;i < 4 ; i = i + 1) begin
+                        matrix_coef0 [i + 8]    <=      DST7P4_coefficient[ 0 ][ i];
+                        matrix_coef1 [i + 8]    <=      DST7P4_coefficient[ 1 ][ i];
+                        matrix_coef2 [i + 8]    <=      DST7P4_coefficient[ 2 ][ i];
+                        matrix_coef3 [i + 8]    <=      DST7P4_coefficient[ 3 ][ i];
                     end
-                4       :   begin
-                        for(i = 0 ;i < 16 ; i = i + 1) begin
-                            matrix_coef0 [i]    <=      DST7P32_coefficient[ 0  ][ i + ( i_type_d1 == DST7 ? count * 16 : 16 - count * 16 ) ];
-                            matrix_coef1 [i]    <=      DST7P32_coefficient[ 1  ][ i + ( i_type_d1 == DST7 ? count * 16 : 16 - count * 16 ) ];
-                            matrix_coef2 [i]    <=      DST7P32_coefficient[ 2  ][ i + ( i_type_d1 == DST7 ? count * 16 : 16 - count * 16 ) ];
-                            matrix_coef3 [i]    <=      DST7P32_coefficient[ 3  ][ i + ( i_type_d1 == DST7 ? count * 16 : 16 - count * 16 ) ];
-                            matrix_coef4 [i]    <=      DST7P32_coefficient[ 4  ][ i + ( i_type_d1 == DST7 ? count * 16 : 16 - count * 16 ) ];
-                            matrix_coef5 [i]    <=      DST7P32_coefficient[ 5  ][ i + ( i_type_d1 == DST7 ? count * 16 : 16 - count * 16 ) ];
-                            matrix_coef6 [i]    <=      DST7P32_coefficient[ 6  ][ i + ( i_type_d1 == DST7 ? count * 16 : 16 - count * 16 ) ];
-                            matrix_coef7 [i]    <=      DST7P32_coefficient[ 7  ][ i + ( i_type_d1 == DST7 ? count * 16 : 16 - count * 16 ) ];
-                            matrix_coef8 [i]    <=      DST7P32_coefficient[ 8  ][ i + ( i_type_d1 == DST7 ? count * 16 : 16 - count * 16 ) ];
-                            matrix_coef9 [i]    <=      DST7P32_coefficient[ 9  ][ i + ( i_type_d1 == DST7 ? count * 16 : 16 - count * 16 ) ];
-                            matrix_coef10[i]    <=      DST7P32_coefficient[ 10 ][ i + ( i_type_d1 == DST7 ? count * 16 : 16 - count * 16 ) ];
-                            matrix_coef11[i]    <=      DST7P32_coefficient[ 11 ][ i + ( i_type_d1 == DST7 ? count * 16 : 16 - count * 16 ) ];
-                            matrix_coef12[i]    <=      DST7P32_coefficient[ 12 ][ i + ( i_type_d1 == DST7 ? count * 16 : 16 - count * 16 ) ];
-                            matrix_coef13[i]    <=      DST7P32_coefficient[ 13 ][ i + ( i_type_d1 == DST7 ? count * 16 : 16 - count * 16 ) ];
-                            matrix_coef14[i]    <=      DST7P32_coefficient[ 14 ][ i + ( i_type_d1 == DST7 ? count * 16 : 16 - count * 16 ) ];
-                            matrix_coef15[i]    <=      DST7P32_coefficient[ 15 ][ i + ( i_type_d1 == DST7 ? count * 16 : 16 - count * 16 ) ];
-                            matrix_coef16[i]    <=      0;//zero
-                            matrix_coef17[i]    <=      0;
-                            matrix_coef18[i]    <=      0;
-                            matrix_coef19[i]    <=      0;
-                            matrix_coef20[i]    <=      0;
-                            matrix_coef21[i]    <=      0;
-                            matrix_coef22[i]    <=      0;
-                            matrix_coef23[i]    <=      0;
-                            matrix_coef24[i]    <=      0;
-                            matrix_coef25[i]    <=      0;
-                            matrix_coef26[i]    <=      0;
-                            matrix_coef27[i]    <=      0;
-                            matrix_coef28[i]    <=      0;
-                            matrix_coef29[i]    <=      0;
-                            matrix_coef30[i]    <=      0;
-                            matrix_coef31[i]    <=      0;
-                        end
+                    for(i = 0 ;i < 4 ; i = i + 1) begin
+                        matrix_coef0 [i + 12]    <=      DST7P4_coefficient[ 0 ][ i ];
+                        matrix_coef1 [i + 12]    <=      DST7P4_coefficient[ 1 ][ i ];
+                        matrix_coef2 [i + 12]    <=      DST7P4_coefficient[ 2 ][ i ];
+                        matrix_coef3 [i + 12]    <=      DST7P4_coefficient[ 3 ][ i ];
                     end
-                default :   begin
-                        ;
+                end
+                SIZE8   : begin
+                    for(i = 0 ;i < 8 ; i = i + 1) begin
+                        matrix_coef0 [i]        <=      DST7P8_coefficient[0 ][ i];
+                        matrix_coef1 [i]        <=      DST7P8_coefficient[1 ][ i];
+                        matrix_coef2 [i]        <=      DST7P8_coefficient[2 ][ i];
+                        matrix_coef3 [i]        <=      DST7P8_coefficient[3 ][ i];
+                        matrix_coef4 [i]        <=      DST7P8_coefficient[4 ][ i];
+                        matrix_coef5 [i]        <=      DST7P8_coefficient[5 ][ i];
+                        matrix_coef6 [i]        <=      DST7P8_coefficient[6 ][ i];
+                        matrix_coef7 [i]        <=      DST7P8_coefficient[7 ][ i];
                     end
+                    for(i = 0 ;i < 8 ; i = i + 1) begin
+                        matrix_coef0 [i + 8]    <=      DST7P8_coefficient[0 ][ i];
+                        matrix_coef1 [i + 8]    <=      DST7P8_coefficient[1 ][ i];
+                        matrix_coef2 [i + 8]    <=      DST7P8_coefficient[2 ][ i];
+                        matrix_coef3 [i + 8]    <=      DST7P8_coefficient[3 ][ i];
+                        matrix_coef4 [i + 8]    <=      DST7P8_coefficient[4 ][ i];
+                        matrix_coef5 [i + 8]    <=      DST7P8_coefficient[5 ][ i];
+                        matrix_coef6 [i + 8]    <=      DST7P8_coefficient[6 ][ i];
+                        matrix_coef7 [i + 8]    <=      DST7P8_coefficient[7 ][ i];
+                    end
+                end
+                SIZE16  : begin
+                    for(i = 0 ;i < 16 ; i = i + 1) begin
+                        matrix_coef0 [i]    <=      DST7P16_coefficient[0 ][ i ];
+                        matrix_coef1 [i]    <=      DST7P16_coefficient[1 ][ i ];
+                        matrix_coef2 [i]    <=      DST7P16_coefficient[2 ][ i ];
+                        matrix_coef3 [i]    <=      DST7P16_coefficient[3 ][ i ];
+                        matrix_coef4 [i]    <=      DST7P16_coefficient[4 ][ i ];
+                        matrix_coef5 [i]    <=      DST7P16_coefficient[5 ][ i ];
+                        matrix_coef6 [i]    <=      DST7P16_coefficient[6 ][ i ];
+                        matrix_coef7 [i]    <=      DST7P16_coefficient[7 ][ i ];
+                        matrix_coef8 [i]    <=      DST7P16_coefficient[8 ][ i ];
+                        matrix_coef9 [i]    <=      DST7P16_coefficient[9 ][ i ];
+                        matrix_coef10[i]    <=      DST7P16_coefficient[10][ i ];
+                        matrix_coef11[i]    <=      DST7P16_coefficient[11][ i ];
+                        matrix_coef12[i]    <=      DST7P16_coefficient[12][ i ];
+                        matrix_coef13[i]    <=      DST7P16_coefficient[13][ i ];
+                        matrix_coef14[i]    <=      DST7P16_coefficient[14][ i ];
+                        matrix_coef15[i]    <=      DST7P16_coefficient[15][ i ];
+                    end
+                end
+                SIZE32  : begin
+                    for(i = 0 ;i < 16 ; i = i + 1) begin
+                        matrix_coef0 [i]    <=      DST7P32_coefficient[ 0  ][ i + ( i_type_d1 == DST7 ? count * 16 : 16 - count * 16 ) ];
+                        matrix_coef1 [i]    <=      DST7P32_coefficient[ 1  ][ i + ( i_type_d1 == DST7 ? count * 16 : 16 - count * 16 ) ];
+                        matrix_coef2 [i]    <=      DST7P32_coefficient[ 2  ][ i + ( i_type_d1 == DST7 ? count * 16 : 16 - count * 16 ) ];
+                        matrix_coef3 [i]    <=      DST7P32_coefficient[ 3  ][ i + ( i_type_d1 == DST7 ? count * 16 : 16 - count * 16 ) ];
+                        matrix_coef4 [i]    <=      DST7P32_coefficient[ 4  ][ i + ( i_type_d1 == DST7 ? count * 16 : 16 - count * 16 ) ];
+                        matrix_coef5 [i]    <=      DST7P32_coefficient[ 5  ][ i + ( i_type_d1 == DST7 ? count * 16 : 16 - count * 16 ) ];
+                        matrix_coef6 [i]    <=      DST7P32_coefficient[ 6  ][ i + ( i_type_d1 == DST7 ? count * 16 : 16 - count * 16 ) ];
+                        matrix_coef7 [i]    <=      DST7P32_coefficient[ 7  ][ i + ( i_type_d1 == DST7 ? count * 16 : 16 - count * 16 ) ];
+                        matrix_coef8 [i]    <=      DST7P32_coefficient[ 8  ][ i + ( i_type_d1 == DST7 ? count * 16 : 16 - count * 16 ) ];
+                        matrix_coef9 [i]    <=      DST7P32_coefficient[ 9  ][ i + ( i_type_d1 == DST7 ? count * 16 : 16 - count * 16 ) ];
+                        matrix_coef10[i]    <=      DST7P32_coefficient[ 10 ][ i + ( i_type_d1 == DST7 ? count * 16 : 16 - count * 16 ) ];
+                        matrix_coef11[i]    <=      DST7P32_coefficient[ 11 ][ i + ( i_type_d1 == DST7 ? count * 16 : 16 - count * 16 ) ];
+                        matrix_coef12[i]    <=      DST7P32_coefficient[ 12 ][ i + ( i_type_d1 == DST7 ? count * 16 : 16 - count * 16 ) ];
+                        matrix_coef13[i]    <=      DST7P32_coefficient[ 13 ][ i + ( i_type_d1 == DST7 ? count * 16 : 16 - count * 16 ) ];
+                        matrix_coef14[i]    <=      DST7P32_coefficient[ 14 ][ i + ( i_type_d1 == DST7 ? count * 16 : 16 - count * 16 ) ];
+                        matrix_coef15[i]    <=      DST7P32_coefficient[ 15 ][ i + ( i_type_d1 == DST7 ? count * 16 : 16 - count * 16 ) ];
+                        matrix_coef16[i]    <=      0;//zero
+                        matrix_coef17[i]    <=      0;
+                        matrix_coef18[i]    <=      0;
+                        matrix_coef19[i]    <=      0;
+                        matrix_coef20[i]    <=      0;
+                        matrix_coef21[i]    <=      0;
+                        matrix_coef22[i]    <=      0;
+                        matrix_coef23[i]    <=      0;
+                        matrix_coef24[i]    <=      0;
+                        matrix_coef25[i]    <=      0;
+                        matrix_coef26[i]    <=      0;
+                        matrix_coef27[i]    <=      0;
+                        matrix_coef28[i]    <=      0;
+                        matrix_coef29[i]    <=      0;
+                        matrix_coef30[i]    <=      0;
+                        matrix_coef31[i]    <=      0;
+                    end
+                end
             endcase
         end
     end

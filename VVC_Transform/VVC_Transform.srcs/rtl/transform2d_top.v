@@ -60,10 +60,14 @@ module transform2d_top#(
 
 integer i;
 
+//input
+    reg [1 : 0] i_type_v_d[0 : 9];
+    reg [2 : 0] i_height_d[0 : 9];
 //transform1d first stage
     wire [1 : 0] transform1d_out_type_h;
-    wire [1 : 0] transform1d_out_type_v;
-    wire [2 : 0] transform1d_out_width, transform1d_out_height;
+    wire [1 : 0] transform1d_out_type_v = i_type_v_d[9];
+    wire [2 : 0] transform1d_out_width;
+    wire [2 : 0] transform1d_out_height = i_height_d[9];
     wire transform1d_out_valid;
     wire signed [OUT_WIDTH - 1 : 0] transform1d_out[0 : 15];
 //transpose memory
@@ -72,79 +76,104 @@ integer i;
     wire [2 : 0] transpose_out_width, transpose_out_height;
     wire transpose_out_valid;
     wire signed [OUT_WIDTH - 1 : 0] transpose_out[0 : 15];
+    reg [1 : 0] transpose_out_type_h_d[0 : 9];
+    reg [2 : 0] transpose_out_width_d[0 : 9];
 
-
-    reg     [1 : 0]     i_type_h_d1;  
-    reg     [1 : 0]     i_type_v_d1;  
-    reg     [2 : 0]     i_width_d1 ;  
-    reg     [2 : 0]     i_height_d1;  
-
-    reg                               i_valid_d1;
-    reg   signed  [BIT_DEPTH : 0]     i_0_d1    ;
-    reg   signed  [BIT_DEPTH : 0]     i_1_d1    ;
-    reg   signed  [BIT_DEPTH : 0]     i_2_d1    ;
-    reg   signed  [BIT_DEPTH : 0]     i_3_d1    ;
-    reg   signed  [BIT_DEPTH : 0]     i_4_d1    ;
-    reg   signed  [BIT_DEPTH : 0]     i_5_d1    ;
-    reg   signed  [BIT_DEPTH : 0]     i_6_d1    ;
-    reg   signed  [BIT_DEPTH : 0]     i_7_d1    ;
-    reg   signed  [BIT_DEPTH : 0]     i_8_d1    ;
-    reg   signed  [BIT_DEPTH : 0]     i_9_d1    ;
-    reg   signed  [BIT_DEPTH : 0]     i_10_d1   ;
-    reg   signed  [BIT_DEPTH : 0]     i_11_d1   ;
-    reg   signed  [BIT_DEPTH : 0]     i_12_d1   ;
-    reg   signed  [BIT_DEPTH : 0]     i_13_d1   ;
-    reg   signed  [BIT_DEPTH : 0]     i_14_d1   ;
-    reg   signed  [BIT_DEPTH : 0]     i_15_d1   ;
-
-
-always@(posedge clk or negedge reset )
-    if(!reset) begin
-        i_type_h_d1     <=  0;
-        i_type_v_d1     <=  0;
-        i_width_d1      <=  0;
-        i_height_d1     <=  0;
-        i_valid_d1      <=  0;
-        i_0_d1          <=  0;
-        i_1_d1          <=  0;
-        i_2_d1          <=  0;
-        i_3_d1          <=  0;
-        i_4_d1          <=  0;
-        i_5_d1          <=  0;
-        i_6_d1          <=  0;
-        i_7_d1          <=  0;
-        i_8_d1          <=  0;
-        i_9_d1          <=  0;
-        i_10_d1         <=  0;
-        i_11_d1         <=  0;
-        i_12_d1         <=  0;
-        i_13_d1         <=  0;
-        i_14_d1         <=  0;
-        i_15_d1         <=  0;
+//parameter delay
+always @(posedge clk or negedge reset) begin
+    if (!reset) begin 
+        for (i = 0; i < 10; i = i + 1) begin
+            i_height_d[i] <= 0;
+            i_type_v_d[i] <= 0;
+            transpose_out_width_d[i] <= 0;
+            transpose_out_type_h_d[i] <= 0;
+        end
     end
     else begin
-        i_type_h_d1     <=  i_type_h;
-        i_type_v_d1     <=  i_type_v;
-        i_width_d1      <=  i_width ;
-        i_height_d1     <=  i_height;
-        i_valid_d1      <=  i_valid ;
-        i_0_d1          <=  i_0     ;
-        i_1_d1          <=  i_1     ;
-        i_2_d1          <=  i_2     ;
-        i_3_d1          <=  i_3     ;
-        i_4_d1          <=  i_4     ;
-        i_5_d1          <=  i_5     ;
-        i_6_d1          <=  i_6     ;
-        i_7_d1          <=  i_7     ;
-        i_8_d1          <=  i_8     ;
-        i_9_d1          <=  i_9     ;
-        i_10_d1         <=  i_10    ;
-        i_11_d1         <=  i_11    ;
-        i_12_d1         <=  i_12    ;
-        i_13_d1         <=  i_13    ;
-        i_14_d1         <=  i_14    ;
-        i_15_d1         <=  i_15    ;
+        i_height_d[0] <= i_height;
+        i_type_v_d[0] <= i_type_v;
+        transpose_out_width_d[0] <= transpose_out_width;
+        transpose_out_type_h_d[0] <= transpose_out_type_h;
+        for (i = 0; i < 9; i = i + 1) begin
+            i_height_d[i + 1] <= i_height_d[i];
+            i_type_v_d[i + 1] <= i_type_v_d[i];
+            transpose_out_width_d[i + 1] <= transpose_out_width_d[i];
+            transpose_out_type_h_d[i + 1] <= transpose_out_type_h_d[i];
+        end
     end
+end
+
+    // reg     [1 : 0]     i_type_h_d1;  
+    // reg     [1 : 0]     i_type_v_d1;  
+    // reg     [2 : 0]     i_width_d1 ;  
+    // reg     [2 : 0]     i_height_d1;  
+
+    // reg                               i_valid_d1;
+    // reg   signed  [BIT_DEPTH : 0]     i_0_d1    ;
+    // reg   signed  [BIT_DEPTH : 0]     i_1_d1    ;
+    // reg   signed  [BIT_DEPTH : 0]     i_2_d1    ;
+    // reg   signed  [BIT_DEPTH : 0]     i_3_d1    ;
+    // reg   signed  [BIT_DEPTH : 0]     i_4_d1    ;
+    // reg   signed  [BIT_DEPTH : 0]     i_5_d1    ;
+    // reg   signed  [BIT_DEPTH : 0]     i_6_d1    ;
+    // reg   signed  [BIT_DEPTH : 0]     i_7_d1    ;
+    // reg   signed  [BIT_DEPTH : 0]     i_8_d1    ;
+    // reg   signed  [BIT_DEPTH : 0]     i_9_d1    ;
+    // reg   signed  [BIT_DEPTH : 0]     i_10_d1   ;
+    // reg   signed  [BIT_DEPTH : 0]     i_11_d1   ;
+    // reg   signed  [BIT_DEPTH : 0]     i_12_d1   ;
+    // reg   signed  [BIT_DEPTH : 0]     i_13_d1   ;
+    // reg   signed  [BIT_DEPTH : 0]     i_14_d1   ;
+    // reg   signed  [BIT_DEPTH : 0]     i_15_d1   ;
+
+
+// always@(posedge clk or negedge reset )
+//     if(!reset) begin
+//         i_type_h_d1     <=  0;
+//         i_type_v_d1     <=  0;
+//         i_width_d1      <=  0;
+//         i_height_d1     <=  0;
+//         i_valid_d1      <=  0;
+//         i_0_d1          <=  0;
+//         i_1_d1          <=  0;
+//         i_2_d1          <=  0;
+//         i_3_d1          <=  0;
+//         i_4_d1          <=  0;
+//         i_5_d1          <=  0;
+//         i_6_d1          <=  0;
+//         i_7_d1          <=  0;
+//         i_8_d1          <=  0;
+//         i_9_d1          <=  0;
+//         i_10_d1         <=  0;
+//         i_11_d1         <=  0;
+//         i_12_d1         <=  0;
+//         i_13_d1         <=  0;
+//         i_14_d1         <=  0;
+//         i_15_d1         <=  0;
+//     end
+//     else begin
+//         i_type_h_d1     <=  i_type_h;
+//         i_type_v_d1     <=  i_type_v;
+//         i_width_d1      <=  i_width ;
+//         i_height_d1     <=  i_height;
+//         i_valid_d1      <=  i_valid ;
+//         i_0_d1          <=  i_0     ;
+//         i_1_d1          <=  i_1     ;
+//         i_2_d1          <=  i_2     ;
+//         i_3_d1          <=  i_3     ;
+//         i_4_d1          <=  i_4     ;
+//         i_5_d1          <=  i_5     ;
+//         i_6_d1          <=  i_6     ;
+//         i_7_d1          <=  i_7     ;
+//         i_8_d1          <=  i_8     ;
+//         i_9_d1          <=  i_9     ;
+//         i_10_d1         <=  i_10    ;
+//         i_11_d1         <=  i_11    ;
+//         i_12_d1         <=  i_12    ;
+//         i_13_d1         <=  i_13    ;
+//         i_14_d1         <=  i_14    ;
+//         i_15_d1         <=  i_15    ;
+//     end
 
 //first stage transform1d
 transform1d#(
@@ -156,34 +185,29 @@ u_transform1d_1st(
     .clk        (clk                    ),
     .rst_n      (reset                  ),
 //input parameter
-    .tr_sequence(1'b0                   ),//0 first transform ;1 second transform;
-    .i_type_h   (i_type_h_d1            ),
-    .i_type_v   (i_type_v_d1            ),
-    .i_width    (i_width_d1             ),
-    .i_height   (i_height_d1            ),
+    .i_type     (i_type_h               ),
+    .i_size     (i_width                ),
 //input data
-    .i_valid    (i_valid_d1             ),
-    .i_0        (i_0_d1                 ),
-    .i_1        (i_1_d1                 ),
-    .i_2        (i_2_d1                 ),
-    .i_3        (i_3_d1                 ),
-    .i_4        (i_4_d1                 ),
-    .i_5        (i_5_d1                 ),
-    .i_6        (i_6_d1                 ),
-    .i_7        (i_7_d1                 ),
-    .i_8        (i_8_d1                 ),
-    .i_9        (i_9_d1                 ),
-    .i_10       (i_10_d1                ),
-    .i_11       (i_11_d1                ),
-    .i_12       (i_12_d1                ),
-    .i_13       (i_13_d1                ),
-    .i_14       (i_14_d1                ),
-    .i_15       (i_15_d1                ),
+    .i_valid    (i_valid                ),
+    .i_0        (i_0                    ),
+    .i_1        (i_1                    ),
+    .i_2        (i_2                    ),
+    .i_3        (i_3                    ),
+    .i_4        (i_4                    ),
+    .i_5        (i_5                    ),
+    .i_6        (i_6                    ),
+    .i_7        (i_7                    ),
+    .i_8        (i_8                    ),
+    .i_9        (i_9                    ),
+    .i_10       (i_10                   ),
+    .i_11       (i_11                   ),
+    .i_12       (i_12                   ),
+    .i_13       (i_13                   ),
+    .i_14       (i_14                   ),
+    .i_15       (i_15                   ),
 //output parameter
-    .o_type_h   (transform1d_out_type_h ),
-    .o_type_v   (transform1d_out_type_v ),
-    .o_width    (transform1d_out_width  ),
-    .o_height   (transform1d_out_height ),
+    .o_type     (transform1d_out_type_h ),
+    .o_size     (transform1d_out_width  ),
 //output 1st stage's coeff
     .o_valid    (transform1d_out_valid  ),
     .o_0        (transform1d_out[0 ]    ),
@@ -203,9 +227,6 @@ u_transform1d_1st(
     .o_14       (transform1d_out[14]    ),
     .o_15       (transform1d_out[15]    )
 );
-
-
-
 
 //transpose memory
 transpose_memory#(
@@ -273,11 +294,8 @@ u_transform1d_2nd(
     .clk        (clk                    ),
     .rst_n      (reset                  ),
 //input parameter
-    .tr_sequence(1'b1                   ),//0 first transform ;1 second transform;
-    .i_type_h   (transpose_out_type_h   ),
-    .i_type_v   (transpose_out_type_v   ),
-    .i_width    (transpose_out_width    ),
-    .i_height   (transpose_out_height   ),
+    .i_type     (transpose_out_type_v   ),
+    .i_size     (transpose_out_height   ),
 //input 1st stage's coeff
     .i_valid    (transpose_out_valid    ),
     .i_0        (transpose_out[0 ]      ),
@@ -297,10 +315,8 @@ u_transform1d_2nd(
     .i_14       (transpose_out[14]      ),
     .i_15       (transpose_out[15]      ),
 //output parameter
-    .o_type_h   (o_type_h               ),
-    .o_type_v   (o_type_v               ),
-    .o_width    (o_width                ),
-    .o_height   (o_height               ),
+    .o_type     (o_type_v               ),
+    .o_size     (o_height               ),
 //output 2nd stage's coeff
     .o_valid    (o_valid                ),
     .o_0        (o_0                    ),
@@ -321,6 +337,7 @@ u_transform1d_2nd(
     .o_15       (o_15                   )
 ); 
 
-
+assign o_type_h = transpose_out_type_h_d[9];
+assign o_width = transpose_out_width_d[9];
 
 endmodule
