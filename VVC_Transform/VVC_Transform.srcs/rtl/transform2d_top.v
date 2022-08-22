@@ -156,7 +156,7 @@ u_transform1d_1st(
     .clk        (clk                    ),
     .rst_n      (reset                  ),
 //input parameter
-    .tr_sequence(0                      ),//0 first transform ;1 second transform;
+    .tr_sequence(1'b0                   ),//0 first transform ;1 second transform;
     .i_type_h   (i_type_h_d1            ),
     .i_type_v   (i_type_v_d1            ),
     .i_width    (i_width_d1             ),
@@ -273,7 +273,7 @@ u_transform1d_2nd(
     .clk        (clk                    ),
     .rst_n      (reset                  ),
 //input parameter
-    .tr_sequence(1                      ),//0 first transform ;1 second transform;
+    .tr_sequence(1'b1                   ),//0 first transform ;1 second transform;
     .i_type_h   (transpose_out_type_h   ),
     .i_type_v   (transpose_out_type_v   ),
     .i_width    (transpose_out_width    ),
