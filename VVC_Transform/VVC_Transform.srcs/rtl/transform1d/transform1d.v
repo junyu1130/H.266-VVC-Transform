@@ -11,7 +11,6 @@ module transform1d#(
     input                               clk         ,
     input                               rst_n       ,
 //input parameter
-    input                               i_stage     ,//0: 1st stage, 1: 2nd stage
     input           [1 : 0]             i_type      ,//0:DCT2 1:DCT8 2:DST7               
     input           [2 : 0]             i_size      ,//1:4x4, 2:8x8, 3:16x16, 4:32x32, 5:64x64
 //input data
@@ -595,26 +594,14 @@ end
 
 //shift
 always @(*) begin
-    if (i_stage == 0) begin //first stage : log2(Width) + BitDepth - 9
-        case (calculate_out_size)
-            SIZE4   : tr_shift <= IN_WIDTH - 8;
-            SIZE8   : tr_shift <= IN_WIDTH - 7;
-            SIZE16  : tr_shift <= IN_WIDTH - 6;
-            SIZE32  : tr_shift <= IN_WIDTH - 5;
-            SIZE64  : tr_shift <= IN_WIDTH - 4;
-            default : tr_shift <= 0;
-        endcase
-    end
-    else begin //second stage : log2(Height) + 6
-        case (calculate_out_size)
-            SIZE4   : tr_shift <= 8;
-            SIZE8   : tr_shift <= 9;
-            SIZE16  : tr_shift <= 10;
-            SIZE32  : tr_shift <= 11;
-            SIZE64  : tr_shift <= 12;
-            default : tr_shift <= 0;
-        endcase
-    end
+    case (calculate_out_size)
+        SIZE4   : tr_shift <= IN_WIDTH - 8;
+        SIZE8   : tr_shift <= IN_WIDTH - 7;
+        SIZE16  : tr_shift <= IN_WIDTH - 6;
+        SIZE32  : tr_shift <= IN_WIDTH - 5;
+        SIZE64  : tr_shift <= IN_WIDTH - 4;
+        default : tr_shift <= 0;
+    endcase
 end
 
 right_shift#(
