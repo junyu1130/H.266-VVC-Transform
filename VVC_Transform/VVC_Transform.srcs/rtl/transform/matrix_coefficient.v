@@ -6052,7 +6052,7 @@ always @(posedge clk) begin
    DST7P4_coefficient[3 ][3 ] <= -29;
 end
 
-always@(posedge clk or negedge rst_n)
+always @(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
         i_size_d1   <=  0;
         i_type_d1   <=  0;
@@ -6069,6 +6069,7 @@ always@(posedge clk or negedge rst_n)
         i_type_d2   <=  i_type_d1;
         i_valid_d2  <=  i_valid_d1;
     end 
+end
 
 always@(posedge clk or negedge rst_n)
     if(!rst_n)  
@@ -6371,9 +6372,7 @@ always @(posedge clk or negedge rst_n) begin
     end
 end
 
-
 //assignment out
-
 assign      o_valid             =       i_valid_d2;
 assign      o_type              =       i_type_d2;
 assign      o_size              =       i_size_d2;  
