@@ -1,6 +1,6 @@
-//describe  : ¶þÎ¬Õý±ä»»(DCT2/DCT8/DST7)
-//input     : 32¸öÏñËØ²Ð²î
-//output    : 32¸ö±ä»»ÏµÊý
+//describe  : ï¿½ï¿½Î¬ï¿½ï¿½ï¿½ä»»(DCT2/DCT8/DST7)
+//input     : 32ï¿½ï¿½ï¿½ï¿½ï¿½Ø²Ð²ï¿½
+//output    : 32ï¿½ï¿½ï¿½ä»»Ïµï¿½ï¿½
 //delay     : 145(64x64) / 81(other) clk
 module transform2d_top#(
     parameter  BIT_DEPTH = 8,
@@ -97,9 +97,9 @@ integer i;
     reg [2 : 0] i_height_d[0 : 6];
 //transform1d
     wire [1 : 0] transform1d_out_type_h;
-    wire [1 : 0] transform1d_out_type_v = i_type_v_d[6];
+    wire [1 : 0] transform1d_out_type_v = i_type_v_d[5];
     wire [2 : 0] transform1d_out_width;
-    wire [2 : 0] transform1d_out_height = i_height_d[6];
+    wire [2 : 0] transform1d_out_height = i_height_d[5];
     wire transform1d_out_valid;
     wire signed [OUT_WIDTH - 1 : 0] transform1d_out[0 : 31];
 //transpose memory
@@ -145,7 +145,6 @@ u_transform1d_1st(
     .clk        (clk                    ),
     .rst_n      (reset                  ),
 //input parameter
-    .i_stage    (1'b0                   ),
     .i_type     (i_type_h               ),
     .i_size     (i_width                ),
 //input data
@@ -319,7 +318,6 @@ u_transform1d_2nd(
     .clk        (clk                    ),
     .rst_n      (reset                  ),
 //input parameter
-    .i_stage    (1'b1                   ),
     .i_type     (transpose_out_type_v   ),
     .i_size     (transpose_out_height   ),
 //input transposed 1st stage's coeff

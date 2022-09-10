@@ -922,7 +922,7 @@ end
 //write
 initial begin 
     #2;
-    #290; //delay 145 clk
+    #286; //delay 143 clk
 //DCT2
     //64x64
     fp_w = $fopen("../../../../../result/fpga_coeff/dct2/fpga_coeff_dct2_64x64.txt", "w");

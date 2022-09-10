@@ -1,9 +1,9 @@
-//describe  : ÓÒÒÆ±£³ÖÏµÊıÔÚ16Î»£¬ÓÒÒÆĞèÒª¿¼ÂÇËÄÉáÎåÈë
-//input     : 32¸öÔ¤´¦ÀíÏµÊı,ÓÒÒÆÎ»Êı
-//output    : 32¸öÏµÊı½á¹û
+//describe  : ï¿½ï¿½ï¿½Æ±ï¿½ï¿½ï¿½Ïµï¿½ï¿½ï¿½ï¿½16Î»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+//input     : 32ï¿½ï¿½Ô¤ï¿½ï¿½ï¿½ï¿½Ïµï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½Î»ï¿½ï¿½
+//output    : 32ï¿½ï¿½Ïµï¿½ï¿½ï¿½ï¿½ï¿½
 //delay     : 1 clk
 module right_shift#(
-    parameter IN_WIDTH  = 28,
+    parameter IN_WIDTH  = 21,
     parameter OUT_WIDTH = 16
 )
 (
@@ -12,7 +12,6 @@ module right_shift#(
     input                                   rst_n   ,
 //input parameter
     input               [3 : 0]             i_shift ,
-    input               [2 : 0]             i_size  ,
 //input pre_coeff
     input                                   i_valid ,
     input       signed  [IN_WIDTH - 1 : 0]  i_0     ,
@@ -47,8 +46,6 @@ module right_shift#(
     input       signed  [IN_WIDTH - 1 : 0]  i_29    ,
     input       signed  [IN_WIDTH - 1 : 0]  i_30    ,
     input       signed  [IN_WIDTH - 1 : 0]  i_31    ,
-//output parameter
-    output reg          [2 : 0]             o_size  ,
 //output coeff
     output reg                              o_valid ,
     output reg  signed  [OUT_WIDTH - 1 : 0] o_0     ,
@@ -85,7 +82,7 @@ module right_shift#(
     output reg  signed  [OUT_WIDTH - 1 : 0] o_31    
 );
 
-//ÓÒÒÆ(shift-1)Î»
+//ï¿½ï¿½ï¿½ï¿½(shift-1)Î»
     wire [3 : 0] shift1 = i_shift - 1;
     wire signed [OUT_WIDTH : 0] temp_0  = i_0  >>> shift1;
     wire signed [OUT_WIDTH : 0] temp_1  = i_1  >>> shift1;
@@ -120,11 +117,10 @@ module right_shift#(
     wire signed [OUT_WIDTH : 0] temp_30 = i_30 >>> shift1;
     wire signed [OUT_WIDTH : 0] temp_31 = i_31 >>> shift1;
 
-//ËÄÉáÎåÈëºóÓÒÒÆ1Î»
+//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½1Î»
 always @(posedge clk or negedge rst_n) begin
     if (!rst_n) begin
         o_valid <= 0;
-        o_size  <= 0;
         o_0     <= 0;
         o_1     <= 0;
         o_2     <= 0;
@@ -160,7 +156,6 @@ always @(posedge clk or negedge rst_n) begin
     end
     else begin
         o_valid <= i_valid;
-        o_size  <= i_size;
         o_0     <= (temp_0  + 1) >>> 1;
         o_1     <= (temp_1  + 1) >>> 1;
         o_2     <= (temp_2  + 1) >>> 1;
